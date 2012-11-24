@@ -28,6 +28,8 @@ namespace Telemachus
                 UnityEngine.Debug.Log("Telemachus data link creating sensor buffers");
   
                 sensorBuffers.Add(new Altitude(this.vessel, 300, "altitude"));
+                sensorBuffers.Add(new Density(this.vessel, 300, "density"));
+                sensorBuffers.Add(new GeeForce(this.vessel, 300, "geeforce"));
 
                 HttpServer http = new HttpServer(new Server(8080));
                 http.Handlers.Add(new DataLocator(this));
@@ -146,6 +148,40 @@ namespace Telemachus
         override public void Update()
         {
             y.Enqueue(vessel.altitude);
+            clampDataSet(y, clamp);
+
+            x.Enqueue(vessel.missionTime);
+            clampDataSet(x, clamp);
+        }
+    }
+
+    public class Density : SensorBuffer
+    {
+        public Density(Vessel vessel, int clamp, String name)
+            : base(vessel, clamp, name)
+        {
+        }
+
+        override public void Update()
+        {
+            y.Enqueue(vessel.atmDensity);
+            clampDataSet(y, clamp);
+
+            x.Enqueue(vessel.missionTime);
+            clampDataSet(x, clamp);
+        }
+    }
+
+    public class GeeForce : SensorBuffer
+    {
+        public GeeForce(Vessel vessel, int clamp, String name)
+            : base(vessel, clamp, name)
+        {
+        }
+
+        override public void Update()
+        {
+            y.Enqueue(vessel.geeForce);
             clampDataSet(y, clamp);
 
             x.Enqueue(vessel.missionTime);

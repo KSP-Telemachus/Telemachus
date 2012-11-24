@@ -35,7 +35,7 @@ namespace Telemachus
                     {
                         TextReader index = TextReader.CreateForType<TelemachusDataLink>("telemachus.html");
                         response.Content = index.ReadToEnd();
-                        response.Content = response.Content.Replace("@DATALOCATION", "http://localhost:8080/" 
+                        response.Content = response.Content.Replace("@DATALOCATION", "http://192.168.1.64:8080/" 
                             + ROOT + "/data/" + getSensorName(request.Url));
                         response.Content = response.Content.Replace("@TITLE", getSensorName(request.Url));
                         index.Close();
