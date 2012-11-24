@@ -34,7 +34,8 @@ using System.Security.Cryptography;
 using RedCorona.Cryptography;
 
 
-namespace RedCorona.Net {	
+namespace RedCorona.Net 
+{	
 	public delegate void ConnectionRead(ClientInfo ci, String text);
 	public delegate void ConnectionClosed(ClientInfo ci);
 	public delegate void ConnectionReadBytes(ClientInfo ci, byte[] bytes, int len);
@@ -147,12 +148,12 @@ namespace RedCorona.Net {
 			dir = d; delim = "\n";
 			id = NextID; // Assign each client an application-unique ID
 			unchecked{NextID++;}
-			//t = new ClientThread(this);
+
 			if(StartNow) BeginReceive();
 		}
 		
 		public void BeginReceive(){
-//			t.t.Start();
+
 			if((encType == EncryptionType.None) && (!sentReady)) {
 				sentReady = true;
 				if(OnReady != null) OnReady(this);

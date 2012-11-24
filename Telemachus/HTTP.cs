@@ -37,8 +37,10 @@ using System.Collections;
 using System.Collections.Generic;
 using KSP.IO;
 
-namespace RedCorona.Net {
-	public class HttpServer {
+namespace RedCorona.Net 
+{
+	public class HttpServer 
+    {
 		Server s;
 		Hashtable hostmap = new Hashtable();	// Map<string, string>: Host => Home folder
 		ArrayList handlers = new ArrayList();		// List<IHttpHandler>
@@ -57,7 +59,6 @@ namespace RedCorona.Net {
 		public HttpServer(Server s){
 			this.s = s; 
 			s.Connect += new ClientEvent(ClientConnect);
-			handlers.Add(new FallbackHandler());
 		}
 		
 		bool ClientConnect(Server s, ClientInfo ci){
@@ -118,16 +119,17 @@ namespace RedCorona.Net {
 			}
 			
 			string contentLengthString;
-			if(data.req.Header.TryGetValue("Content-Length", out contentLengthString))
-				data.req.ContentLength = Int32.Parse(contentLengthString);
-			else  data.req.ContentLength = 0;
-			
-			//if(data.req.ContentLength > 0){
-				data.state = ClientState.PreContent;
-				data.skip = text.Length + 4;
-			//} else DoProcess(ci);
-			
-			//ClientReadBytes(ci, new byte[0], 0); // For content length 0 body
+            if (data.req.Header.TryGetValue("Content-Length", out contentLengthString))
+            {
+                data.req.ContentLength = Int32.Parse(contentLengthString);
+            }
+            else
+            {
+                data.req.ContentLength = 0;
+            }
+		
+			data.state = ClientState.PreContent;
+			data.skip = text.Length + 4;
 		}
 		
 		public string GetFilename(HttpRequest req){
@@ -290,29 +292,6 @@ namespace RedCorona.Net {
 			#endif
 			if(close) ci.Close();
 		}
-		
-		class FallbackHandler : IHttpHandler {
-			public bool Process(HttpServer server, HttpRequest req, HttpResponse resp){
-				#if DEBUG
-				Console.WriteLine("Processing "+req);
-				#endif
-				server.RequestSession(req);
-				StringBuilder sb = new StringBuilder();
-				sb.Append("<h3>Session</h3>");
-				sb.Append("<p>ID: "+req.Session.ID+"<br>User: "+req.Session.User);
-				sb.Append("<h3>Header</h3>");
-				sb.Append("Method: "+req.Method+"; URL: '"+req.Url+"'; HTTP version "+req.HttpVersion+"<p>");
-				foreach(KeyValuePair<string, string> ide in req.Header) sb.Append(" "+ide.Key +": "+ide.Value+"<br>");
-				sb.Append("<h3>Cookies</h3>");
-				foreach(KeyValuePair<string, string> ide in req.Cookies) sb.Append(" "+ide.Key +": "+ide.Value+"<br>");
-				sb.Append("<h3>Query</h3>");
-				foreach(KeyValuePair<string, string> ide in req.Query) sb.Append(" "+ide.Key +": "+ide.Value+"<br>");
-				sb.Append("<h3>Content</h3>");
-				sb.Append(req.Content);
-				resp.Content = sb.ToString();
-				return true;
-			}
-		}
 	}
 	
 	public class HttpRequest {
@@ -338,7 +317,7 @@ namespace RedCorona.Net {
 		public void MakeRedirect(string newurl){
 			ReturnCode = 303;
 			Header["Location"] = newurl;
-			Content = "This document is requesting a redirection to <a href="+newurl+">"+newurl+"</a>";
+			Content = "This document is requesting a redirection to <a href=" + newurl + ">" + newurl + "</a>";
 		}
 	}
 	
@@ -370,56 +349,5 @@ namespace RedCorona.Net {
 		
 		public void Touch(){ lasttouched = DateTime.Now; }
 	}
-	
-	public class SubstitutingFileReader : IHttpHandler {
-		// Reads a file, and substitutes <%x>
-		HttpRequest req;
-		bool substitute = true;
-		
-		public bool Substitute { get { return substitute; } set { substitute = value; } }
-		
-		public static Hashtable MimeTypes;
-		
-		static SubstitutingFileReader(){
-			MimeTypes = new Hashtable();
-			MimeTypes[".html"] = "text/html";
-			MimeTypes[".htm"] = "text/html";
-			MimeTypes[".css"] = "text/css";
-			MimeTypes[".js"] = "application/x-javascript";
-			
-			MimeTypes[".png"] = "image/png";
-			MimeTypes[".gif"] = "image/gif";
-			MimeTypes[".jpg"] = "image/jpeg";
-			MimeTypes[".jpeg"] = "image/jpeg";
-		}
-		
-		public virtual bool Process(HttpServer server, HttpRequest request, HttpResponse response){
 
-            string mime = "text / html";
-            response.ContentType = mime;
-            if (request.Url.Contains("telemetry.xml"))
-            {
-                response.Content = "telem";
-            }
-            else
-            {
-                TextReader index = TextReader.CreateForType<Telemachus>("telemachus.html");
-                response.Content = index.ReadToEnd();
-                index.Close();
-            }
-			return true;
-		}	
-		
-		public virtual string GetValue(HttpRequest req, string tag){
-			return "<span class=error>Unknown substitution: "+tag+"</span>";
-		}
-		
-		string RegexMatch(Match m){
-			try {
-				return GetValue(req, m.Groups["tag"].Value);
-			} catch(Exception e) {
-				return "<span class=error>Error substituting "+m.Groups["tag"].Value+"</span>";
-			}
-		}
-	}
 }
