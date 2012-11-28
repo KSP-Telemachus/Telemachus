@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.64.0 r51232</authoring_tool>
     </contributor>
-    <created>2012-11-28T19:07:26</created>
-    <modified>2012-11-28T19:07:26</modified>
+    <created>2012-11-28T20:34:52</created>
+    <modified>2012-11-28T20:34:52</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -244,11 +244,11 @@
         <instance_light url="#Lamp-light"/>
       </node>
       <node id="Cylinder" name="Cylinder" type="NODE">
-        <translate sid="location">0 0 2.975815</translate>
+        <translate sid="location">0 0 0.6872153</translate>
         <rotate sid="rotationZ">0 0 1 0</rotate>
         <rotate sid="rotationY">0 1 0 0</rotate>
         <rotate sid="rotationX">1 0 0 0</rotate>
-        <scale sid="scale">-0.1152905 -0.1152905 -3.067565</scale>
+        <scale sid="scale">-0.02577975 -0.02577975 -0.6859283</scale>
         <instance_geometry url="#Cylinder_001-mesh">
           <bind_material>
             <technique_common>
@@ -260,11 +260,11 @@
         </instance_geometry>
       </node>
       <node id="node_collider" name="node_collider" type="NODE">
-        <translate sid="location">0 0 0</translate>
+        <translate sid="location">0 0 0.8024957</translate>
         <rotate sid="rotationZ">0 0 1 0</rotate>
         <rotate sid="rotationY">0 1 0 0</rotate>
         <rotate sid="rotationX">1 0 0 0</rotate>
-        <scale sid="scale">-0.1152905 -0.1152905 -3.067565</scale>
+        <scale sid="scale">-0.0243496 -0.0243496 -0.6478761</scale>
         <instance_geometry url="#Cylinder_002-mesh">
           <bind_material>
             <technique_common>

@@ -12,28 +12,34 @@ namespace Telemachus
     public class TelemachusDataLink : Part
     {
         List<SensorBuffer> sensorBuffers = new List<SensorBuffer>();
-        HttpServer http;
+        static HttpServer http = null;
 
-        public override void OnLoad(
-          ConfigNode node)
-        { 
-           
-
+        protected override void onFlightStart()
+        {
+            startDataLink();
+            base.onFlightStart();
         }
 
-        public override void OnSave(ConfigNode node)
+        protected override void onDisconnect()
         {
-            UnityEngine.Debug.Log("Telemachus data link save");
+            stopDataLink();
+            base.onDisconnect();
         }
-        
-        public override void OnStart(StartState state)
+
+        protected override void  onPartDestroy()
+        {   
+            stopDataLink();
+            base.onPartDestroy();
+        }
+
+        private void startDataLink()
         {
-            if (state != StartState.Editor)
+            if (http == null)
             {
                 UnityEngine.Debug.Log("Telemachus data link starting");
 
                 UnityEngine.Debug.Log("Telemachus data link creating sensor buffers");
-  
+
                 sensorBuffers.Add(new Altitude(this.vessel, 300, "altitude"));
                 sensorBuffers.Add(new Density(this.vessel, 300, "density"));
                 sensorBuffers.Add(new GeeForce(this.vessel, 300, "geeforce"));
@@ -42,6 +48,16 @@ namespace Telemachus
                 http.Handlers.Add(new DataLocator(this));
 
                 UnityEngine.Debug.Log("Telemachus data link listening for requests");
+            }
+        }
+
+        private void stopDataLink()
+        {
+            if (http != null)
+            {
+                UnityEngine.Debug.Log("Telemachus data link shutting down.");
+                http.Close();
+                http = null;
             }
         }
 
