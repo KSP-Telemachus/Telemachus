@@ -32,8 +32,7 @@
 
         function onLoad() {
             rawData = [
-                ['Mission Time', 'g-force'],
-                [0, 0]
+                ['Mission Time', 'g-force']
             ];
             data = google.visualization.arrayToDataTable(rawData);
 
@@ -52,7 +51,9 @@
         }
 
         function update() {
-            drawChart();
+            if (rawData.length > 1) {
+                drawChart();
+            }
             readStream();
 
             if (rawData.length > 200) {

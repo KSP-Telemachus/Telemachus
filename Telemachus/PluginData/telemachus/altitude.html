@@ -32,8 +32,7 @@
 
         function onLoad() {
             rawData = [
-                ['Mission Time', 'Altitude', 'Height from Terrain', 'Terrain Height'],
-                [0, 0, 0, 0]
+                ['Mission Time', 'Altitude', 'Height from Terrain', 'Terrain Height']
             ];
             data = google.visualization.arrayToDataTable(rawData);
 
@@ -52,7 +51,11 @@
         }
 
         function update() {
-            drawChart();
+
+            if (rawData.length > 1) {
+                drawChart();
+            }
+
             readStream();
 
             if (rawData.length > 200) {

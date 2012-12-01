@@ -14,9 +14,9 @@ namespace Telemachus
 
         public TelemachusResponsibility()
         {
-            String[] hashes = new String[] {"1C-73-43-05-A4-E9-BD-74-A9-E1-52-0B-3B-B8-D9-7B-22-B7-75-B6",
-                                           "50-1A-7A-BA-0D-B4-16-6C-53-FA-E7-5D-31-FF-34-C6-ED-51-5C-C4",
-                                           "6C-C2-17-8E-2F-64-DA-B4-A1-6E-B8-21-01-B1-06-17-D1-28-9B-BF"};
+            String[] hashes = new String[] {"1C-6A-92-61-27-1B-C5-4F-CF-3D-54-D7-A9-12-DF-06-1B-12-3C-E6",
+                                           "17-B4-75-CA-5A-E4-5B-BE-E1-52-C7-F9-DD-91-41-BF-64-E1-72-20",
+                                           "D0-67-05-A0-A9-5B-09-FC-AF-30-E6-D2-1A-AA-38-08-35-69-4D-4D"};
 
             foreach (String hash in hashes)
             {
