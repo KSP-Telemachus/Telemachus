@@ -1,9 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#undef HASHED_PAGES
+
+using System;
 using System.Text;
 using MinimalHTTPServer;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Telemachus
 {
@@ -11,6 +14,7 @@ namespace Telemachus
     {
         Dictionary<string, string> hashCheck =
             new Dictionary<string, string>();
+        String PAGE_PREFIX = "/telemachus";
 
         public TelemachusResponsibility()
         {
@@ -23,8 +27,7 @@ namespace Telemachus
                 hashCheck.Add(hash, "");
             }
         }
-
-        String PAGE_PREFIX = "/telemachus";
+        
         public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
             if (request.path.StartsWith(PAGE_PREFIX))
@@ -40,13 +43,13 @@ namespace Telemachus
                     }
 
                     String fileContents = tr.ReadToEnd();
-
+#if (HASHED_PAGES)
                     if(!checkHash(fileContents))
                     {
                         return false;
                     }
-                    
-                    cc.Send(new OKPage(fileContents).ToString());
+#endif
+                    cc.Send(new OKPage(fileContents, fileName).ToString());
                     return true;
                 }
                 catch
