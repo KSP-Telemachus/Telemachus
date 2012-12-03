@@ -18,9 +18,10 @@ namespace Telemachus
 
         public TelemachusResponsibility()
         {
-            String[] hashes = new String[] {"1C-6A-92-61-27-1B-C5-4F-CF-3D-54-D7-A9-12-DF-06-1B-12-3C-E6",
-                                           "17-B4-75-CA-5A-E4-5B-BE-E1-52-C7-F9-DD-91-41-BF-64-E1-72-20",
-                                           "D0-67-05-A0-A9-5B-09-FC-AF-30-E6-D2-1A-AA-38-08-35-69-4D-4D"};
+            String[] hashes = new String[] {"6B-D5-88-E0-47-5A-2E-EB-82-4E-B7-3F-EA-B1-90-E4-71-DD-D3-C4",
+                                            "23-B5-C4-37-BE-EF-D6-7F-F3-D2-7B-17-77-97-CD-EC-E4-06-AA-D8",
+                                            "50-E4-D6-2B-E7-10-EA-7A-2D-A9-C4-65-38-AF-78-BD-97-1D-D2-CB",
+                                            "F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2"};
 
             foreach (String hash in hashes)
             {
@@ -244,7 +245,7 @@ namespace Telemachus
                 sb.Append("</br>");
                 sb.Append("<h1>Hash</h1>");
 
-                String[] files = new String[] { "altitude.html", "gforce.html", "velocity.html" };
+                String[] files = new String[] { "altitude.html", "gforce.html", "velocity.html", "fit-to-screen.css" };
 
                 foreach(String fileName in files)
                 {
