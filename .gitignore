@@ -2,6 +2,9 @@
 [Bb]in/
 [Oo]bj/
 
+*.sln
+Properties/
+*.csproj
 # mstest test results
 TestResults
 
