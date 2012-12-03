@@ -1,6 +1,4 @@
-﻿#undef HASHED_PAGES
-
-using System;
+﻿using System;
 using System.Text;
 using MinimalHTTPServer;
 using System.Reflection;
@@ -44,7 +42,7 @@ namespace Telemachus
                     }
 
                     String fileContents = tr.ReadToEnd();
-#if (HASHED_PAGES)
+#if (!DEBUG)
                     if(!checkHash(fileContents))
                     {
                         return false;
