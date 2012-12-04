@@ -19,7 +19,9 @@ namespace Telemachus
             String[] hashes = new String[] {"6B-D5-88-E0-47-5A-2E-EB-82-4E-B7-3F-EA-B1-90-E4-71-DD-D3-C4",
                                             "23-B5-C4-37-BE-EF-D6-7F-F3-D2-7B-17-77-97-CD-EC-E4-06-AA-D8",
                                             "50-E4-D6-2B-E7-10-EA-7A-2D-A9-C4-65-38-AF-78-BD-97-1D-D2-CB",
-                                            "F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2"};
+                                            "F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2",
+                                            "8F-DD-F5-6B-E5-6B-F0-06-10-AA-39-88-A7-9D-71-12-D1-CB-A6-BC",
+                                            ""};
 
             foreach (String hash in hashes)
             {
@@ -48,6 +50,7 @@ namespace Telemachus
                         return false;
                     }
 #endif
+
                     cc.Send(new OKPage(fileContents, fileName).ToString());
                     return true;
                 }
@@ -222,54 +225,73 @@ namespace Telemachus
             if (request.path.StartsWith("/telemachus/information"))
             {
                 StringBuilder sb = new StringBuilder();
-                sb.Append("<h1>Telemachus Information Page</h1>");
-                sb.Append("Version: " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
-                sb.Append("</br>");
-                sb.Append("<h1>API</h1>");
-                Type type = typeof(Vessel); 
-                FieldInfo[] fields = type.GetFields(); 
-                foreach (var field in fields) 
-                {
-                    sb.Append("Vessel: " + field.Name + "</br>");
-                }
 
-                type = typeof(Orbit); 
-                fields = type.GetFields();
-                foreach (var field in fields)
-                {
-                    sb.Append("Orbit: " + field.Name + "</br>");
-                }
-
-                sb.Append("</br>");
-                sb.Append("<h1>Hash</h1>");
-
-                String[] files = new String[] { "altitude.html", "gforce.html", "velocity.html", "fit-to-screen.css" };
-
-                foreach(String fileName in files)
-                {
-                    KSP.IO.TextReader tr = null;
-
-                        tr = KSP.IO.TextReader.CreateForType<TelemachusDataLink>
-                           (fileName);
-
-                        using (var cryptoProvider = new SHA1CryptoServiceProvider())
-                        {
-                            string hash = BitConverter
-                                    .ToString(cryptoProvider.ComputeHash(
-                                    TelemachusResponsibility.GetBytes(tr.ReadToEnd())));
-
-                            sb.Append(fileName + ": " + hash + "</br>");
-                        }
-
-                }
-
+                header(ref sb);
+                api(ref sb);
+                hash(ref sb);
+               
                 cc.Send(new OKPage(sb.ToString()).ToString());
 
                 return true;
             }
 
-
             return false;
+        }
+
+        private void header(ref StringBuilder sb)
+        {
+            sb.Append("<h1>Telemachus Information Page</h1>");
+            sb.Append("Version: " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            sb.Append("</br>");
+        }
+
+        private void api(ref StringBuilder sb)
+        {
+            sb.Append("<h1>API</h1>");
+            Type type = typeof(Vessel);
+            FieldInfo[] fields = type.GetFields();
+            foreach (var field in fields)
+            {
+                sb.Append("Vessel: " + field.Name + "</br>");
+            }
+
+            type = typeof(Orbit);
+            fields = type.GetFields();
+            foreach (var field in fields)
+            {
+                sb.Append("Orbit: " + field.Name + "</br>");
+            }
+
+            sb.Append("</br>");
+        }
+
+        private void hash(ref StringBuilder sb)
+        {
+            sb.Append("<h1>Hash</h1>");
+
+            String[] files = new String[] { "altitude.html", "g-force.html", "velocity.html", "fit-to-screen.css", "dynamicpressure.html" };
+
+            sb.Append("{");
+            foreach (String fileName in files)
+            {
+                KSP.IO.TextReader tr = null;
+
+                tr = KSP.IO.TextReader.CreateForType<TelemachusDataLink>
+                   (fileName);
+
+                using (var cryptoProvider = new SHA1CryptoServiceProvider())
+                {
+                    string hash = BitConverter
+                            .ToString(cryptoProvider.ComputeHash(
+                            TelemachusResponsibility.GetBytes(tr.ReadToEnd())));
+
+                    sb.Append("\"" + hash + "\",</br>");
+                }
+
+            }
+
+            sb.Append("\"\"};");
+            sb.Append("</br>");
         }
     }
 }

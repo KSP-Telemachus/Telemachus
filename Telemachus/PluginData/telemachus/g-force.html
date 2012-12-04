@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Telemachus - g-force</title>
+    <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", { packages: ["corechart"] });
+        google.setOnLoadCallback(onLoad);
+
+        var data;
+        var rawData;
+        var chart
+        var options;
+
+        function onLoad() {
+            rawData = [
+                ['Mission Time', 'g-force']
+            ];
+            data = google.visualization.arrayToDataTable(rawData);
+
+            options = {
+                title: 'g-force Plot',
+                vAxis: { title: 'g-force' },
+                hAxis: { title: 'Mission Time (s)' }
+            };
+
+            chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            update();
+        }
+
+        function drawChart() {
+            chart.draw(data, options);
+        }
+
+        function update() {
+            if (rawData.length > 1) {
+                drawChart();
+            }
+            readStream();
+
+            if (rawData.length > 200) {
+                rawData.splice(1, 10);
+            }
+
+            t = setTimeout('update()', 300);
+        }
+
+        function readStream() {
+            var req = null;
+            var g = 0;
+            var met = 0;
+            try { req = new XMLHttpRequest(); } catch (e) { }
+            if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
+            if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
+            req.open('GET', "datalink?g=vessel.geeForce&met=vessel.missionTime", false);
+            req.send();
+
+            eval(req.responseText);
+
+            rawData.push([met, g]);
+
+            data = google.visualization.arrayToDataTable(rawData);
+        }
+    </script>
+  </head>
+  <body id="full">
+   <div id="main">
+    <div id="chart_div" style="width: 100%; height:100%;"></div>
+    </div>
+  </body>
+</html>
