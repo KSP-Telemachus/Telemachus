@@ -26,7 +26,7 @@ namespace Telemachus
                                             "50-E4-D6-2B-E7-10-EA-7A-2D-A9-C4-65-38-AF-78-BD-97-1D-D2-CB",
                                             "F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2",
                                             "3D-17-6A-14-EC-89-C9-E0-11-DB-34-30-6B-99-A7-B4-B0-51-02-32",
-                                            "BD-A0-A7-22-CF-B2-81-05-6C-C1-8A-16-7B-CD-77-2F-AA-35-B1-85",
+                                            "E4-19-11-1C-78-78-55-F3-E3-65-60-C0-BF-69-40-C6-A6-6D-77-9B",
                                             ""};
 
             foreach (String hash in hashes)
