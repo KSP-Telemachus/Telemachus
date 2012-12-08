@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Telemachus - Dynamic Pressure</title>
+  <title>Telemachus - Periapsis and Apoapsis</title>
     <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
@@ -15,13 +15,14 @@
 
         function onLoad() {
             rawData = [
-                ['Mission Time', 'Dynamic Pressure']
+                ['Mission Time', 'Periapsis', 'Apoapsis']
             ];
             data = google.visualization.arrayToDataTable(rawData);
 
             options = {
-                title: 'Dynamic Pressure Plot',
-                hAxis: { title: 'Mission Time (s)' }
+                title: 'Periapsis and Apoapsis',
+                vAxis: { title: 'a' },
+                hAxis: { title: 'b' }
             };
 
             chart = new google.visualization.LineChart(document.getElementById('chart_div'));
@@ -33,11 +34,9 @@
         }
 
         function update() {
-
             if (rawData.length > 1) {
                 drawChart();
             }
-
             readStream();
 
             if (rawData.length > 200) {
@@ -49,18 +48,18 @@
 
         function readStream() {
             var req = null;
+            var ap = 0;
+            var pe = 0;
             var met = 0;
-            var terrain = 0;
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?v=vessel.srf_velocity&d=vessel.atmDensity&met=vessel.missionTime", false);
+            req.open('GET', "datalink?pe=orbit.PeA&ap=orbit.ApA&met=vessel.missionTime", false);
             req.send();
-         
+          
             eval(req.responseText);
-            mag = Math.pow(v[0], 2) + Math.pow(v[1], 2) + Math.pow(v[2], 2);
-            mag = Math.sqrt(mag);
-            rawData.push([met,(0.5*d)*Math.pow(mag,2)]);
+
+            rawData.push([met, pe, ap]);
 
             data = google.visualization.arrayToDataTable(rawData);
         }

@@ -46,12 +46,12 @@ namespace Telemachus
                     server.OnServerNotify += new Server.ServerNotify(serverOut);
                     server.addHTTPResponsibility(new ElseResponsibility());
                     server.addHTTPResponsibility(new TelemachusResponsibility());
-                    DataLinks dataLinks = new DataLinks();
+                    DataLink dataLinks = new DataLink();
                     dataLinks.vessel = this.vessel;
                     dataLinks.orbit = this.vessel.orbit;
                     dataLinkResponsibility = new DataLinkResponsibility(dataLinks);
-                    server.addHTTPResponsibility(new DataLinkResponsibility(dataLinks));
-                    server.addHTTPResponsibility(new InformationResponsibility());
+                    server.addHTTPResponsibility(dataLinkResponsibility);
+                    server.addHTTPResponsibility(new InformationResponsibility(dataLinkResponsibility));
                     server.startServing();
 
                     Logger.Out("Telemachus data link listening for requests on: " + server.getIP() + ":" + config.port.ToString());
@@ -72,7 +72,7 @@ namespace Telemachus
                 Logger.Out("Telemachus data link shutting down.");
                 server.stopServing();
                 server = null;
-                dataLinkResponsibility.clear();
+                dataLinkResponsibility.clearCache();
             }
         }
 
@@ -80,6 +80,12 @@ namespace Telemachus
         {
             Logger.Log(message);
         }
+    }
+
+    public class DataLink
+    {
+        public Vessel vessel;
+        public Orbit orbit;
     }
 }
 
