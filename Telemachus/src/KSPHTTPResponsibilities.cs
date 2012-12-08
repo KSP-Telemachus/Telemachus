@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Telemachus
 {
@@ -126,10 +127,12 @@ namespace Telemachus
         const char ACCESS_DELIMITER = '.';
         const String JAVASCRIPT_DELIMITER = ";";
         const String JAVASCRIPT_ASSIGN = " = ";
+        const int INFINITE_WAIT = -1;
 
         DataLink dataLinks = null;
         Dictionary<string, ReflectiveArgumentData> abstractArgument =
             new Dictionary<string, ReflectiveArgumentData>();
+        static ReaderWriterLock argumentCacheLock = new ReaderWriterLock();
 
         public DataLinkResponsibility(DataLink dataLinks)
         {
@@ -145,7 +148,7 @@ namespace Telemachus
                     request.path.Remove(
                     0, request.path.IndexOf(ARGUMENTS_START) + 1))
                     ).ToString());
-             
+           
                 return true;
             }
 
@@ -154,7 +157,15 @@ namespace Telemachus
 
         public void clearCache()
         {
-            abstractArgument.Clear();
+            argumentCacheLock.AcquireWriterLock(INFINITE_WAIT);
+            try
+            {
+                abstractArgument.Clear();
+            }
+            finally
+            {
+                argumentCacheLock.ReleaseWriterLock();
+            }
         }
 
         public List<String> getAccessList()
@@ -228,17 +239,36 @@ namespace Telemachus
         {
             String[] argsSplit = args.Split(ARGUMENTS_ASSIGN);
             ReflectiveArgumentData ad = null;
-            abstractArgument.TryGetValue(argsSplit[1], out ad);
+            
+            argumentCacheLock.AcquireReaderLock(INFINITE_WAIT);
 
-            if (ad == null)
-            {
-                ad = new ReflectiveArgumentData();
-                ad.key = argsSplit[1];
-                abstractArgument.Add(argsSplit[1], ad);
+            try
+            {    
+                abstractArgument.TryGetValue(argsSplit[1], out ad);
+
+                if (ad == null)
+                {
+                    LockCookie lc = argumentCacheLock.UpgradeToWriterLock(INFINITE_WAIT);
+
+                    try
+                    {
+                        ad = new ReflectiveArgumentData();
+                        ad.key = argsSplit[1];
+                        abstractArgument.Add(argsSplit[1], ad);
+                    }
+                    finally
+                    {
+                        argumentCacheLock.DowngradeFromWriterLock(ref lc);
+                    }
+                }
+
+                ad.variableName = argsSplit[0];
+                ad.updateValue(dataLinks);
             }
-
-            ad.variableName = argsSplit[0];
-            ad.updateValue(dataLinks);
+            finally
+            {
+                argumentCacheLock.ReleaseReaderLock();
+            }
 
             return ad.toJavascriptString();
         }
