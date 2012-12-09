@@ -65,9 +65,52 @@ namespace Telemachus
         }
     }
 
-    public interface IAPIHandler
+    public class SensorAPIHandler : IAPIHandler
     {
-        bool process(String API, String assign, ref Dictionary<string, CachedAPIReference> cache, ref CachedAPIReference cachedAPIReference);
+        DataLink dataLinks = null;
+
+        List<ModuleEnviroSensor> sensors =
+            new List<ModuleEnviroSensor>();
+
+        public SensorAPIHandler(DataLink dataLinks)
+        {
+            this.dataLinks = dataLinks;
+
+            
+        }
+
+        public bool process(String API, String assign, ref Dictionary<string, CachedAPIReference> cache, ref CachedAPIReference cachedAPIReference)
+        {
+            String[] path = API.Split(DataLinkResponsibility.ACCESS_DELIMITER);
+           
+            if(path[0].Equals("sensor"))
+            {
+                List<ModuleEnviroSensor> sensors = new List<ModuleEnviroSensor>();
+
+                foreach (Part part in dataLinks.vessel.parts.FindAll(p => p.Modules.Contains("ModuleEnviroSensor")))
+                {
+                    foreach (var module in part.Modules)
+                    {
+                        if (module.GetType().Equals(typeof(ModuleEnviroSensor)))
+                        {
+                            ModuleEnviroSensor sensor = (ModuleEnviroSensor)module;
+            
+                            if(sensor.sensorType.Equals(path[1]))
+                            {
+                                sensors.Add(sensor);
+                            }
+                        }
+                    }
+                }
+
+                cachedAPIReference = new SensorCachedAPIReference(sensors, new JavaScriptGeneralFormatter());
+                cache.Add(API, cachedAPIReference);
+
+                return true;
+            }
+
+            return false;
+        }
     }
 
     public class DefaultAPIHandler : IAPIHandler
@@ -76,5 +119,10 @@ namespace Telemachus
         {
             throw new Exception("Bad API reference");
         }
+    }
+
+    public interface IAPIHandler
+    {
+        bool process(String API, String assign, ref Dictionary<string, CachedAPIReference> cache, ref CachedAPIReference cachedAPIReference);
     }
 }

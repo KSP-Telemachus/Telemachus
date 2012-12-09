@@ -137,6 +137,7 @@ namespace Telemachus
         {
             this.dataLinks = dataLinks;
 
+            APIHandlers.Add(new SensorAPIHandler(dataLinks));
             APIHandlers.Add(new ReflectiveAPIHandler(dataLinks));
             APIHandlers.Add(new DefaultAPIHandler());
         }
