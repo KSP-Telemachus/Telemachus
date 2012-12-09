@@ -15,7 +15,7 @@
 
         function onLoad() {
             rawData = [
-                ['Mission Time', 'Vertical', 'Surface', 'Angular']
+                ['Mission Time', 'Actual', 'Vertical', 'Surface', 'Angular', 'Orbital']
             ];
             data = google.visualization.arrayToDataTable(rawData);
 
@@ -46,21 +46,27 @@
             t = setTimeout('update()', 300);
         }
 
+        function magnitude3d(v) {
+            return Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2) + Math.pow(v[2], 2));
+        }
+
         function readStream() {
             var req = null;
             var vs = 0;
             var sv = 0;
             var av = 0;
             var met = 0;
+            var m = 0;
+            var o = 0;
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?av=vessel.angularVelocity&sv=vessel.horizontalSrfSpeed&vs=vessel.verticalSpeed&met=vessel.missionTime", false);
+            req.open('GET', "datalink?o=vessel.obt_velocity&m=vessel.srf_velocity&av=vessel.angularVelocity&sv=vessel.horizontalSrfSpeed&vs=vessel.verticalSpeed&met=vessel.missionTime", false);
             req.send();
 
             eval(req.responseText);
 
-            rawData.push([met, vs, sv, av]);
+            rawData.push([met, magnitude3d(m), vs, sv, av, magnitude3d(o)]);
 
             data = google.visualization.arrayToDataTable(rawData);
         }

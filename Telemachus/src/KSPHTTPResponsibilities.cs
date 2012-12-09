@@ -17,7 +17,7 @@ namespace Telemachus
 
         static String[] files = new String[] { "altitude.html", 
                 "g-force.html", "velocity.html", 
-                "fit-to-screen.css", "dynamicpressure.html", "apoapsis-periapsis.html" };
+                "fit-to-screen.css", "dynamic-pressure.html", "apoapsis-periapsis.html" };
 
         static TelemachusResponsibility()
         {
@@ -120,23 +120,25 @@ namespace Telemachus
 
     class DataLinkResponsibility : IHTTPRequestResponsibility
     {
-        const String PAGE_PREFIX = "/telemachus/datalink";
-        const char ARGUMENTS_START = '?';
-        const char ARGUMENTS_ASSIGN = '=';
-        const char ARGUMENTS_DELIMETER = '&';
-        const char ACCESS_DELIMITER = '.';
-        const String JAVASCRIPT_DELIMITER = ";";
-        const String JAVASCRIPT_ASSIGN = " = ";
-        const int INFINITE_WAIT = -1;
+        public const String PAGE_PREFIX = "/telemachus/datalink";
+        public const char ARGUMENTS_START = '?';
+        public const char ARGUMENTS_ASSIGN = '=';
+        public const char ARGUMENTS_DELIMETER = '&';
+        public const char ACCESS_DELIMITER = '.';
+        public const int INFINITE_WAIT = -1;
 
         DataLink dataLinks = null;
-        Dictionary<string, ReflectiveArgumentData> abstractArgument =
-            new Dictionary<string, ReflectiveArgumentData>();
-        static ReaderWriterLock argumentCacheLock = new ReaderWriterLock();
+        Dictionary<string, CachedAPIReference> APICache =
+            new Dictionary<string, CachedAPIReference>();
+        static ReaderWriterLock valueCacheLock = new ReaderWriterLock();
+        List<IAPIHandler> APIHandlers = new List<IAPIHandler>();
 
         public DataLinkResponsibility(DataLink dataLinks)
         {
             this.dataLinks = dataLinks;
+
+            APIHandlers.Add(new ReflectiveAPIHandler(dataLinks));
+            APIHandlers.Add(new DefaultAPIHandler());
         }
 
         public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
@@ -157,14 +159,15 @@ namespace Telemachus
 
         public void clearCache()
         {
-            argumentCacheLock.AcquireWriterLock(INFINITE_WAIT);
+            valueCacheLock.AcquireWriterLock(INFINITE_WAIT);
+
             try
             {
-                abstractArgument.Clear();
+                APICache.Clear();
             }
             finally
             {
-                argumentCacheLock.ReleaseWriterLock();
+                valueCacheLock.ReleaseWriterLock();
             }
         }
 
@@ -238,124 +241,40 @@ namespace Telemachus
         private String argumentParse(String args)
         {
             String[] argsSplit = args.Split(ARGUMENTS_ASSIGN);
-            ReflectiveArgumentData ad = null;
-            
-            argumentCacheLock.AcquireReaderLock(INFINITE_WAIT);
+            CachedAPIReference cachedAPIReference = null;
+
+            valueCacheLock.AcquireReaderLock(INFINITE_WAIT);
 
             try
-            {    
-                abstractArgument.TryGetValue(argsSplit[1], out ad);
+            {
+                APICache.TryGetValue(argsSplit[1], out cachedAPIReference);
 
-                if (ad == null)
+                if (cachedAPIReference == null)
                 {
-                    LockCookie lc = argumentCacheLock.UpgradeToWriterLock(INFINITE_WAIT);
+                    LockCookie lc = valueCacheLock.UpgradeToWriterLock(INFINITE_WAIT);
 
                     try
                     {
-                        ad = new ReflectiveArgumentData();
-                        ad.key = argsSplit[1];
-                        abstractArgument.Add(argsSplit[1], ad);
+                        foreach(IAPIHandler APIHandler in APIHandlers)
+                        {
+                            if (APIHandler.process(argsSplit[1], argsSplit[0], ref APICache, ref cachedAPIReference))
+                            {
+                                break;
+                            }
+                        }
                     }
                     finally
                     {
-                        argumentCacheLock.DowngradeFromWriterLock(ref lc);
+                        valueCacheLock.DowngradeFromWriterLock(ref lc);
                     }
                 }
-
-                ad.variableName = argsSplit[0];
-                ad.updateValue(dataLinks);
             }
             finally
             {
-                argumentCacheLock.ReleaseReaderLock();
+                valueCacheLock.ReleaseReaderLock();
             }
 
-            return ad.toJavascriptString();
-        }
-
-        public class ReflectiveArgumentData
-        {
-            public String variableName { get; set; }
-            public String key { get; set; }
-            private Object value = null, parentValue = null;
-
-            FieldInfo field = null;
-            PropertyInfo pfield = null;
-
-            public void updateValue(DataLink dl)
-            {
-                if (field == null && pfield == null)
-                {
-                    reflectiveUpdate(dl);
-                }
-                else
-                {
-                    if (pfield == null)
-                    {
-                        value = field.GetValue(parentValue);
-                    }
-                    else
-                    {
-                        value = pfield.GetValue(parentValue, null);
-                    }
-                }
-            }
-
-            private void reflectiveUpdate(DataLink dataLinks)
-            {
-                String[] argsSplit = key.Split(ACCESS_DELIMITER);
-                Type type = dataLinks.GetType();
-                value = dataLinks;
-                FieldInfo field = null;
-                PropertyInfo pfield = null;
-                int accessType = 0;
-
-                for (int i = 0; i < argsSplit.Length; i ++ )
-                {
-                    String s = argsSplit[i];
-
-                    try
-                    {
-                        field = type.GetField(s);
-                        parentValue = value;
-                        value = field.GetValue(parentValue);
-                        accessType = 1;
-                    }
-                    catch
-                    {
-                        pfield = type.GetProperty(s);
-                        parentValue = value;
-                        value = pfield.GetValue(parentValue, null);
-                        accessType = 2;
-                    }
-
-                    type = value.GetType();
-
-                    if (i == argsSplit.Length - 1)
-                    {
-                        if (accessType == 1)
-                        {
-                            this.field = field;
-                        }
-                        else
-                        {
-                            this.pfield = pfield;
-                        }
-                    }
-                }
-            }
-
-            public String toJavascriptString()
-            {
-                StringBuilder sb = new StringBuilder();
-
-                sb.Append(variableName);
-                sb.Append(JAVASCRIPT_ASSIGN);
-                sb.Append(value.ToString());
-                sb.Append(JAVASCRIPT_DELIMITER);
-
-                return sb.ToString();
-            }
+            return JavaScriptGeneralFormatter.formatWithAssignment(cachedAPIReference.getValue(), argsSplit[0]);
         }
     }
     

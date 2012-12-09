@@ -54,7 +54,7 @@
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?pe=orbit.PeA&ap=orbit.ApA&met=vessel.missionTime", false);
+            req.open('GET', "datalink?pe=vessel.orbit.PeA&ap=vessel.orbit.ApA&met=vessel.missionTime", false);
             req.send();
           
             eval(req.responseText);
