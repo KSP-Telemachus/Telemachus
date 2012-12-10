@@ -17,16 +17,20 @@ namespace Telemachus
 
         static String[] files = new String[] { "altitude.html", 
                 "g-force.html", "velocity.html", 
-                "fit-to-screen.css", "dynamic-pressure.html", "apoapsis-periapsis.html" };
+                "fit-to-screen.css", "dynamic-pressure.html", "apoapsis-periapsis.html",
+                "temperature.html", "pressure.html", "gravity.html"};
 
         static TelemachusResponsibility()
         {
             String[] hashes = new String[] {"6B-D5-88-E0-47-5A-2E-EB-82-4E-B7-3F-EA-B1-90-E4-71-DD-D3-C4",
-                                            "23-B5-C4-37-BE-EF-D6-7F-F3-D2-7B-17-77-97-CD-EC-E4-06-AA-D8",
-                                            "50-E4-D6-2B-E7-10-EA-7A-2D-A9-C4-65-38-AF-78-BD-97-1D-D2-CB",
+                                            "C5-C2-2A-EA-1C-C7-AE-45-B7-C2-6F-3D-0C-CE-F9-B7-5C-C2-17-50",
+                                            "C2-AB-83-C5-EB-36-F6-43-14-C5-2B-50-0D-F2-9F-8B-81-D0-3F-E0",
                                             "F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2",
                                             "3D-17-6A-14-EC-89-C9-E0-11-DB-34-30-6B-99-A7-B4-B0-51-02-32",
-                                            "E4-19-11-1C-78-78-55-F3-E3-65-60-C0-BF-69-40-C6-A6-6D-77-9B",
+                                            "5F-EB-57-93-4A-35-84-00-E2-5C-FB-F9-6B-AC-D0-35-88-CB-67-4F",
+                                            "F1-BE-D1-96-42-A3-C9-34-28-22-C5-BD-E1-74-D4-9E-15-BF-11-A3",
+                                            "F6-E8-73-6B-C8-6A-8F-DD-BC-F1-C0-67-C4-F3-0E-DE-0A-CC-DE-6D",
+                                            "2C-07-56-1C-97-1E-F0-6A-D8-D9-45-12-FA-EB-8B-30-4C-B7-8C-F8",
                                             ""};
 
             foreach (String hash in hashes)

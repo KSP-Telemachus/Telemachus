@@ -13,7 +13,7 @@ namespace Telemachus
             responseCode = "404";
             attributes.Add("Content-Type", "text / html");
             attributes.Add("Content-Length", "0");
-            content = "<html><body><h1>No datalink found at this address.</h1></body></html>";
+            content = "<html><body><h1>No datalink found at this address</h1></body></html>";
         }
 
         public override String ToString()

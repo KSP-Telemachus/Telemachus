@@ -17,7 +17,6 @@
             rawData = [
                 ['Mission Time', 'Temperature']
             ];
-
             data = google.visualization.arrayToDataTable(rawData);
 
             options = {
@@ -35,9 +34,11 @@
         }
 
         function update() {
+
             if (rawData.length > 1) {
                 drawChart();
             }
+
             readStream();
 
             if (rawData.length > 200) {
@@ -49,25 +50,28 @@
 
         function readStream() {
             var req = null;
-            var g = 0;
             var met = 0;
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?g=sensor.TEMP&met=vessel.missionTime", false);
+            req.open('GET', "datalink?t=sensor.TEMP&met=vessel.missionTime", false);
             req.send();
 
-            document.writeln(req.responseText);
 
-            //eval(req.responseText);
+            //document.writeln(req.responseText);
 
-            //document.writeln(g);
-            //toAdd = g[1];
-            //toAdd.splice(0, 0, met);
-            //rawData.push(toAdd);
-            //rawData[0] = g[0];
 
-           //data = google.visualization.arrayToDataTable(rawData);
+
+            eval(req.responseText);
+            temp = t[0];
+            temp.splice(0, 0, "Mission Time");
+            rawData[0] = temp;
+            add = t[1];
+            add.splice(0, 0, met);
+        
+            rawData.push(add);
+            //document.writeln(rawData);
+            data = google.visualization.arrayToDataTable(rawData);
         }
     </script>
   </head>

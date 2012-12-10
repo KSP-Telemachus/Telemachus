@@ -58,7 +58,7 @@ namespace Telemachus
             sb1.Append("[");
             foreach (ModuleEnviroSensor m in sensors)
             {
-                if (m == null || !m.isEnabled)
+                if (!m.isEnabled)
                 {
                     sb0.Append("0,");
                 }
@@ -78,7 +78,14 @@ namespace Telemachus
                     sb0.Append(f.ToString() + ",");
                 }
 
-                sb1.Append(m.part.parent.name + ",");
+                try
+                {
+                    sb1.Append("'Sensor location: " + m.part.parent.name + "',");
+                }
+                catch
+                {
+                    sb1.Append("'(Part Unavailable)',");
+                }
             }
 
             if (sb0.Length > 1)

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Telemachus - g-force</title>
+    <title>Telemachus - Gravity</title>
     <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
@@ -15,13 +15,13 @@
 
         function onLoad() {
             rawData = [
-                ['Mission Time', 'g-force']
+                ['Mission Time', 'Gravity']
             ];
             data = google.visualization.arrayToDataTable(rawData);
 
             options = {
-                title: 'g-force Plot',
-                vAxis: { title: 'g-force' },
+                title: 'Gravity Plot',
+                vAxis: { title: 'Gravity (m/s^2)' },
                 hAxis: { title: 'Mission Time (s)' }
             };
 
@@ -54,7 +54,7 @@
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?t=sensor.ACC&met=vessel.missionTime", false);
+            req.open('GET', "datalink?t=sensor.GRAV&met=vessel.missionTime", false);
             req.send();
 
             //document.writeln(req.responseText);
@@ -65,7 +65,7 @@
             rawData[0] = temp;
             add = t[1];
             add.splice(0, 0, met);
-
+        
             rawData.push(add);
 
             data = google.visualization.arrayToDataTable(rawData);
