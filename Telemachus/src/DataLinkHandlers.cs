@@ -2,21 +2,22 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using MinimalHTTPServer;
 
 namespace Telemachus
 {
-    public class ReflectiveAPIHandler : IAPIHandler
+    public class ReflectiveDataLinkHandler : IDataLinkHandler
     {
         const int FIELD_ACCESS = 1, PROPERTY_ACCESS = 2;
 
         DataLink dataLinks = null;
 
-        public ReflectiveAPIHandler(DataLink dataLinks)
+        public ReflectiveDataLinkHandler(DataLink dataLinks)
         {
             this.dataLinks = dataLinks;
         }
 
-        public bool process(String API, String assign, ref Dictionary<string, CachedAPIReference> cache, ref CachedAPIReference cachedAPIReference)
+        public bool process(String API, String assign, ref Dictionary<string, CachedDataLinkReference> cache, ref CachedDataLinkReference cachedAPIReference)
         {
 
             String[] argsSplit = API.Split(DataLinkResponsibility.ACCESS_DELIMITER);
@@ -50,12 +51,12 @@ namespace Telemachus
             switch (accessType)
             {
                 case FIELD_ACCESS:
-                    cachedAPIReference = new FieldCachedAPIReference(field, parentValue, new JavaScriptGeneralFormatter());
+                    cachedAPIReference = new FieldCachedDataLinkReference(field, parentValue, new JavaScriptGeneralFormatter());
                     cache.Add(API, cachedAPIReference);
                     return true;
 
                 case PROPERTY_ACCESS:
-                    cachedAPIReference = new PropertyCachedAPIReference(property, parentValue, new JavaScriptGeneralFormatter());
+                    cachedAPIReference = new PropertyCachedDataLinkReference(property, parentValue, new JavaScriptGeneralFormatter());
                     cache.Add(API, cachedAPIReference);
                     return true;
 
@@ -65,21 +66,21 @@ namespace Telemachus
         }
     }
 
-    public class SensorAPIHandler : IAPIHandler
+    public class SensorDataLinkHandler : IDataLinkHandler
     {
         DataLink dataLinks = null;
 
         List<ModuleEnviroSensor> sensors =
             new List<ModuleEnviroSensor>();
 
-        public SensorAPIHandler(DataLink dataLinks)
+        public SensorDataLinkHandler(DataLink dataLinks)
         {
             this.dataLinks = dataLinks;
 
             
         }
 
-        public bool process(String API, String assign, ref Dictionary<string, CachedAPIReference> cache, ref CachedAPIReference cachedAPIReference)
+        public bool process(String API, String assign, ref Dictionary<string, CachedDataLinkReference> cache, ref CachedDataLinkReference cachedAPIReference)
         {
             String[] path = API.Split(DataLinkResponsibility.ACCESS_DELIMITER);
            
@@ -103,7 +104,7 @@ namespace Telemachus
                     }
                 }
 
-                cachedAPIReference = new SensorCachedAPIReference(sensors, new JavaScriptGeneralFormatter());
+                cachedAPIReference = new SensorCachedDataLinkReference(sensors, new JavaScriptGeneralFormatter());
                 cache.Add(API, cachedAPIReference);
 
                 return true;
@@ -113,16 +114,16 @@ namespace Telemachus
         }
     }
 
-    public class DefaultAPIHandler : IAPIHandler
+    public class DefaultDataLinkHandler : IDataLinkHandler
     {
-        public bool process(String API, String assign, ref Dictionary<string, CachedAPIReference> cache, ref CachedAPIReference cachedAPIReference)
+        public bool process(String API, String assign, ref Dictionary<string, CachedDataLinkReference> cache, ref CachedDataLinkReference cachedAPIReference)
         {
-            throw new Exception("Bad API reference");
+            throw new SoftException("Bad data link reference.");
         }
     }
 
-    public interface IAPIHandler
+    public interface IDataLinkHandler
     {
-        bool process(String API, String assign, ref Dictionary<string, CachedAPIReference> cache, ref CachedAPIReference cachedAPIReference);
+        bool process(String API, String assign, ref Dictionary<string, CachedDataLinkReference> cache, ref CachedDataLinkReference cachedAPIReference);
     }
 }
