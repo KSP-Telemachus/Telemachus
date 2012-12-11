@@ -39,13 +39,14 @@
                 drawChart();
             }
 
-            readStream();
+            if (readStream()) {
 
-            if (rawData.length > 200) {
-                rawData.splice(1, 10);
+                if (rawData.length > 200) {
+                    rawData.splice(1, 10);
+                }
+
+                t = setTimeout('update()', 300);
             }
-
-            t = setTimeout('update()', 300);
         }
 
         function readStream() {
@@ -59,11 +60,19 @@
             req.open('GET', "datalink?terrain=vessel.heightFromTerrain&alt=vessel.altitude&met=vessel.missionTime", false);
             req.send();
 
-            eval(req.responseText);
+            if (req.status == 200) {
+                eval(req.responseText);
 
-            rawData.push([met, alt, terrain, alt - terrain]);
+                rawData.push([met, alt, terrain, alt - terrain]);
 
-            data = google.visualization.arrayToDataTable(rawData);
+                data = google.visualization.arrayToDataTable(rawData);
+            }
+            else {
+                document.writeln(req.responseText);
+                return false;
+            }
+
+            return true;
         }
     </script>
   </head>

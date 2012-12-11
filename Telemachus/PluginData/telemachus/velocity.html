@@ -37,13 +37,15 @@
             if (rawData.length > 1) {
                 drawChart();
             }
-            readStream();
 
-            if (rawData.length > 200) {
-                rawData.splice(1, 10);
+            if (readStream()) {
+
+                if (rawData.length > 200) {
+                    rawData.splice(1, 10);
+                }
+
+                t = setTimeout('update()', 300);
             }
-
-            t = setTimeout('update()', 300);
         }
 
         function magnitude3d(v) {
@@ -64,11 +66,17 @@
             req.open('GET', "datalink?o=vessel.obt_velocity&m=vessel.srf_velocity&av=vessel.angularVelocity&sv=vessel.horizontalSrfSpeed&vs=vessel.verticalSpeed&met=vessel.missionTime", false);
             req.send();
 
-            eval(req.responseText);
+            if (req.status == 200) {
+                eval(req.responseText);
+                rawData.push([met, magnitude3d(m), vs, sv, av, magnitude3d(o)]);
+                data = google.visualization.arrayToDataTable(rawData);
+            }
+            else {
+                document.writeln(req.responseText);
+                return false;
+            }
 
-            rawData.push([met, magnitude3d(m), vs, sv, av, magnitude3d(o)]);
-
-            data = google.visualization.arrayToDataTable(rawData);
+            return true;
         }
     </script>
   </head>

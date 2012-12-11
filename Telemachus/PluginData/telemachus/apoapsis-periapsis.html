@@ -37,13 +37,14 @@
             if (rawData.length > 1) {
                 drawChart();
             }
-            readStream();
 
-            if (rawData.length > 200) {
-                rawData.splice(1, 10);
+            if (readStream()) {
+                if (rawData.length > 200) {
+                    rawData.splice(1, 10);
+                }
+
+                t = setTimeout('update()', 300);
             }
-
-            t = setTimeout('update()', 300);
         }
 
         function readStream() {
@@ -56,12 +57,20 @@
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
             req.open('GET', "datalink?pe=vessel.orbit.PeA&ap=vessel.orbit.ApA&met=vessel.missionTime", false);
             req.send();
-          
-            eval(req.responseText);
 
-            rawData.push([met, pe, ap]);
+            if (req.status == 200) {
+                eval(req.responseText);
 
-            data = google.visualization.arrayToDataTable(rawData);
+                rawData.push([met, pe, ap]);
+
+                data = google.visualization.arrayToDataTable(rawData);
+            } 
+            else {
+                document.writeln(req.responseText);
+                return false;
+            }
+
+            return true;
         }
     </script>
   </head>

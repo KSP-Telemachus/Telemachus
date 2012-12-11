@@ -19,15 +19,15 @@ namespace Telemachus
 
         static IOPageResponsibility()
         {
-            String[] hashes = new String[] {"6B-D5-88-E0-47-5A-2E-EB-82-4E-B7-3F-EA-B1-90-E4-71-DD-D3-C4",
-                                            "C5-C2-2A-EA-1C-C7-AE-45-B7-C2-6F-3D-0C-CE-F9-B7-5C-C2-17-50",
-                                            "C2-AB-83-C5-EB-36-F6-43-14-C5-2B-50-0D-F2-9F-8B-81-D0-3F-E0",
+            String[] hashes = new String[] {"5B-1E-CF-0E-B9-7F-C8-88-27-F4-5B-C5-06-BB-A9-2E-CD-B4-63-0A",
+                                            "A6-D5-55-50-24-68-FA-A6-2D-0A-A2-AC-8B-79-77-39-CE-A4-45-8A",
+                                            "81-D7-46-D7-36-4B-CD-2A-9E-CB-B8-2B-B8-13-09-08-FF-2C-C9-7A",
                                             "F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2",
-                                            "3D-17-6A-14-EC-89-C9-E0-11-DB-34-30-6B-99-A7-B4-B0-51-02-32",
-                                            "5F-EB-57-93-4A-35-84-00-E2-5C-FB-F9-6B-AC-D0-35-88-CB-67-4F",
-                                            "F1-BE-D1-96-42-A3-C9-34-28-22-C5-BD-E1-74-D4-9E-15-BF-11-A3",
-                                            "F6-E8-73-6B-C8-6A-8F-DD-BC-F1-C0-67-C4-F3-0E-DE-0A-CC-DE-6D",
-                                            "2C-07-56-1C-97-1E-F0-6A-D8-D9-45-12-FA-EB-8B-30-4C-B7-8C-F8",
+                                            "F0-B5-96-5F-15-D6-E5-02-D5-89-A8-9C-4F-CD-69-1B-02-F4-EF-3C",
+                                            "3A-28-9C-65-D1-39-4D-7D-3F-51-56-94-BB-28-0C-73-73-82-A6-99",
+                                            "F3-DB-CD-2B-45-49-34-5D-50-2A-73-08-AF-F4-E9-EF-85-48-18-CA",
+                                            "D1-85-95-94-CC-86-E7-AA-FC-DC-D8-3B-5E-41-2A-A7-41-D2-2A-04",
+                                            "03-20-15-E0-28-2F-6F-B9-40-05-EB-7F-95-18-CA-EA-5D-EE-3D-C9",
                                             ""};
 
             foreach (String hash in hashes)

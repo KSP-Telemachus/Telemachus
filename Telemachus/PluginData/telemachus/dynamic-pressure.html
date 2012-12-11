@@ -38,13 +38,14 @@
                 drawChart();
             }
 
-            readStream();
+            if (readStream()) {
 
-            if (rawData.length > 200) {
-                rawData.splice(1, 10);
+                if (rawData.length > 200) {
+                    rawData.splice(1, 10);
+                }
+
+                t = setTimeout('update()', 300);
             }
-
-            t = setTimeout('update()', 300);
         }
 
         function readStream() {
@@ -56,13 +57,21 @@
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
             req.open('GET', "datalink?v=vessel.srf_velocity&d=vessel.atmDensity&met=vessel.missionTime", false);
             req.send();
-         
-            eval(req.responseText);
-            mag = Math.pow(v[0], 2) + Math.pow(v[1], 2) + Math.pow(v[2], 2);
-            mag = Math.sqrt(mag);
-            rawData.push([met,(0.5*d)*Math.pow(mag,2)]);
 
-            data = google.visualization.arrayToDataTable(rawData);
+            if (req.status == 200) {
+                eval(req.responseText);
+                mag = Math.pow(v[0], 2) + Math.pow(v[1], 2) + Math.pow(v[2], 2);
+                mag = Math.sqrt(mag);
+                rawData.push([met, (0.5 * d) * Math.pow(mag, 2)]);
+
+                data = google.visualization.arrayToDataTable(rawData);
+            }
+            else {
+                document.writeln(req.responseText);
+                return false;
+            }
+
+            return true;
         }
     </script>
   </head>
