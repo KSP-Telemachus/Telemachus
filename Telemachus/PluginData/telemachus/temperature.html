@@ -3,6 +3,7 @@
   <head>
     <title>Telemachus - Temperature</title>
     <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
+    <script type="text/javascript" src="chart-const.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
         google.load("visualization", "1", { packages: ["corechart"] });
@@ -41,11 +42,11 @@
 
             if (readStream()) {
 
-                if (rawData.length > 200) {
-                    rawData.splice(1, 10);
+                if (rawData.length > DATA_SIZE) {
+                    rawData.splice(1, SPLICE_SIZE);
                 }
 
-                t = setTimeout('update()', 300);
+                t = setTimeout('update()', UPDATE_INTERVAL);
             }
         }
 
@@ -55,18 +56,21 @@
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?t=sensor.TEMP&met=vessel.missionTime", false);
+            req.open('GET', "datalink?t=sensor.TEMP&met=vessel.missionTime&p=pdl.paused", false);
             req.send();
 
             if (req.status == 200) {
                 eval(req.responseText);
-                temp = t[0];
-                temp.splice(0, 0, "Mission Time");
-                rawData[0] = temp;
-                add = t[1];
-                add.splice(0, 0, met);
-                rawData.push(add);
-                data = google.visualization.arrayToDataTable(rawData);
+
+                if (!p) {
+                    temp = t[0];
+                    temp.splice(0, 0, "Mission Time");
+                    rawData[0] = temp;
+                    add = t[1];
+                    add.splice(0, 0, met);
+                    rawData.push(add);
+                    data = google.visualization.arrayToDataTable(rawData);
+                }
             }
             else {
                 document.writeln(req.responseText);

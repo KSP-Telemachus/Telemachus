@@ -3,6 +3,7 @@
   <head>
     <title>Telemachus - Dynamic Pressure</title>
     <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
+    <script type="text/javascript" src="chart-const.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
         google.load("visualization", "1", { packages: ["corechart"] });
@@ -40,11 +41,11 @@
 
             if (readStream()) {
 
-                if (rawData.length > 200) {
-                    rawData.splice(1, 10);
+                if (rawData.length > DATA_SIZE) {
+                    rawData.splice(1, SPLICE_SIZE);
                 }
 
-                t = setTimeout('update()', 300);
+                t = setTimeout('update()', UPDATE_INTERVAL);
             }
         }
 
@@ -55,16 +56,18 @@
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?v=vessel.srf_velocity&d=vessel.atmDensity&met=vessel.missionTime", false);
+            req.open('GET', "datalink?v=vessel.srf_velocity&d=vessel.atmDensity&met=vessel.missionTime&p=pdl.paused", false);
             req.send();
 
             if (req.status == 200) {
                 eval(req.responseText);
-                mag = Math.pow(v[0], 2) + Math.pow(v[1], 2) + Math.pow(v[2], 2);
-                mag = Math.sqrt(mag);
-                rawData.push([met, (0.5 * d) * Math.pow(mag, 2)]);
+                if (!p) {
+                    mag = Math.pow(v[0], 2) + Math.pow(v[1], 2) + Math.pow(v[2], 2);
+                    mag = Math.sqrt(mag);
+                    rawData.push([met, (0.5 * d) * Math.pow(mag, 2)]);
 
-                data = google.visualization.arrayToDataTable(rawData);
+                    data = google.visualization.arrayToDataTable(rawData);
+                }
             }
             else {
                 document.writeln(req.responseText);

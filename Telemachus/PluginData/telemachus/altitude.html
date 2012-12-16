@@ -3,6 +3,7 @@
   <head>
     <title>Telemachus - Altitude</title>
     <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
+    <script type="text/javascript" src="chart-const.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
         google.load("visualization", "1", { packages: ["corechart"] });
@@ -41,31 +42,30 @@
 
             if (readStream()) {
 
-                if (rawData.length > 200) {
-                    rawData.splice(1, 10);
+                if (rawData.length > DATA_SIZE) {
+                    rawData.splice(1, SPLICE_SIZE);
                 }
 
-                t = setTimeout('update()', 300);
+                t = setTimeout('update()', UPDATE_INTERVAL);
             }
         }
 
         function readStream() {
             var req = null;
-            var alt = 0;
-            var met = 0;
-            var terrain = 0;
+    
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?terrain=vessel.heightFromTerrain&alt=vessel.altitude&met=vessel.missionTime", false);
+            req.open('GET', "datalink?terrain=vessel.heightFromTerrain&alt=vessel.altitude&met=vessel.missionTime&p=pdl.paused", false);
             req.send();
 
             if (req.status == 200) {
                 eval(req.responseText);
 
-                rawData.push([met, alt, terrain, alt - terrain]);
-
-                data = google.visualization.arrayToDataTable(rawData);
+                if (!p) {
+                    rawData.push([met, alt, terrain, alt - terrain]);
+                    data = google.visualization.arrayToDataTable(rawData);
+                }
             }
             else {
                 document.writeln(req.responseText);

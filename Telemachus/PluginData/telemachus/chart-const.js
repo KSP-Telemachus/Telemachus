@@ -1,0 +1,3 @@
+﻿var DATA_SIZE = 1000;
+var UPDATE_INTERVAL = 200;
+var SPLICE_SIZE = 10;

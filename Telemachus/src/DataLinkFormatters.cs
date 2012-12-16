@@ -15,6 +15,10 @@ namespace Telemachus
             {
                 return "'" + input.ToString() + "'" + JAVASCRIPT_DELIMITER;
             }
+            else if (type.Name.Equals("Boolean"))
+            {
+                return input.ToString().ToLower() + JAVASCRIPT_DELIMITER;
+            }
             else
             {
                 return input.ToString() + JAVASCRIPT_DELIMITER;

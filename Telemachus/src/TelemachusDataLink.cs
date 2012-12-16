@@ -42,7 +42,7 @@ namespace Telemachus
                 try
                 {
                     Logger.Out("Telemachus data link starting");
-
+                    
                     readConfiguration();
 
                     server = new Server(serverConfig);
@@ -52,6 +52,7 @@ namespace Telemachus
                     DataLink dataLinks = new DataLink();
                     dataLinks.vessel = this.vessel;
                     dataLinks.orbit = this.vessel.orbit;
+                    dataLinks.pdl = new PausedDataLink();
                     dataLinkResponsibility = new DataLinkResponsibility(dataLinks);
                     server.addHTTPResponsibility(dataLinkResponsibility);
                     server.addHTTPResponsibility(new InformationResponsibility(dataLinkResponsibility));
@@ -132,6 +133,7 @@ namespace Telemachus
     {
         public Vessel vessel;
         public Orbit orbit;
+        public PausedDataLink pdl;
     }
 }
 
