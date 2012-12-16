@@ -16,7 +16,7 @@ namespace Telemachus
         public const char ACCESS_DELIMITER = '.';
         public const int INFINITE_WAIT = -1;
 
-        DataLink dataLinks = null;
+        public DataLink dataLinks {get; set;}
         Dictionary<string, CachedDataLinkReference> APICache =
             new Dictionary<string, CachedDataLinkReference>();
         static ReaderWriterLock valueCacheLock = new ReaderWriterLock();

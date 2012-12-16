@@ -19,7 +19,7 @@ namespace Telemachus
 
         protected override void onFlightStart()
         {
-            startDataLink();
+            startDataLink(); 
             base.onFlightStart();
         }
 
@@ -44,7 +44,7 @@ namespace Telemachus
                     Logger.Out("Telemachus data link starting");
                     
                     readConfiguration();
-
+                 
                     server = new Server(serverConfig);
                     server.OnServerNotify += new Server.ServerNotify(serverOut);
                     server.addHTTPResponsibility(new ElseResponsibility());
@@ -53,6 +53,7 @@ namespace Telemachus
                     dataLinks.vessel = this.vessel;
                     dataLinks.orbit = this.vessel.orbit;
                     dataLinks.pdl = new PausedDataLink();
+                    dataLinks.fcdl = new FlightControlDataLink(this);
                     dataLinkResponsibility = new DataLinkResponsibility(dataLinks);
                     server.addHTTPResponsibility(dataLinkResponsibility);
                     server.addHTTPResponsibility(new InformationResponsibility(dataLinkResponsibility));
@@ -134,6 +135,7 @@ namespace Telemachus
         public Vessel vessel;
         public Orbit orbit;
         public PausedDataLink pdl;
+        public FlightControlDataLink fcdl;
     }
 }
 

@@ -15,7 +15,7 @@ namespace Telemachus
         public readonly static String[] files = new String[] { "altitude.html", 
                 "g-force.html", "velocity.html", 
                 "fit-to-screen.css", "dynamic-pressure.html", "apoapsis-periapsis.html",
-                "temperature.html", "pressure.html", "gravity.html", "chart-const.js"};
+                "temperature.html", "pressure.html", "gravity.html", "chart-const.js", "stage.html"};
 
         static IOPageResponsibility()
         {

@@ -24,6 +24,7 @@ namespace Telemachus
 
 #if (DEBUG)
                 api(ref sb);
+                resources(ref sb);
                 hash(ref sb);
 #endif
 
@@ -53,6 +54,25 @@ namespace Telemachus
             }
 
             sb.Append("</br>");
+        }
+
+
+        private void resources(ref StringBuilder sb)
+        {
+            sb.Append("<h1>Resources</h1>");
+
+            
+            foreach (Part p in dataLinks.dataLinks.vessel.Parts)
+            {
+                sb.Append("Part: " + p.name + "</br></br>");
+                foreach (PartResource ri in p.Resources.list)
+                {
+                    sb.Append("Name: " + ri.resourceName + 
+                        "Amount: " + ri.amount + "max amount: " + ri.maxAmount + "</br>");
+                }
+            }
+
+            sb.Append("</br></br>");
         }
 
         private void hash(ref StringBuilder sb)

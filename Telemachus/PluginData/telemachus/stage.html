@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Telemachus - Stage</title>
+    <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
+    <script type="text/javascript" src="chart-const.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        
+        function stage() {
+            var req = null;
+    
+            try { req = new XMLHttpRequest(); } catch (e) { }
+            if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
+            if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
+            req.open('GET', "datalink?p=fcdl.stage", false);
+            req.send();
+
+            if (req.status == 200) {
+                eval(req.responseText);
+            }
+            else {
+                document.writeln(req.responseText);
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+  </head>
+  <body id="full">
+   <div id="main">
+    <button type="button" onclick="stage()">Stage</button>
+  </body>
+</html>
