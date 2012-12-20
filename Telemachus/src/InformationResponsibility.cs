@@ -27,7 +27,7 @@ namespace Telemachus
                 resources(ref sb);
                 hash(ref sb);
 #endif
-
+                footer(ref sb);
                 cc.Send(new OKPage(sb.ToString()).ToString());
 
                 return true;
@@ -38,6 +38,7 @@ namespace Telemachus
 
         private void header(ref StringBuilder sb)
         {
+            sb.Append("<html><body>");
             sb.Append("<h1>Telemachus Information Page</h1>");
             sb.Append("Version: " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
             sb.Append("</br>");
@@ -87,6 +88,11 @@ namespace Telemachus
 
             sb.Append("\"\"};");
             sb.Append("</br>");
+        }
+
+        private void footer(ref StringBuilder sb)
+        {
+            sb.Append("</body></html>");
         }
     }
 }
