@@ -1,4 +1,5 @@
-﻿using System;
+﻿//Author: Richard Bunt
+using System;
 using UnityEngine;
 using KSP.IO;
 using System.Net;

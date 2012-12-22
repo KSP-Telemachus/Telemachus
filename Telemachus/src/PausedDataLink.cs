@@ -1,4 +1,5 @@
-﻿using System;
+﻿//Author: Richard Bunt
+using System;
 using System.Collections.Generic;
 using System.Text;
 

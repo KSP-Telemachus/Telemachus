@@ -1,4 +1,5 @@
-﻿using System;
+﻿//Author: Richard Bunt
+using System;
 using System.Collections.Generic;
 using System.Text;
 using MinimalHTTPServer;
@@ -15,20 +16,22 @@ namespace Telemachus
         public readonly static String[] files = new String[] { "altitude.html", 
                 "g-force.html", "velocity.html", 
                 "fit-to-screen.css", "dynamic-pressure.html", "apoapsis-periapsis.html",
-                "temperature.html", "pressure.html", "gravity.html", "chart-const.js", "stage.html"};
+                "temperature.html", "pressure.html", "gravity.html", "chart-const.js", "density.html"};
 
         static IOPageResponsibility()
         {
-            String[] hashes = new String[] {"5B-1E-CF-0E-B9-7F-C8-88-27-F4-5B-C5-06-BB-A9-2E-CD-B4-63-0A",
-                                            "A6-D5-55-50-24-68-FA-A6-2D-0A-A2-AC-8B-79-77-39-CE-A4-45-8A",
-                                            "81-D7-46-D7-36-4B-CD-2A-9E-CB-B8-2B-B8-13-09-08-FF-2C-C9-7A",
-                                            "F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2",
-                                            "F0-B5-96-5F-15-D6-E5-02-D5-89-A8-9C-4F-CD-69-1B-02-F4-EF-3C",
-                                            "3A-28-9C-65-D1-39-4D-7D-3F-51-56-94-BB-28-0C-73-73-82-A6-99",
-                                            "F3-DB-CD-2B-45-49-34-5D-50-2A-73-08-AF-F4-E9-EF-85-48-18-CA",
-                                            "D1-85-95-94-CC-86-E7-AA-FC-DC-D8-3B-5E-41-2A-A7-41-D2-2A-04",
-                                            "03-20-15-E0-28-2F-6F-B9-40-05-EB-7F-95-18-CA-EA-5D-EE-3D-C9",
-                                            ""};
+            String[] hashes = new String[] {"D0-4C-60-2F-92-D1-E4-DA-33-54-02-95-44-CC-E6-F7-F4-A9-54-84",
+"6C-42-18-65-F8-F4-60-3A-F0-B3-33-5E-1D-D3-01-39-53-2F-7D-09",
+"B2-BD-07-B3-AA-95-38-23-C1-90-F8-A6-9D-72-1C-28-AD-E4-BF-79",
+"F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2",
+"55-02-BF-0F-FD-54-BE-3B-C9-0D-69-61-B9-F9-D4-26-56-FE-13-44",
+"8A-07-1A-52-8E-07-2D-DC-C3-8F-00-7C-43-5A-61-BA-63-0E-5F-96",
+"41-FE-B4-5D-13-85-02-FC-C5-57-42-81-6A-2F-A7-64-7E-8A-B6-25",
+"6D-48-1D-38-85-A5-D2-5F-F6-D7-57-64-36-3A-85-87-6C-59-E9-E9",
+"CC-22-5F-06-EC-7A-6E-7D-C8-41-2B-1E-EE-AF-16-31-85-9F-27-A2",
+"4A-A6-AB-0B-82-77-F2-46-BF-D9-38-23-82-D8-DC-C6-00-26-41-7E",
+"82-65-F9-35-F6-0A-81-72-60-15-C2-4B-3C-22-BD-27-03-36-B7-F1",
+""};
 
             foreach (String hash in hashes)
             {
