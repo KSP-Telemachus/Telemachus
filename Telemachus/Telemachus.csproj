@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{AF7DF6B2-7D88-4399-92FC-E21EC15231DE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Telemachus</RootNamespace>
+    <AssemblyName>Telemachus</AssemblyName>
+    <TargetFrameworkVersion>v3.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>3</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>3</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\KSP\KSP_win_0_18_2\KSP_win\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\KSP\KSP_win_0_18_2\KSP_win\KSP_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="src\DataLinkCallCache.cs" />
+    <Compile Include="src\DataLinkFormatters.cs" />
+    <Compile Include="src\DataLinkHandlers.cs" />
+    <Compile Include="src\DataLinkResponsibility.cs" />
+    <Compile Include="src\FlightControlDataLink.cs" />
+    <Compile Include="src\InformationResponsibility.cs" />
+    <Compile Include="src\IOPageResponsibility.cs" />
+    <Compile Include="src\Logger.cs" />
+    <Compile Include="src\PausedDataLink.cs" />
+    <Compile Include="src\TelemachusDataLink.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PluginData\telemachus\altitude.html" />
+    <Content Include="PluginData\telemachus\apoapsis-periapsis.html" />
+    <Content Include="PluginData\telemachus\chart-const.js" />
+    <Content Include="PluginData\telemachus\config.xml" />
+    <Content Include="PluginData\telemachus\density.html" />
+    <Content Include="PluginData\telemachus\gravity.html" />
+    <Content Include="PluginData\telemachus\pressure.html" />
+    <Content Include="PluginData\telemachus\temperature.html" />
+    <Content Include="PluginData\telemachus\dynamic-pressure.html" />
+    <Content Include="PluginData\telemachus\fit-to-screen.css" />
+    <Content Include="PluginData\telemachus\velocity.html" />
+    <Content Include="PluginData\telemachus\g-force.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LICENSE" />
+    <None Include="Parts\TelemachusAntenna\model.mu" />
+    <None Include="Parts\TelemachusAntenna\model000.mbm" />
+    <None Include="Parts\TelemachusAntenna\part.cfg" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\..\SkyDrive\Documents\Visual Studio 2010\Projects\Servers\Servers\Servers.csproj">
+      <Project>{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}</Project>
+      <Name>Servers</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetPath)" "C:\Users\Richard Bunt\KSP\KSP_win_0_18_2\KSP_win\Plugins"
+copy "$(TargetDir)Servers.dll" "C:\Users\Richard Bunt\KSP\KSP_win_0_18_2\KSP_win\Plugins"
+xcopy "$(ProjectDir)Parts\*" "C:\Users\Richard Bunt\KSP\KSP_win_0_18_2\KSP_win\Parts" /e /y /i /r
+xcopy "$(ProjectDir)PluginData\*" "C:\Users\Richard Bunt\KSP\KSP_win_0_18_2\KSP_win\PluginData" /e /y /i /r
+
+xcopy "$(TargetPath)" "$(ProjectDir)bin\Publish\Plugins\" /y
+copy "$(TargetDir)Servers.dll" "$(ProjectDir)bin\Publish\Plugins"
+xcopy "$(ProjectDir)Parts\*" "$(ProjectDir)bin\Publish\Parts" /e /y /i /r
+xcopy "$(ProjectDir)PluginData\*" "$(ProjectDir)bin\Publish\PluginData" /e /y /i /r
+xcopy "$(ProjectDir)LICENSE" "$(ProjectDir)bin\Publish\" /y</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
