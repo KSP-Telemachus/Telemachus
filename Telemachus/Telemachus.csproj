@@ -95,11 +95,11 @@ copy "$(TargetDir)Servers.dll" "C:\Users\Richard Bunt\KSP\KSP_win_0_18_2\KSP_win
 xcopy "$(ProjectDir)Parts\*" "C:\Users\Richard Bunt\KSP\KSP_win_0_18_2\KSP_win\Parts" /e /y /i /r
 xcopy "$(ProjectDir)PluginData\*" "C:\Users\Richard Bunt\KSP\KSP_win_0_18_2\KSP_win\PluginData" /e /y /i /r
 
-xcopy "$(TargetPath)" "$(ProjectDir)bin\Publish\Plugins\" /y
-copy "$(TargetDir)Servers.dll" "$(ProjectDir)bin\Publish\Plugins"
-xcopy "$(ProjectDir)Parts\*" "$(ProjectDir)bin\Publish\Parts" /e /y /i /r
-xcopy "$(ProjectDir)PluginData\*" "$(ProjectDir)bin\Publish\PluginData" /e /y /i /r
-xcopy "$(ProjectDir)LICENSE" "$(ProjectDir)bin\Publish\" /y</PostBuildEvent>
+xcopy "$(TargetPath)" "$(ProjectDir)publish\Plugins\" /y
+copy "$(TargetDir)Servers.dll" "$(ProjectDir)publish\Plugins"
+xcopy "$(ProjectDir)Parts\*" "$(ProjectDir)publish\Parts" /e /y /i /r
+xcopy "$(ProjectDir)PluginData\*" "$(ProjectDir)publish\PluginData" /e /y /i /r
+xcopy "$(ProjectDir)LICENSE" "$(ProjectDir)publish\" /y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
