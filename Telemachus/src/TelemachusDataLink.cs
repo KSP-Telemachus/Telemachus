@@ -129,6 +129,36 @@ namespace Telemachus
         {
             Logger.Log(message);
         }
+
+        #region Flight Control Invoke
+
+        public void activateNextStage()
+        {
+            Staging.ActivateNextStage();
+        }
+
+        public void throttleUp()
+        {
+            
+            FlightInputHandler.state.mainThrottle += 0.1f;
+
+            if(FlightInputHandler.state.mainThrottle > 1)
+            {
+                FlightInputHandler.state.mainThrottle = 1;
+            }
+        }
+
+        public void throttleDown()
+        {
+            FlightInputHandler.state.mainThrottle -= 0.1f;
+
+            if (FlightInputHandler.state.mainThrottle < 0)
+            {
+                FlightInputHandler.state.mainThrottle = 0;
+            }
+        }
+
+        #endregion
     }
 
     public class DataLink

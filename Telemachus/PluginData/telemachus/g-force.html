@@ -23,7 +23,8 @@
             options = {
                 title: 'g-force Plot',
                 vAxis: { title: 'g-force' },
-                hAxis: { title: 'Mission Time (s)' }
+                hAxis: { title: 'Mission Time (s)' },
+                legend: { position: 'bottom' }
             };
 
             chart = new google.visualization.LineChart(document.getElementById('chart_div'));
@@ -67,6 +68,7 @@
                 add = t[1];
                 add.splice(0, 0, met);
                 rawData.push(add);
+                appendCurrentValueToLegend(rawData);
                 data = google.visualization.arrayToDataTable(rawData);
             }
             else {

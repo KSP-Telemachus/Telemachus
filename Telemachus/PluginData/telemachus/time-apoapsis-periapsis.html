@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Telemachus - Temperature</title>
+  <title>Telemachus - Time to Periapsis and Apoapsis</title>
     <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
     <script type="text/javascript" src="chart-const.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
@@ -16,13 +16,13 @@
 
         function onLoad() {
             rawData = [
-                ['Mission Time', 'Temperature']
+                ['Mission Time', 'Time to Periapsis', 'Time to Apoapsis']
             ];
             data = google.visualization.arrayToDataTable(rawData);
 
             options = {
-                title: 'Temperature Plot',
-                vAxis: { title: 'Temperature' },
+                title: 'Time to Periapsis and Apoapsis',
+                vAxis: { title: 'Time (s)' },
                 hAxis: { title: 'Mission Time (s)' },
                 legend: { position: 'bottom' }
             };
@@ -36,13 +36,11 @@
         }
 
         function update() {
-
             if (rawData.length > 1) {
                 drawChart();
             }
 
             if (readStream()) {
-
                 if (rawData.length > DATA_SIZE) {
                     rawData.splice(1, SPLICE_SIZE);
                 }
@@ -53,27 +51,23 @@
 
         function readStream() {
             var req = null;
+            var ap = 0;
+            var pe = 0;
             var met = 0;
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?t=sensor.TEMP&met=vessel.missionTime&p=pdl.paused", false);
+            req.open('GET', "datalink?pe=orbit.timeToPe&ap=orbit.timeToAp&met=vessel.missionTime&p=pdl.paused", false);
             req.send();
 
             if (req.status == 200) {
                 eval(req.responseText);
-
                 if (!p) {
-                    temp = t[0];
-                    temp.splice(0, 0, "Mission Time");
-                    rawData[0] = temp;
-                    add = t[1];
-                    add.splice(0, 0, met);
-                    rawData.push(add);
+                    rawData.push([met, pe, ap]);
                     appendCurrentValueToLegend(rawData);
                     data = google.visualization.arrayToDataTable(rawData);
                 }
-            }
+            } 
             else {
                 document.writeln(req.responseText);
                 return false;

@@ -23,7 +23,8 @@
             options = {
                 title: 'Velocity Plot',
                 vAxis: { title: 'Velocity (m/s)' },
-                hAxis: { title: 'Mission Time (s)' }
+                hAxis: { title: 'Mission Time (s)' },
+                legend: { position: 'bottom' }
             };
 
             chart = new google.visualization.LineChart(document.getElementById('chart_div'));
@@ -55,12 +56,7 @@
 
         function readStream() {
             var req = null;
-            var vs = 0;
-            var sv = 0;
-            var av = 0;
-            var met = 0;
-            var m = 0;
-            var o = 0;
+
             try { req = new XMLHttpRequest(); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
             if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
@@ -72,6 +68,7 @@
 
                 if (!p) {
                     rawData.push([met, magnitude3d(m), vs, sv, av, magnitude3d(o)]);
+                    appendCurrentValueToLegend(rawData);
                     data = google.visualization.arrayToDataTable(rawData);
                 }
             }

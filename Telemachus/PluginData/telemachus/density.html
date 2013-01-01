@@ -23,7 +23,8 @@
             options = {
                 title: 'Density Plot',
                 vAxis: { title: 'Height (m)' },
-                hAxis: { title: 'Mission Time (s)' }
+                hAxis: { title: 'Mission Time (s)' },
+                legend: { position: 'bottom' }
             };
 
             chart = new google.visualization.LineChart(document.getElementById('chart_div'));
@@ -64,6 +65,7 @@
 
                 if (!p) {
                     rawData.push([met, d]);
+                    appendCurrentValueToLegend(rawData);
                     data = google.visualization.arrayToDataTable(rawData);
                 }
             }
