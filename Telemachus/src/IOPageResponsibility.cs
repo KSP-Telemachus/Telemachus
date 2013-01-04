@@ -30,7 +30,7 @@ namespace Telemachus
 "46-08-5F-32-72-20-23-F6-78-7B-6D-60-F8-FD-C9-BE-56-F7-AA-82",
 "B5-6B-97-3A-75-FF-36-7E-49-03-C0-19-89-1F-7B-F8-E8-CE-03-A6",
 "4A-53-F5-C0-20-71-BB-2C-F4-18-FC-E3-6B-1F-30-83-C7-00-64-B4",
-"C1-13-57-D4-B2-EF-1D-AC-F3-DC-E0-26-4E-9C-19-A2-36-E4-7B-F3",
+"DE-4E-57-FC-0B-85-C4-C2-FF-6F-C1-1E-F2-69-61-0E-41-64-20-D5",
 "B0-D2-13-D3-CB-0E-08-D7-1C-4F-23-0F-B9-EF-01-50-61-0D-0E-E4",
 "4E-90-F4-2E-98-FD-DF-1B-54-2A-BE-57-94-75-8D-04-1D-18-CC-35",
 "D6-D2-41-F9-83-67-F7-9B-4D-95-E5-6C-58-20-C2-0E-4B-B4-80-4F",
@@ -148,6 +148,7 @@ namespace Telemachus
 
             StringBuilder sb = new StringBuilder();
 
+            sb.Append("<!DOCTYPE html>");
             sb.Append("<html><body><h1>");
             sb.Append("Data Link Not Found");
             sb.Append("</h1>");
@@ -159,7 +160,7 @@ namespace Telemachus
             {
                 if(fileName.EndsWith(HTML_FILE_SUFFIX))
                 {
-                    sb.Append("<a href=\"telemachus/" + fileName 
+                    sb.Append("<a href=\"/telemachus/" + fileName 
                         + "\"" + ">" + fileName.Replace(HTML_FILE_SUFFIX, "") + "</a></br>");
                 }
             }

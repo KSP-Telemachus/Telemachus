@@ -4,8 +4,20 @@ var SPLICE_SIZE = 10;
 var SIG_FIG = 5;
 
 function sigFigs(n, sig) {
+    var m = false;
+
+    if (n < 0) {
+        m = true;
+        n = Math.abs(n);
+    }
+
     var mult = Math.pow(10,
         sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+
+    if (m) {
+        n = n * -1;
+    }
+
     return Math.round(n * mult) / mult;
 }
 

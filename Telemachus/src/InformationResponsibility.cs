@@ -39,6 +39,7 @@ namespace Telemachus
 
         private void header(ref StringBuilder sb)
         {
+            sb.Append("<!DOCTYPE html>");
             sb.Append("<html><body>");
             sb.Append("<h1>Telemachus Information Page</h1>");
             sb.Append("Version: " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());

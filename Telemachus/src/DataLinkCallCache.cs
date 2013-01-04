@@ -84,12 +84,12 @@ namespace Telemachus
 
                     try
                     {
-                        sb1.Append("'" + (m.isEnabled ? "" : "(Inactive) ") + "Sensor location: " + m.part.parent.name  +
+                        sb1.Append("'" + (m.isEnabled ? "" : "Inactive ") + m.part.parent.name  +
                              "',");
                     }
                     catch
                     {
-                        sb1.Append("'(Part Unavailable)',");
+                        sb1.Append("'Unavailable',");
                     }
                 }
 

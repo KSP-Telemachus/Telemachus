@@ -76,7 +76,6 @@
     <Content Include="PluginData\telemachus\g-force.html" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LICENSE" />
     <None Include="Parts\TelemachusAntenna\model.mu" />
     <None Include="Parts\TelemachusAntenna\model000.mbm" />
     <None Include="Parts\TelemachusAntenna\part.cfg" />
@@ -99,7 +98,7 @@ xcopy "$(TargetPath)" "$(ProjectDir)publish\Plugins\" /y
 copy "$(TargetDir)Servers.dll" "$(ProjectDir)publish\Plugins"
 xcopy "$(ProjectDir)Parts\*" "$(ProjectDir)publish\Parts" /e /y /i /r
 xcopy "$(ProjectDir)PluginData\*" "$(ProjectDir)publish\PluginData" /e /y /i /r
-xcopy "$(ProjectDir)LICENSE" "$(ProjectDir)publish\" /y</PostBuildEvent>
+xcopy "$(ProjectDir)..\LICENSE" "$(ProjectDir)publish\" /y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
