@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Telemachus
 {
-    class Logger
+    class PluginLogger
     {
         public static void Log(String s)
         {

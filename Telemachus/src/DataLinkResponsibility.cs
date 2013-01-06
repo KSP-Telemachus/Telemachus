@@ -16,12 +16,16 @@ namespace Telemachus
         public const char ARGUMENTS_DELIMETER = '&';
         public const char ACCESS_DELIMITER = '.';
         public const int INFINITE_WAIT = -1;
+        public const int RATE_AVERAGE_SAMPLE_SIZE = 20;
 
         public DataLink dataLinks {get; set;}
         Dictionary<string, CachedDataLinkReference> APICache =
             new Dictionary<string, CachedDataLinkReference>();
         static ReaderWriterLock valueCacheLock = new ReaderWriterLock();
         List<IDataLinkHandler> APIHandlers = new List<IDataLinkHandler>();
+
+        private UpLinkDownLinkRate itsDataRates = new UpLinkDownLinkRate(RATE_AVERAGE_SAMPLE_SIZE);
+        public UpLinkDownLinkRate dataRates { get { return itsDataRates; } set { itsDataRates = value; } }
 
         public DataLinkResponsibility(DataLink dataLinks)
         {
@@ -36,15 +40,21 @@ namespace Telemachus
         {
             if (request.path.StartsWith(PAGE_PREFIX))
             {
-                cc.Send(new OKPage(
+                dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
+
+                String returnMessage = new OKPage(
                     argumentsParse(
                     request.path.Remove(
                     0, request.path.IndexOf(ARGUMENTS_START) + 1))
-                    ).ToString());
+                    ).ToString();
+
+                dataRates.addDownLinkPoint(System.DateTime.Now, returnMessage.Length);
+
+                cc.Send(returnMessage);
 
                 return true;
             }
-
+            
             return false;
         }
 

@@ -13,10 +13,24 @@ namespace Telemachus
 {
     public class TelemachusDataLink : Part
     {
+        #region Fields
+
         static Server server = null;
         static DataLinkResponsibility dataLinkResponsibility = null;
         PluginConfiguration config = PluginConfiguration.CreateForType<TelemachusDataLink>();
         ServerConfiguration serverConfig = new ServerConfiguration();
+
+        public UpLinkDownLinkRate dataRates 
+        { 
+            get 
+            { 
+                return dataLinkResponsibility.dataRates; 
+            }
+        }
+
+        #endregion
+
+        #region Part Events
 
         protected override void onFlightStart()
         {
@@ -25,7 +39,7 @@ namespace Telemachus
         }
 
         protected override void onDisconnect()
-        {
+        { 
             stopDataLink();
             base.onDisconnect();
         }
@@ -36,16 +50,20 @@ namespace Telemachus
             base.onPartDestroy();
         }
 
+        #endregion
+
+        #region Data Link
+
         private void startDataLink()
         {
             if (server == null)
             {
                 try
                 {
-                    Logger.Out("Telemachus data link starting");
-                    
+                    PluginLogger.Out("Telemachus data link starting");
+                    P
                     readConfiguration();
-                 
+
                     server = new Server(serverConfig);
                     server.OnServerNotify += new Server.ServerNotify(serverOut);
                     server.addHTTPResponsibility(new ElseResponsibility());
@@ -53,24 +71,37 @@ namespace Telemachus
                     DataLink dataLinks = new DataLink();
                     dataLinks.vessel = this.vessel;
                     dataLinks.orbit = this.vessel.orbit;
-                    dataLinks.pdl = new PausedDataLink();
+                    dataLinks.pdl = new PausedDataLink(getPowerDrainModule());
                     dataLinks.fcdl = new FlightControlDataLink(this);
                     dataLinkResponsibility = new DataLinkResponsibility(dataLinks);
                     server.addHTTPResponsibility(dataLinkResponsibility);
                     server.addHTTPResponsibility(new InformationResponsibility(dataLinkResponsibility));
                     server.startServing();
 
-                    Logger.Out("Telemachus data link listening for requests on the following addresses: (" 
+                    PluginLogger.Out("Telemachus data link listening for requests on the following addresses: (" 
                         + server.getIPsAsString() + 
                         "). Try putting them into your web browser, some of them might not work.");
     
                 }
                 catch (Exception e)
                 {
-                    Logger.Out(e.Message);
-                    Logger.Out(e.StackTrace);
+                    PluginLogger.Out(e.Message);
+                    PluginLogger.Out(e.StackTrace);
                 }
             }
+        }
+
+        public TelemachusPowerDrain getPowerDrainModule()
+        {
+            foreach (var o in this.Modules)
+            {
+                if (typeof(TelemachusPowerDrain) == (o.GetType()))
+                {
+                    return (TelemachusPowerDrain)o;
+                }
+            }
+            
+            return null;
         }
 
         private void writeDefaultConfig()
@@ -92,7 +123,7 @@ namespace Telemachus
             }
             else
             {
-                Logger.Log("No port in configuration file.");
+                PluginLogger.Log("No port in configuration file.");
             }
 
             String ip = config.GetValue<String>("IPADDRESS");
@@ -105,12 +136,12 @@ namespace Telemachus
                 }
                 catch
                 {
-                    Logger.Log("Invalid IP address in configuration file, falling back to find.");
+                    PluginLogger.Log("Invalid IP address in configuration file, falling back to find.");
                 }
             }
             else
             {
-                Logger.Log("No IP address in configuration file.");
+                PluginLogger.Log("No IP address in configuration file.");
             }
         }
 
@@ -118,7 +149,7 @@ namespace Telemachus
         {
             if (server != null)
             {
-                Logger.Out("Telemachus data link shutting down.");
+                PluginLogger.Out("Telemachus data link shutting down.");
                 server.stopServing();
                 server = null;
                 dataLinkResponsibility.clearCache();
@@ -127,8 +158,10 @@ namespace Telemachus
 
         private void serverOut(String message)
         {
-            Logger.Log(message);
+            PluginLogger.Log(message);
         }
+
+        #endregion
 
         #region Flight Control Invoke
 
@@ -161,12 +194,126 @@ namespace Telemachus
         #endregion
     }
 
+    public class TelemachusPowerDrain : PartModule
+    {
+
+        string[] dataUnits = new string[] { "Error", " bit/s", " kbit/s", " Mbit/s", "Gbit/s" };
+
+        #region Fields
+
+        public bool active = true, activeToggle = true;
+
+        public float powerConsumption = 0f;
+
+        [KSPField]
+        public float powerConsumptionIncrease = 0.02f;
+        
+        [KSPField]
+        public float powerConsumptionBase = 0.02f;
+
+        [KSPField(guiActive = true, guiName = "Power Consumption")]
+        string activeReading = "";
+
+        [KSPField(guiActive = true, guiName = "Uplink Rate")]
+        string uplinkReading = "";
+
+        [KSPField(guiActive = true, guiName = "Downlink Rate")]
+        string downlinkReading = "";
+
+        [KSPEvent(guiActive = true, guiName = "Enable/Disable Data Link")]
+        public void togglePower()
+        {
+            if (activeToggle)
+            {
+                activeToggle = false;
+            }
+            else
+            {
+                activeToggle = true;
+            }
+        }
+
+        #endregion
+
+        #region Part Events
+
+        public override void OnUpdate()
+        {
+            if (activeToggle)
+            {
+                float requiredPower = powerConsumption * TimeWarp.deltaTime;
+                float availPower = part.RequestResource("ElectricCharge", requiredPower);
+
+                if (availPower < requiredPower)
+                {
+                    active = false;
+                    telemachusInactive();
+                }
+                else
+                {
+                    active = true;
+                    telemachusActive();
+                }
+            }
+            else
+            {
+                 telemachusInactive();
+            }
+        }
+
+        #endregion
+
+        #region GUI Update
+
+        private void telemachusInactive()
+        {
+            activeReading = "0 units";
+            uplinkReading = "0" + dataUnits[1];
+            downlinkReading = "0" + dataUnits[1];
+        }
+
+        private void telemachusActive()
+        {
+            activeReading = powerConsumption + " units";
+
+            TelemachusDataLink tdl = (TelemachusDataLink)part;
+            uplinkReading = formatBitRate(tdl.dataRates.getUpLinkRate());
+            downlinkReading = formatBitRate(tdl.dataRates.getDownLinkRate());
+        }
+
+        private string formatBitRate(double bitRate)
+        {
+            int index = 1;
+            powerConsumption = powerConsumptionBase;
+
+            while(bitRate > 1000)
+            {
+                bitRate = bitRate / 1000;
+                index++;
+                powerConsumption += powerConsumptionIncrease;
+            }
+
+            if(index >= dataUnits.Length)
+            {
+                index = 0;
+            }
+
+            return Math.Round(bitRate, 2) + dataUnits[index];
+        }
+
+        #endregion
+    }
+
     public class DataLink
     {
+        #region Fields
+
         public Vessel vessel;
         public Orbit orbit;
         public PausedDataLink pdl;
         public FlightControlDataLink fcdl;
+
+        #endregion
     }
 }
 
