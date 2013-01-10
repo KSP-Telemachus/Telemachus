@@ -7,15 +7,18 @@ namespace Telemachus
 {
     public class FlightControlDataLink
     {
-        TelemachusDataLink p = null;
-        public FlightControlDataLink(TelemachusDataLink p)
+        TelemachusDataLinkScenario p = null;
+        public FlightControlDataLink(TelemachusDataLinkScenario p)
         {
             this.p = p;
         }
 
-        public Boolean stage { get { checkAndInvoke(p, "activateNextStage"); return true; } set { } }
-        public Boolean throttleUp { get { checkAndInvoke(p, "throttleUp"); return true; } set { } }
-        public Boolean throttleDown { get { checkAndInvoke(p, "throttleDown"); return true; } set { } }
+        public Boolean stage { get { //checkAndInvoke(p, "activateNextStage"); 
+            return true; } set { } }
+        public Boolean throttleUp { get { //checkAndInvoke(p, "throttleUp"); 
+            return true; } set { } }
+        public Boolean throttleDown { get { //checkAndInvoke(p, "throttleDown"); 
+            return true; } set { } }
 
 
         private void checkAndInvoke(TelemachusDataLink p, string methodName)

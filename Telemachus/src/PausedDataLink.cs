@@ -7,19 +7,17 @@ namespace Telemachus
 {
     public class PausedDataLink
     {
-        TelemachusPowerDrain tpd = null;
-
-        public PausedDataLink(TelemachusPowerDrain tpd)
+        public PausedDataLink()
         {
-            this.tpd = tpd;
         }
 
         public Boolean paused 
         { 
             get 
             {
-                return FlightDriver.Pause || (tpd == null ? false : !tpd.active || !tpd.activeToggle); 
-            } 
+                return FlightDriver.Pause || (!TelemachusPowerDrain.isActive || !TelemachusPowerDrain.activeToggle); 
+            }
+
             set { } 
         }
     }

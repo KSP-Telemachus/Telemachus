@@ -13,197 +13,52 @@ namespace Telemachus
 {
     public class TelemachusDataLink : Part
     {
-        #region Fields
-
-        static Server server = null;
-        static DataLinkResponsibility dataLinkResponsibility = null;
-        PluginConfiguration config = PluginConfiguration.CreateForType<TelemachusDataLink>();
-        ServerConfiguration serverConfig = new ServerConfiguration();
-
-        public UpLinkDownLinkRate dataRates 
-        { 
-            get 
-            { 
-                return dataLinkResponsibility.dataRates; 
-            }
-        }
-
-        #endregion
-
+       
         #region Part Events
 
         protected override void onFlightStart()
         {
-            startDataLink(); 
+            ScenarioRunner.GetLoadedModules().Add(new TelemachusDataLinkScenario());
+            //startDataLink();
             base.onFlightStart();
         }
 
         protected override void onDisconnect()
         { 
-            stopDataLink();
             base.onDisconnect();
         }
 
         protected override void onPartDestroy()
         {
-            stopDataLink();
+
+            //stopDataLink();
+            
+
             base.onPartDestroy();
         }
 
         #endregion
 
-        #region Data Link
-
-        private void startDataLink()
+        private void getTelemachusScenarioModule()
         {
-            if (server == null)
+            foreach(ScenarioModule s in ScenarioRunner.GetLoadedModules())
             {
-                try
-                {
-                    PluginLogger.Out("Telemachus data link starting");
-                    P
-                    readConfiguration();
 
-                    server = new Server(serverConfig);
-                    server.OnServerNotify += new Server.ServerNotify(serverOut);
-                    server.addHTTPResponsibility(new ElseResponsibility());
-                    server.addHTTPResponsibility(new IOPageResponsibility());
-                    DataLink dataLinks = new DataLink();
-                    dataLinks.vessel = this.vessel;
-                    dataLinks.orbit = this.vessel.orbit;
-                    dataLinks.pdl = new PausedDataLink(getPowerDrainModule());
-                    dataLinks.fcdl = new FlightControlDataLink(this);
-                    dataLinkResponsibility = new DataLinkResponsibility(dataLinks);
-                    server.addHTTPResponsibility(dataLinkResponsibility);
-                    server.addHTTPResponsibility(new InformationResponsibility(dataLinkResponsibility));
-                    server.startServing();
-
-                    PluginLogger.Out("Telemachus data link listening for requests on the following addresses: (" 
-                        + server.getIPsAsString() + 
-                        "). Try putting them into your web browser, some of them might not work.");
-    
-                }
-                catch (Exception e)
-                {
-                    PluginLogger.Out(e.Message);
-                    PluginLogger.Out(e.StackTrace);
-                }
-            }
-        }
-
-        public TelemachusPowerDrain getPowerDrainModule()
-        {
-            foreach (var o in this.Modules)
-            {
-                if (typeof(TelemachusPowerDrain) == (o.GetType()))
-                {
-                    return (TelemachusPowerDrain)o;
-                }
-            }
-            
-            return null;
-        }
-
-        private void writeDefaultConfig()
-        {
-            config.SetValue("PORT", 8080);
-            config.SetValue("IPADDRESS", "127.0.0.1");
-            config.save();
-        }
-
-        private void readConfiguration()
-        {
-            config.load();
-
-            int port = config.GetValue<int>("PORT");
-
-            if (port != 0)
-            {
-                serverConfig.port = port;
-            }
-            else
-            {
-                PluginLogger.Log("No port in configuration file.");
             }
 
-            String ip = config.GetValue<String>("IPADDRESS");
-                
-            if (ip != null)
-            {
-                try
-                {
-                    serverConfig.addIPAddressAsString(ip);
-                }
-                catch
-                {
-                    PluginLogger.Log("Invalid IP address in configuration file, falling back to find.");
-                }
-            }
-            else
-            {
-                PluginLogger.Log("No IP address in configuration file.");
-            }
         }
-
-        private void stopDataLink()
-        {
-            if (server != null)
-            {
-                PluginLogger.Out("Telemachus data link shutting down.");
-                server.stopServing();
-                server = null;
-                dataLinkResponsibility.clearCache();
-            }
-        }
-
-        private void serverOut(String message)
-        {
-            PluginLogger.Log(message);
-        }
-
-        #endregion
-
-        #region Flight Control Invoke
-
-        public void activateNextStage()
-        {
-            Staging.ActivateNextStage();
-        }
-
-        public void throttleUp()
-        {
-            
-            FlightInputHandler.state.mainThrottle += 0.1f;
-
-            if(FlightInputHandler.state.mainThrottle > 1)
-            {
-                FlightInputHandler.state.mainThrottle = 1;
-            }
-        }
-
-        public void throttleDown()
-        {
-            FlightInputHandler.state.mainThrottle -= 0.1f;
-
-            if (FlightInputHandler.state.mainThrottle < 0)
-            {
-                FlightInputHandler.state.mainThrottle = 0;
-            }
-        }
-
-        #endregion
     }
 
     public class TelemachusPowerDrain : PartModule
     {
 
-        string[] dataUnits = new string[] { "Error", " bit/s", " kbit/s", " Mbit/s", "Gbit/s" };
+        static string[] dataUnits = new string[] { "Error", " bit/s", " kbit/s", " Mbit/s", "Gbit/s" };
 
         #region Fields
 
-        public bool active = true, activeToggle = true;
+        static public bool isActive = true, activeToggle = true;
 
-        public float powerConsumption = 0f;
+        static public float powerConsumption = 0f;
 
         [KSPField]
         public float powerConsumptionIncrease = 0.02f;
@@ -246,12 +101,12 @@ namespace Telemachus
 
                 if (availPower < requiredPower)
                 {
-                    active = false;
+                    isActive = false;
                     telemachusInactive();
                 }
                 else
                 {
-                    active = true;
+                    isActive = true;
                     telemachusActive();
                 }
             }
@@ -275,10 +130,8 @@ namespace Telemachus
         private void telemachusActive()
         {
             activeReading = powerConsumption + " units";
-
-            TelemachusDataLink tdl = (TelemachusDataLink)part;
-            uplinkReading = formatBitRate(tdl.dataRates.getUpLinkRate());
-            downlinkReading = formatBitRate(tdl.dataRates.getDownLinkRate());
+            uplinkReading = formatBitRate(TelemachusDataLinkScenario.dataRates.getUpLinkRate());
+            downlinkReading = formatBitRate(TelemachusDataLinkScenario.dataRates.getDownLinkRate());
         }
 
         private string formatBitRate(double bitRate)

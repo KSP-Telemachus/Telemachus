@@ -23,6 +23,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>3</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +33,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>3</LangVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -58,6 +60,7 @@
     <Compile Include="src\PausedDataLink.cs" />
     <Compile Include="src\TelemachusDataLink.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\TelemachusDataLinkScenario.cs" />
     <Compile Include="src\UpLinkDownLinkRate.cs" />
   </ItemGroup>
   <ItemGroup>
