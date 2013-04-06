@@ -18,50 +18,23 @@ namespace Telemachus
 
         private void buildAPI()
         {
-            registerAPI(new APIEntry(new APIDelegate(altitude), "v.altitude", "Altitude"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.altitude; }, 
+                "v.altitude", "Altitude"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.heightFromTerrain; }, 
+                "v.heightFromTerrain", "Height from Terrain"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.missionTime; }, 
+                "v.missionTime", "Mission Time"));
+            registerAPI(new APIEntry(
+                dataSources => { return FlightDriver.Pause || (!TelemachusPowerDrain.isActive || !TelemachusPowerDrain.activeToggle); }, 
+                "p.paused", "Paused"));
         }
 
         #endregion
 
         #region API Functions
-
-        private object altitude(DataSources dataSources)
-        {
-            return dataSources.vessel.altitude;
-        }
-
-        #endregion
-    }
-
-    public class APIListDataLinkHandler : DataLinkHandler
-    {
-        #region Initialisation
-
-        public APIListDataLinkHandler()
-        {
-            buildAPI();
-        }
-
-        private void buildAPI()
-        {
-            registerAPI(new APIEntry(new APIDelegate(getAPIList), "c.api", "API List"));
-        }
-
-        #endregion
-
-        #region API Functions
-
-        private object getAPIList(DataSources dataSources)
-        {
-            List<KeyValuePair<String, String>> APIList = new List<KeyValuePair<string, string>>();
-            
-            foreach(DataLinkHandler dlh in dataSources.APIHandlers)
-            {
-                dlh.appendAPIList(ref APIList);
-            }
-
-            return APIList;
-        }
 
         #endregion
     }
@@ -88,7 +61,6 @@ namespace Telemachus
 
         #region API Fields
 
-        protected DataSources dataSources = new DataSources();
         Dictionary<string, APIEntry> APIEntries =
            new Dictionary<string, APIEntry>();
 
@@ -133,18 +105,18 @@ namespace Telemachus
 
     public class APIEntry
     {
-        DataLinkHandler.APIDelegate itsFunction = null;
+
         public DataLinkHandler.APIDelegate function { get; set; }
-        string itsAPIString = null;
+
         public string APIString { get; set; }
-        string itsName = null;
+
         public string name { get; set; }
 
         public APIEntry(DataLinkHandler.APIDelegate function, string APIString, string name)
         {
-            itsFunction = function;
-            itsAPIString = APIString;
-            itsName = name;
+            this.function = function;
+            this.APIString = APIString;
+            this.name = name;
         }
     }
 

@@ -24,7 +24,8 @@ namespace Telemachus
         #region Fields
         
         List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
-
+        DataSources ds = new DataSources();
+        JavaScriptGeneralFormatter f = new JavaScriptGeneralFormatter();
         #endregion
 
         #region Data Rate Fields
@@ -37,7 +38,7 @@ namespace Telemachus
 
         #region Initialisation
 
-        DataLinkResponsibility()
+        public DataLinkResponsibility()
         {
             loadHandlers();
         }
@@ -57,12 +58,12 @@ namespace Telemachus
             if (request.path.StartsWith(PAGE_PREFIX))
             {
                 dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
+                ds.vessel = FlightGlobals.ActiveVessel;
 
                 String returnMessage = new OKPage(
                    argumentsParse(
                    request.path.Remove(
-                   0, request.path.IndexOf(ARGUMENTS_START) + 1), buildDataSourcesFromURL(request.path.Substring(
-                   0, request.path.IndexOf(ARGUMENTS_START))))
+                   0, request.path.IndexOf(ARGUMENTS_START) + 1), ds)
                    ).ToString();
 
                 dataRates.addDownLinkPoint(System.DateTime.Now, returnMessage.Length);
@@ -78,27 +79,6 @@ namespace Telemachus
         #endregion
 
         #region Parse URL
-
-        private DataSources buildDataSourcesFromURL(string url)
-        {
-            DataSources dataSources = new DataSources();
-            string[] splitURL = url.Split('/');
-            string vesselName = splitURL[3];
-            string format = splitURL[4];
-
-            dataSources.format = splitURL[4];
-            dataSources.APIHandlers = APIHandlers;
-
-            foreach (Vessel vessel in FlightGlobals.Vessels)
-            {
-                if (vessel.name.Equals(splitURL[3]))
-                {
-                    dataSources.vessel = vessel;
-                }
-            }
-
-            return dataSources;
-        }
 
         private String argumentsParse(String args, DataSources dataSources)
         {
@@ -126,8 +106,9 @@ namespace Telemachus
                 }
             }
 
-            result.function(dataSources);
-            return ""; // result.format(dataSources);
+            object r = result.function(dataSources);
+            return JavaScriptGeneralFormatter.formatWithAssignment(
+                f.format(r.ToString(), r.GetType()), argsSplit[0]);
         }
 
         #endregion

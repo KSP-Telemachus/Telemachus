@@ -12,40 +12,10 @@ namespace Telemachus
 {
     public class TelemachusPart : Part
     {
-        public static int MAX_FREQUENCY = 6000;
-
-        public int frequency {get; set;}
-
         protected override void onFlightStart()
         {
-            PluginLogger.Out("Flight start");
+            PluginLogger.Log("Flight start");
             base.onFlightStart();
-        }
-
-        public override void onFlightStateLoad(Dictionary<string, KSPParseable> parsedData)
-        {
-            PluginLogger.Out("Part load.");
-
-            if (parsedData.ContainsKey("frequency"))
-            {
-                frequency = parsedData["frequency"].value_int;
-                PluginLogger.Out("Part load freq.");
-
-            }
-            else
-            {
-                System.Random random = new System.Random(System.DateTime.Now.Millisecond);
-                frequency = random.Next(MAX_FREQUENCY);
-                PluginLogger.Out("Part load freq." + frequency);
-            }
-
-            base.onFlightStateLoad(parsedData);
-        }
-
-        public override void onFlightStateSave(Dictionary<string, KSPParseable> partDataCollection)
-        {
-            partDataCollection.Add("frequency", new KSPParseable(frequency, KSPParseable.Type.INT));
-            base.onFlightStateSave(partDataCollection);
         }
     }
 
@@ -53,14 +23,11 @@ namespace Telemachus
     {
         #region Fields
 
-        [KSPField(guiActive = true, guiName = "Frequency")]
-        string partFrequency = "";
-
         [KSPEvent(guiActive = true, guiName = "Display Browser")]
         public void openBrowser()
         {
             Application.OpenURL("http://" + TelemachusBehaviour.getServerPrimaryIPAddress() + ":"
-                + TelemachusBehaviour.getServerPort() + "/telemachus");
+                + TelemachusBehaviour.getServerPort() + "/telemachus/information");
         }
 
         #endregion
@@ -76,11 +43,6 @@ namespace Telemachus
             }
 
             base.OnAwake();
-        }
-
-        public override void OnUpdate()
-        {
-            partFrequency = ((TelemachusPart)part).frequency.ToString();
         }
 
         public override void OnLoad(ConfigNode node)

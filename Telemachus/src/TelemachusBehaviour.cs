@@ -12,8 +12,7 @@ namespace Telemachus
         #region Fields
 
         public static GameObject instance;
-        private VesselListChangeDetector vesselListChangeDetector = new VesselListChangeDetector();
-        private VesselCacheMonitor vesselCacheMonitor = new VesselCacheMonitor();
+
         #endregion
 
         #region Data Link
@@ -21,6 +20,7 @@ namespace Telemachus
         private static Server server = null;
         private static PluginConfiguration config = PluginConfiguration.CreateForType<TelemachusBehaviour>();
         private static ServerConfiguration serverConfig = new ServerConfiguration();
+        private static DataLinkResponsibility dataLinkResponsibility = null;
 
         static public string getServerPrimaryIPAddress()
         {
@@ -46,8 +46,8 @@ namespace Telemachus
                     server.OnServerNotify += new Server.ServerNotify(serverOut);
                     server.addHTTPResponsibility(new ElseResponsibility());
                     server.addHTTPResponsibility(new IOPageResponsibility());
- 
-                    //server.addHTTPResponsibility(dataLinkResponsibility);
+                    dataLinkResponsibility = new DataLinkResponsibility();
+                    server.addHTTPResponsibility(dataLinkResponsibility);
                     server.addHTTPResponsibility(new InformationResponsibility());
                     server.startServing();
                  
@@ -121,40 +121,16 @@ namespace Telemachus
 
         #endregion
 
-        #region Vessel List Changed Detector
-
-        void vesselListChangeDetector_ColdChanged(int count)
-        {
-            PluginLogger.Log("Vessel List Changed Cold: " + count.ToString());
-            vesselCacheMonitor.reBuildCache();
-        }
-
-        void vesselListChangeDetector_WarmChanged(int count)
-        {
-            PluginLogger.Log("Vessel List Changed Warm: " + count.ToString());
-            vesselCacheMonitor.reBuildCache();
-        }
-
-        #endregion
-
         #region Behaviour Events
 
         public void Awake()
         {
             DontDestroyOnLoad(this);
-            vesselListChangeDetector.ColdChanged += vesselListChangeDetector_ColdChanged;
-            vesselListChangeDetector.WarmChanged += vesselListChangeDetector_WarmChanged;
+
             startDataLink();
         }
 
        
-
-        public void Update()
-        {
-            vesselListChangeDetector.Update();
-
-            vesselCacheMonitor.debugContents();
-        }
 
         #endregion
 
@@ -162,149 +138,12 @@ namespace Telemachus
 
         static public double getDownLinkRate()
         {
-            return 0;
+            return dataLinkResponsibility.dataRates.getDownLinkRate();
         }
 
         static public double getUpLinkRate()
         {
-            return 0;
-        }
-
-        #endregion
-    }
-
-    class VesselCacheMonitor
-    {
-        #region Fields
-        
-        Dictionary<uint, Part> partCache =
-           new Dictionary<uint, Part>();
-
-        #endregion
-
-        #region Cache Access
-
-        public Vessel getVesselFromPartUid(uint id)
-        {
-            Part part = null;
-           
-            partCache.TryGetValue(id, out part);
-
-            if (part == null)
-            {
-                return null;
-            }
-            else
-            {
-                return part.vessel;
-            }
-        }
-
-        public void reBuildCache()
-        {
-            partCache.Clear();
-            PluginLogger.Log("Building cache");
-            
-            foreach (Vessel vessel in FlightGlobals.Vessels)
-            {
-                vessel.i
-                PluginLogger.Log("Number of parts: " + vessel.parts.Count);
-                foreach (Part part in vessel.Parts)
-                {
-                    PluginLogger.Log("part: " + part.partInfo.name);
-                    if (part.partInfo.name.StartsWith("Telemachus"))
-                    {
-                        PluginLogger.Log("Part Cache: " + part.uid);
-                        partCache.Add(part.uid, part);
-                    }
-                }
-            }
-        }
-
-        private bool containsTelemachusModule(Part part)
-        {
-            foreach (PartModule module in part.Modules)
-            {
-                if(module.GetType().Equals(typeof(TelemachusDataLink)))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        #endregion
-
-        public void debugContents()
-        {
-            Dictionary<uint, Part>.Enumerator e = partCache.GetEnumerator();
-            while (e.MoveNext())
-            {
-                Part p = e.Current.Value;
-                if (p != null)
-                {
-                    //PluginLogger.Out(p.vessel.id + " " + p.uid + " " + p.vessel.missionTime.ToString() + " " + p.vessel.altitude.ToString());
-                }
-                else
-                {
-                    //PluginLogger.Out(e.Current.Key + " Part does not exist");
-                }
-            }
-        }
-    }
-
-    class VesselListChangeDetector
-    {
-        #region Delegates
-
-        public delegate void VesselListChange(int count);
-
-        #endregion
-
-        #region Events
-
-        public event VesselListChange ColdChanged;
-        public event VesselListChange WarmChanged;
-
-        #endregion
-
-        #region Fields
-
-        private int previousSize = 0;
-
-        #endregion
-
-        #region Fire Event
-
-        public void Update()
-        {
-            int nextSize = 0;
-
-            if (FlightGlobals.fetch != null)
-            {
-                nextSize = FlightGlobals.Vessels.Count;
-            }
-
-            if (nextSize != previousSize)
-            {
-                if (previousSize == 0)
-                {
-                    if (ColdChanged != null)
-                    {
-                        ColdChanged(nextSize);
-                    }
-                }
-                else
-                {
-                    if (WarmChanged != null)
-                    {
-                        WarmChanged(nextSize);
-                    }
-                }
-            }
-
-            previousSize = nextSize;
+            return dataLinkResponsibility.dataRates.getUpLinkRate();
         }
 
         #endregion

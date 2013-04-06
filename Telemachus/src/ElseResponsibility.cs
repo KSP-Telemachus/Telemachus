@@ -11,7 +11,7 @@ namespace Telemachus
 
         public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
-            cc.Send(new IOLessDataLinkRedirectToApplication(IOPageResponsibility.files).ToString());
+            cc.Send(new IOLessDataLinkRedirectToApplication().ToString());
             return true;
         }
 
@@ -28,12 +28,12 @@ namespace Telemachus
 
         #region Constructors
 
-        public IOLessDataLinkRedirectToApplication(String[] files)
+        public IOLessDataLinkRedirectToApplication()
         {
             protocol = "HTTP/1.0";
             responseType = "Moved Permanently";
             responseCode = "301";
-            attributes.Add("Location", "/telemachus/telemachus.html");
+            attributes.Add("Location", "/telemachus/information");
         }
 
         #endregion

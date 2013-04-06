@@ -1,5 +1,5 @@
 ﻿var DATA_SIZE = 1000;
-var UPDATE_INTERVAL = 300;
+var UPDATE_INTERVAL = 400;
 var SPLICE_SIZE = 10;
 var SIG_FIG = 5;
 
