@@ -8,7 +8,145 @@ using System.Reflection;
 
 namespace Telemachus
 {
-    class DataLinkResponsibility : IHTTPRequestResponsibility
+    public class DataLinkResponsibility : IHTTPRequestResponsibility
+    {
+        #region Constants
+
+        public const String PAGE_PREFIX = "/telemachus/datalink";
+        public const char ARGUMENTS_START = '?';
+        public const char ARGUMENTS_ASSIGN = '=';
+        public const char ARGUMENTS_DELIMETER = '&';
+        public const char ACCESS_DELIMITER = '.';
+        public const int INFINITE_WAIT = -1;
+
+        #endregion
+
+        #region Fields
+        
+        List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
+
+        #endregion
+
+        #region Data Rate Fields
+
+        public const int RATE_AVERAGE_SAMPLE_SIZE = 20;
+        public UpLinkDownLinkRate dataRates { get { return itsDataRates; } set { itsDataRates = value; } }
+        private UpLinkDownLinkRate itsDataRates = new UpLinkDownLinkRate(RATE_AVERAGE_SAMPLE_SIZE);
+
+        #endregion
+
+        #region Initialisation
+
+        DataLinkResponsibility()
+        {
+            loadHandlers();
+        }
+
+        private void loadHandlers()
+        {
+            APIHandlers.Add(new VesselDataLinkHandler());
+            APIHandlers.Add(new DefaultDataLinkHandler());
+        }
+
+        #endregion
+
+        #region IHTTPRequestResponsibility
+
+        public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
+        {
+            if (request.path.StartsWith(PAGE_PREFIX))
+            {
+                dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
+
+                String returnMessage = new OKPage(
+                   argumentsParse(
+                   request.path.Remove(
+                   0, request.path.IndexOf(ARGUMENTS_START) + 1), buildDataSourcesFromURL(request.path.Substring(
+                   0, request.path.IndexOf(ARGUMENTS_START))))
+                   ).ToString();
+
+                dataRates.addDownLinkPoint(System.DateTime.Now, returnMessage.Length);
+
+                cc.Send(returnMessage);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region Parse URL
+
+        private DataSources buildDataSourcesFromURL(string url)
+        {
+            DataSources dataSources = new DataSources();
+            string[] splitURL = url.Split('/');
+            string vesselName = splitURL[3];
+            string format = splitURL[4];
+
+            dataSources.format = splitURL[4];
+            dataSources.APIHandlers = APIHandlers;
+
+            foreach (Vessel vessel in FlightGlobals.Vessels)
+            {
+                if (vessel.name.Equals(splitURL[3]))
+                {
+                    dataSources.vessel = vessel;
+                }
+            }
+
+            return dataSources;
+        }
+
+        private String argumentsParse(String args, DataSources dataSources)
+        {
+            StringBuilder sb = new StringBuilder();
+            String[] argsSplit = args.Split(ARGUMENTS_DELIMETER);
+
+            foreach (String arg in argsSplit)
+            {
+                sb.Append(argumentParse(arg, dataSources));
+            }
+
+            return sb.ToString();
+        }
+
+        private String argumentParse(String args, DataSources dataSources)
+        {
+            String[] argsSplit = args.Split(ARGUMENTS_ASSIGN);
+            APIEntry result = null;
+
+            foreach (DataLinkHandler APIHandler in APIHandlers)
+            {
+                if (APIHandler.process(argsSplit[1], out result))
+                {
+                    break;
+                }
+            }
+
+            result.function(dataSources);
+            return ""; // result.format(dataSources);
+        }
+
+        #endregion
+    }
+
+    public class DataSources
+    {
+        #region Fields
+
+        public Vessel vessel;
+        public string format;
+        public string varName;
+        public List<DataLinkHandler> APIHandlers;
+
+        #endregion
+    }
+
+    /*
+    public class DataLinkResponsibilityOld : IHTTPRequestResponsibility
     {
         public const String PAGE_PREFIX = "/telemachus/datalink";
         public const char ARGUMENTS_START = '?';
@@ -17,6 +155,17 @@ namespace Telemachus
         public const char ACCESS_DELIMITER = '.';
         public const int INFINITE_WAIT = -1;
         public const int RATE_AVERAGE_SAMPLE_SIZE = 20;
+   
+        string itsApiList =  "{" +
+                                "'Mission-Time':'v.missionTime'," +
+                                "'Altitude':'v.altitude'," +
+                                "'ApA':'o.ApA'," +
+                                "'PeA':'o.PeA'," +
+                                "'Density':'v.atmDensity'," +
+                                "'Orbital-Velocity':'d.orbitalVelocity'," +
+                                "'Surface-Velocity':'d.surfaceVelocity'" +
+                             "}";
+        public string apiList { get { return itsApiList; } }
 
         public DataLink dataLinks {get; set;}
         Dictionary<string, CachedDataLinkReference> APICache =
@@ -27,7 +176,7 @@ namespace Telemachus
         private UpLinkDownLinkRate itsDataRates = new UpLinkDownLinkRate(RATE_AVERAGE_SAMPLE_SIZE);
         public UpLinkDownLinkRate dataRates { get { return itsDataRates; } set { itsDataRates = value; } }
 
-        public DataLinkResponsibility(DataLink dataLinks)
+        public DataLinkResponsibilityOld(DataLink dataLinks)
         {
             this.dataLinks = dataLinks;
 
@@ -111,8 +260,7 @@ namespace Telemachus
                     catch (Exception e)
                     {
                         typeName = "[" + e.Message + "]";
-                        /*Report the type as the error message if the property cannot be accessed.
-                          This is most likely because indexed properties are not supported*/
+
                     }
 
                     if (innerValue != null)
@@ -178,4 +326,5 @@ namespace Telemachus
             return JavaScriptGeneralFormatter.formatWithAssignment(cachedAPIReference.getValue(), argsSplit[0]);
         }
     }
+     */
 }

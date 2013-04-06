@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Telemachus - Altitude</title>
+    <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
+    <script type="text/javascript" src="chart-const.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", { packages: ["corechart"] });
+        google.setOnLoadCallback(onLoad);
+
+        var data;
+        var rawData;
+        var chart
+        var options;
+
+        function onLoad() {
+            rawData = [
+                ['Mission Time', 'Altitude', 'Height from Terrain', 'Terrain Height']
+            ];
+            data = google.visualization.arrayToDataTable(rawData);
+
+            options = {
+                title: 'Altitude Plot',
+                vAxis: { title: 'Height (m)' },
+                hAxis: { title: 'Mission Time (s)' },
+                legend: {position: 'bottom'}
+            };
+
+            chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            update();
+        }
+
+        function drawChart() {
+            chart.draw(data, options);
+        }
+
+        function update() {
+
+            if (rawData.length > 1) {
+                drawChart();
+            }
+
+            if (readStream()) {
+
+                if (rawData.length > DATA_SIZE) {
+                    rawData.splice(1, SPLICE_SIZE);
+                }
+
+                t = setTimeout('update()', UPDATE_INTERVAL);
+            }
+        }
+
+        function readStream() {
+            var req = null;
+    
+            try { req = new XMLHttpRequest(); } catch (e) { }
+            if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
+            if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
+            req.open('GET', "datalink?terrain=vessel.heightFromTerrain&alt=vessel.altitude&met=vessel.missionTime&p=pdl.paused", false);
+            req.send();
+
+            if (req.status == 200) {
+                eval(req.responseText);
+
+                if (!p) {
+                    rawData.push([met, alt, terrain, alt - terrain]);
+
+                    appendCurrentValueToLegend(rawData);
+                    
+                    data = google.visualization.arrayToDataTable(rawData);
+                }
+            }
+            else {
+                document.writeln(req.responseText);
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+  </head>
+  <body id="full">
+   <div id="main">
+    <div id="chart_div" style="width: 100%; height:100%;"></div>
+    </div>
+  </body>
+</html>

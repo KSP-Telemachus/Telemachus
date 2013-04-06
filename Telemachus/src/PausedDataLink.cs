@@ -7,18 +7,14 @@ namespace Telemachus
 {
     public class PausedDataLink
     {
-        public PausedDataLink()
+        public Boolean paused
         {
-        }
-
-        public Boolean paused 
-        { 
-            get 
+            get
             {
-                return FlightDriver.Pause || (!TelemachusPowerDrain.isActive || !TelemachusPowerDrain.activeToggle); 
+                return FlightDriver.Pause || (!TelemachusPowerDrain.isActive || !TelemachusPowerDrain.activeToggle);
             }
 
-            set { } 
+            set { }
         }
     }
 }

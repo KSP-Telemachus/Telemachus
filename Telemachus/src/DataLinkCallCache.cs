@@ -12,7 +12,7 @@ namespace Telemachus
     {
         FieldInfo field = null;
 
-        public FieldCachedDataLinkReference(FieldInfo field, Object parentValue, ResultFormatter resultFormatter)
+        public FieldCachedDataLinkReference(FieldInfo field, Object parentValue, DataSourceResultFormatter resultFormatter)
             : base(parentValue, resultFormatter)
         {
             this.field = field;
@@ -29,7 +29,7 @@ namespace Telemachus
     {
         PropertyInfo property = null;
 
-        public PropertyCachedDataLinkReference(PropertyInfo property, Object parentValue, ResultFormatter resultFormatter)
+        public PropertyCachedDataLinkReference(PropertyInfo property, Object parentValue, DataSourceResultFormatter resultFormatter)
             : base(parentValue, resultFormatter)
         {
             this.property = property;
@@ -46,7 +46,7 @@ namespace Telemachus
     {
         List<ModuleEnviroSensor> sensors = null;
 
-        public SensorCachedDataLinkReference(List<ModuleEnviroSensor> sensors, ResultFormatter resultFormatter)
+        public SensorCachedDataLinkReference(List<ModuleEnviroSensor> sensors, DataSourceResultFormatter resultFormatter)
             : base(null, resultFormatter)
         {
             this.sensors = sensors;
@@ -118,9 +118,9 @@ namespace Telemachus
     public abstract class CachedDataLinkReference
     {
         protected Object parentValue = null;
-        protected ResultFormatter resultFormatter = null;
+        protected DataSourceResultFormatter resultFormatter = null;
 
-        public CachedDataLinkReference(Object parentValue, ResultFormatter resultFormatter)
+        public CachedDataLinkReference(Object parentValue, DataSourceResultFormatter resultFormatter)
         {
             this.parentValue = parentValue;
             this.resultFormatter = resultFormatter;

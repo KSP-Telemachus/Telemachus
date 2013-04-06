@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Telemachus
 {
-    public class JavaScriptGeneralFormatter : ResultFormatter
+    public class JavaScriptGeneralFormatter : DataSourceResultFormatter
     {
         protected const String JAVASCRIPT_DELIMITER = ";";
         protected const String JAVASCRIPT_ASSIGN = " = ";
@@ -32,7 +32,7 @@ namespace Telemachus
         }
     }
 
-    public interface ResultFormatter
+    public interface DataSourceResultFormatter
     {
         String format(String input, Type type);
     }

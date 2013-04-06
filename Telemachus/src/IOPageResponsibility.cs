@@ -22,19 +22,19 @@ namespace Telemachus
         static IOPageResponsibility()
         {
             String[] hashes = new String[] {"22-4B-9F-81-FA-30-F7-CB-16-BC-1D-CD-63-B9-B3-A9-A5-F7-A4-06",
-"AC-35-AB-FA-CE-DD-24-B6-AF-0E-8F-4E-67-43-74-9B-3B-54-88-17",
-"7A-BE-ED-15-40-5E-6B-FE-00-D6-2E-B0-ED-07-C6-55-82-BF-84-07",
-"F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2",
-"5E-45-E6-F6-82-6B-1D-48-3F-76-00-89-B3-55-A5-F3-A1-B3-0F-1E",
-"17-73-EF-10-76-BA-50-11-DA-47-79-ED-E3-9A-23-10-70-C5-8E-7F",
-"46-08-5F-32-72-20-23-F6-78-7B-6D-60-F8-FD-C9-BE-56-F7-AA-82",
-"B5-6B-97-3A-75-FF-36-7E-49-03-C0-19-89-1F-7B-F8-E8-CE-03-A6",
-"4A-53-F5-C0-20-71-BB-2C-F4-18-FC-E3-6B-1F-30-83-C7-00-64-B4",
-"DE-4E-57-FC-0B-85-C4-C2-FF-6F-C1-1E-F2-69-61-0E-41-64-20-D5",
-"B0-D2-13-D3-CB-0E-08-D7-1C-4F-23-0F-B9-EF-01-50-61-0D-0E-E4",
-"4E-90-F4-2E-98-FD-DF-1B-54-2A-BE-57-94-75-8D-04-1D-18-CC-35",
-"D6-D2-41-F9-83-67-F7-9B-4D-95-E5-6C-58-20-C2-0E-4B-B4-80-4F",
-""};
+                                            "AC-35-AB-FA-CE-DD-24-B6-AF-0E-8F-4E-67-43-74-9B-3B-54-88-17",
+                                            "7A-BE-ED-15-40-5E-6B-FE-00-D6-2E-B0-ED-07-C6-55-82-BF-84-07",
+                                            "F7-35-B7-A4-41-27-68-6A-D2-38-FB-60-0B-36-6C-82-C2-4E-A1-D2",
+                                            "5E-45-E6-F6-82-6B-1D-48-3F-76-00-89-B3-55-A5-F3-A1-B3-0F-1E",
+                                            "17-73-EF-10-76-BA-50-11-DA-47-79-ED-E3-9A-23-10-70-C5-8E-7F",
+                                            "46-08-5F-32-72-20-23-F6-78-7B-6D-60-F8-FD-C9-BE-56-F7-AA-82",
+                                            "B5-6B-97-3A-75-FF-36-7E-49-03-C0-19-89-1F-7B-F8-E8-CE-03-A6",
+                                            "4A-53-F5-C0-20-71-BB-2C-F4-18-FC-E3-6B-1F-30-83-C7-00-64-B4",
+                                            "DE-4E-57-FC-0B-85-C4-C2-FF-6F-C1-1E-F2-69-61-0E-41-64-20-D5",
+                                            "B0-D2-13-D3-CB-0E-08-D7-1C-4F-23-0F-B9-EF-01-50-61-0D-0E-E4",
+                                            "4E-90-F4-2E-98-FD-DF-1B-54-2A-BE-57-94-75-8D-04-1D-18-CC-35",
+                                            "D6-D2-41-F9-83-67-F7-9B-4D-95-E5-6C-58-20-C2-0E-4B-B4-80-4F",
+                                            ""};
 
             foreach (String hash in hashes)
             {
@@ -124,57 +124,4 @@ namespace Telemachus
             return bytes;
         }
     }
-
-    class ElseResponsibility : IHTTPRequestResponsibility
-    {
-        public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
-        {
-            cc.Send(new IOLessDataLinkDisplayNotFoundPage(IOPageResponsibility.files).ToString());
-            return true;
-        }
-    }
-
-    class IOLessDataLinkDisplayNotFoundPage : HTTPResponse
-    {
-        const String HTML_FILE_SUFFIX = ".html";
-
-        public IOLessDataLinkDisplayNotFoundPage(String[] files)
-        {
-            protocol = "HTTP/1.0";
-            responseType = "OK";
-            responseCode = "200";
-            attributes.Add("Content-Type", "text / html");
-            attributes.Add("Content-Length", "0");
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("<!DOCTYPE html>");
-            sb.Append("<html><body><h1>");
-            sb.Append("Data Link Not Found");
-            sb.Append("</h1>");
-            sb.Append("<p>");
-            sb.Append("The data link you have requested was not found, ");
-            sb.Append("this craft is broadcasting the following:</p>");
-
-            foreach (String fileName in files)
-            {
-                if(fileName.EndsWith(HTML_FILE_SUFFIX))
-                {
-                    sb.Append("<a href=\"/telemachus/" + fileName 
-                        + "\"" + ">" + fileName.Replace(HTML_FILE_SUFFIX, "") + "</a></br>");
-                }
-            }
-
-            sb.Append("</body></html>");
-
-            content = sb.ToString();
-        }
-
-        public override String ToString()
-        {
-            StringBuilder response = new StringBuilder(base.ToString());
-
-            return response.ToString();
-        }
-    }  
 }
