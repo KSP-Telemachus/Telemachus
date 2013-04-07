@@ -49,7 +49,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\DataLinkCallCache.cs" />
     <Compile Include="src\DataLinkFormatters.cs" />
     <Compile Include="src\DataLinkHandlers.cs" />
     <Compile Include="src\DataLinkResponsibility.cs" />
@@ -78,7 +77,7 @@
   <ItemGroup>
     <Content Include="PluginData\telemachus\altitude.html" />
     <Content Include="PluginData\telemachus\apoapsis-periapsis.html" />
-    <Content Include="PluginData\telemachus\chart-const.js" />
+    <Content Include="PluginData\telemachus\jKSPWAPI.js" />
     <Content Include="PluginData\telemachus\config.xml" />
     <Content Include="PluginData\telemachus\density.html" />
     <Content Include="PluginData\telemachus\dynamic-pressure.html" />
@@ -86,6 +85,7 @@
     <Content Include="PluginData\telemachus\flight-control.html" />
     <Content Include="PluginData\telemachus\g-force.html" />
     <Content Include="PluginData\telemachus\gravity.html" />
+    <Content Include="PluginData\telemachus\jquery-1.9.1.min.js" />
     <Content Include="PluginData\telemachus\pressure.html" />
     <Content Include="PluginData\telemachus\temperature.html" />
     <Content Include="PluginData\telemachus\time-apoapsis-periapsis.html" />

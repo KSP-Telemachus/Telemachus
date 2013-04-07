@@ -75,6 +75,7 @@ namespace Telemachus
                 {
                     DateTime newestTime = TIME_ARBITRARY, lastTime = TIME_ARBITRARY, thresholdTime = System.DateTime.Now.Subtract(TIME_SPAN_5_SECONDS);
                     long totalBytes = 0;
+                    int irel = 0;
 
                     foreach (KeyValuePair<DateTime, int> point in rate)
                     {
@@ -87,12 +88,21 @@ namespace Telemachus
                         lastTime = point.Key;
 
                         if (point.Key < thresholdTime)
-                        {    
+                        {
                             break;
                         }
+
+                        irel++;
                     }
 
-                    return ((double)totalBytes) / newestTime.Subtract(lastTime).TotalSeconds;
+                    if (irel > 0)
+                    {
+                        return ((double)totalBytes) / newestTime.Subtract(lastTime).TotalSeconds;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
                 else
                 {

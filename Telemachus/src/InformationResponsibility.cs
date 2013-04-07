@@ -34,6 +34,8 @@ namespace Telemachus
 
             header(ref sb);
 
+            pages(ref sb);
+
 #if (DEBUG)
             hash(ref sb);
 #endif
@@ -73,6 +75,23 @@ namespace Telemachus
             }
 
             sb.Append("\"\"};");
+            sb.Append("</br>");
+        }
+
+        private void pages(ref StringBuilder sb)
+        {
+            sb.Append("<h1>Pages</h1>");
+
+            foreach (String page in IOPageResponsibility.files)
+            {
+                //Ignore .css and .js
+                if (page.EndsWith(".html"))
+                {
+                    sb.Append("<a href=\"/telemachus/" + page + "\">" + page + "</a></br>");
+                }
+            }
+
+
             sb.Append("</br>");
         }
 

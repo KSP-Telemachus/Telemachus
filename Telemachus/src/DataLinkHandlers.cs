@@ -10,13 +10,13 @@ namespace Telemachus
     public class VesselDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
-
+        
         public VesselDataLinkHandler()
         {
             buildAPI();
         }
-
-        private void buildAPI()
+        
+        protected void buildAPI()
         {
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.altitude; }, 
@@ -28,13 +28,123 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.missionTime; }, 
                 "v.missionTime", "Mission Time"));
             registerAPI(new APIEntry(
-                dataSources => { return FlightDriver.Pause || (!TelemachusPowerDrain.isActive || !TelemachusPowerDrain.activeToggle); }, 
-                "p.paused", "Paused"));
+                dataSources => { return dataSources.vessel.srf_velocity.magnitude; },
+                "v.surfaceVelocity", "Surface Velocity"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.angularVelocity.magnitude; },
+                "v.angularVelocity", "Angular Velocity"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.obt_velocity.magnitude; },
+                "v.orbitalVelocity", "Orbital Velocity"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.horizontalSrfSpeed; },
+                "v.surfaceSpeed", "Surface Speed"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.verticalSpeed; },
+                "v.verticalSpeed", "Vertical Speed"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.atmDensity; },
+                "v.atmosphericDensity", "Atmospheric Density"));
         }
 
         #endregion
+    }
 
-        #region API Functions
+    public class OrbitDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public OrbitDataLinkHandler()
+        {
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.orbit.PeA; },
+                "o.PeA", "PeA"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.orbit.ApA; },
+                "o.ApA", "ApA"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.orbit.timeToAp; },
+                "o.timeToAp", "Time to Ap"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.orbit.timeToPe; },
+                "o.timeToPe", "Time to Pe"));
+        }
+
+        #endregion
+    }
+
+    public class SensorDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public SensorDataLinkHandler()
+        {
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources => { return getsSensorValues(dataSources, "TEMP"); },
+                "s.temperature", "Temperature"));
+            registerAPI(new APIEntry(
+                dataSources => { return getsSensorValues(dataSources, "ACC"); },
+                "s.acceleration", "Acceleration"));
+            registerAPI(new APIEntry(
+                dataSources => { return getsSensorValues(dataSources, "GRAV"); },
+                "s.gravity", "Gravity"));
+            registerAPI(new APIEntry(
+                dataSources => { return getsSensorValues(dataSources, "PRES"); },
+                "s.pressure", "Pressure"));
+        }
+
+        protected List<ModuleEnviroSensor> getsSensorValues(DataSources datasources, string Id)
+        {
+
+            List<ModuleEnviroSensor> sensors = new List<ModuleEnviroSensor>();
+
+            foreach (Part part in datasources.vessel.parts.FindAll(p => p.Modules.Contains("ModuleEnviroSensor")))
+            {
+                foreach (var module in part.Modules)
+                {
+                    if (module.GetType().Equals(typeof(ModuleEnviroSensor)))
+                    {
+                        ModuleEnviroSensor sensor = (ModuleEnviroSensor)module;
+
+                        if (sensor.sensorType.Equals(Id))
+                        {
+                            sensors.Add(sensor);
+                        }
+                    }
+                }
+            }
+
+            return sensors;
+        }
+
+        #endregion
+    }
+
+    public class PausedDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public PausedDataLinkHandler()
+        {
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources => { return FlightDriver.Pause || (!TelemachusPowerDrain.isActive || !TelemachusPowerDrain.activeToggle); },
+                "p.paused", "Paused"));
+        }
 
         #endregion
     }
@@ -72,18 +182,18 @@ namespace Telemachus
         {
             APIEntry entry = null;
 
-            try
-            {
-                APIEntries.TryGetValue(API, out entry);
-                result = entry;
-            }
-            catch
+            APIEntries.TryGetValue(API, out entry);
+
+            if (entry == null)
             {
                 result = null;
                 return false;
             }
-
-            return true;
+            else
+            {
+                result = entry;
+                return true;
+            } 
         }
 
         public void appendAPIList(ref List<KeyValuePair<String, String>> APIList)
@@ -105,7 +215,6 @@ namespace Telemachus
 
     public class APIEntry
     {
-
         public DataLinkHandler.APIDelegate function { get; set; }
 
         public string APIString { get; set; }
@@ -119,112 +228,4 @@ namespace Telemachus
             this.name = name;
         }
     }
-
-    /*
-    public class ReflectiveDataLinkHandler : IDataLinkHandler
-    {
-        const int FIELD_ACCESS = 1, PROPERTY_ACCESS = 2;
-
-        DataLink dataLinks = null;
-
-        public ReflectiveDataLinkHandler(DataLink dataLinks)
-        {
-            this.dataLinks = dataLinks;
-        }
-
-        public bool process(String API, String assign, ref Dictionary<string, CachedDataLinkReference> cache, ref CachedDataLinkReference cachedAPIReference)
-        {
-
-            String[] argsSplit = API.Split(DataLinkResponsibilityOld.ACCESS_DELIMITER);
-            Type type = dataLinks.GetType();
-            Object value = dataLinks, parentValue = null;
-            FieldInfo field = null;
-            PropertyInfo property = null;
-            int accessType = 0;
-            int i = 0;
-
-            for (i = 0; i < argsSplit.Length; i++)
-            {
-                try
-                {
-                    field = type.GetField(argsSplit[i]);
-                    parentValue = value;
-                    value = field.GetValue(parentValue);
-                    accessType = FIELD_ACCESS;
-                }
-                catch
-                {
-                    accessType = PROPERTY_ACCESS;
-                    property = type.GetProperty(argsSplit[i]);
-                    parentValue = value;
-                    value = property.GetValue(parentValue, null);
-                }
-
-                type = value.GetType();
-            }
-
-            switch (accessType)
-            {
-                case FIELD_ACCESS:
-                    cachedAPIReference = new FieldCachedDataLinkReference(field, parentValue, new JavaScriptGeneralFormatter());
-                    cache.Add(API, cachedAPIReference);
-                    return true;
-
-                case PROPERTY_ACCESS:
-                    cachedAPIReference = new PropertyCachedDataLinkReference(property, parentValue, new JavaScriptGeneralFormatter());
-                    cache.Add(API, cachedAPIReference);
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-    }
-
-    public class SensorDataLinkHandler : IDataLinkHandler
-    {
-        DataLink dataLinks = null;
-
-        List<ModuleEnviroSensor> sensors =
-            new List<ModuleEnviroSensor>();
-
-        public SensorDataLinkHandler(DataLink dataLinks)
-        {
-            this.dataLinks = dataLinks;
-        }
-
-        public bool process(String API, String assign, ref Dictionary<string, CachedDataLinkReference> cache, ref CachedDataLinkReference cachedAPIReference)
-        {
-            String[] path = API.Split(DataLinkResponsibilityOld.ACCESS_DELIMITER);
-           
-            if(path[0].Equals("sensor"))
-            {
-                List<ModuleEnviroSensor> sensors = new List<ModuleEnviroSensor>();
-
-                foreach (Part part in dataLinks.v.parts.FindAll(p => p.Modules.Contains("ModuleEnviroSensor")))
-                {
-                    foreach (var module in part.Modules)
-                    {
-                        if (module.GetType().Equals(typeof(ModuleEnviroSensor)))
-                        {
-                            ModuleEnviroSensor sensor = (ModuleEnviroSensor)module;
-            
-                            if(sensor.sensorType.Equals(path[1]))
-                            {
-                                sensors.Add(sensor);
-                            }
-                        }
-                    }
-                }
-
-                cachedAPIReference = new SensorCachedDataLinkReference(sensors, new JavaScriptGeneralFormatter());
-                cache.Add(API, cachedAPIReference);
-
-                return true;
-            }
-
-            return false;
-        }
-    }
-    */
 }
