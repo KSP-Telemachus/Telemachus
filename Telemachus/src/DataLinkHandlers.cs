@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using MinimalHTTPServer;
+using System.Threading;
+using System.Collections;
 
 namespace Telemachus
 {
@@ -80,11 +82,15 @@ namespace Telemachus
 
     public class SensorDataLinkHandler : DataLinkHandler
     {
+
+        SensorCache sensorCache = new SensorCache();
+
         #region Initialisation
 
-        public SensorDataLinkHandler()
+        public SensorDataLinkHandler(VesselChangeDetector vesselChangeDetector)
         {
             buildAPI();
+            vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
         }
 
         protected void buildAPI()
@@ -103,31 +109,80 @@ namespace Telemachus
                 "s.pressure", "Pressure"));
         }
 
-        protected List<ModuleEnviroSensor> getsSensorValues(DataSources datasources, string Id)
+        #endregion
+
+        #region Sensors
+
+        protected List<ModuleEnviroSensor> getsSensorValues(DataSources datasources, string ID)
         {
-
-            List<ModuleEnviroSensor> sensors = new List<ModuleEnviroSensor>();
-
-            foreach (Part part in datasources.vessel.parts.FindAll(p => p.Modules.Contains("ModuleEnviroSensor")))
-            {
-                foreach (var module in part.Modules)
-                {
-                    if (module.GetType().Equals(typeof(ModuleEnviroSensor)))
-                    {
-                        ModuleEnviroSensor sensor = (ModuleEnviroSensor)module;
-
-                        if (sensor.sensorType.Equals(Id))
-                        {
-                            sensors.Add(sensor);
-                        }
-                    }
-                }
-            }
-
-            return sensors;
+            return sensorCache.get(ID);
         }
 
         #endregion
+
+        #region VesselChangeDetector
+
+        private void vesselChanged(Vessel vessel)
+        {
+            sensorCache.refresh(vessel);
+        }
+
+        #endregion
+    }
+
+    public class SensorCache
+    {
+        ReaderWriterLock theLock = new ReaderWriterLock();
+        Dictionary<string, List<ModuleEnviroSensor>> sensors = new Dictionary<string, List<ModuleEnviroSensor>>();
+
+        public void refresh(Vessel vessel)
+        {
+            theLock.AcquireWriterLock(0);
+
+            try
+            {
+                sensors.Clear();
+
+                List<Part> partsWithSensors = vessel.parts.FindAll(p => p.Modules.Contains("ModuleEnviroSensor"));
+
+                foreach (Part part in partsWithSensors)
+                {
+                    foreach (var module in part.Modules)
+                    {
+                        if (module.GetType().Equals(typeof(ModuleEnviroSensor)))
+                        {
+                            List<ModuleEnviroSensor> list = null;
+                            sensors.TryGetValue(((ModuleEnviroSensor)module).sensorType, out list);
+                            if (list == null)
+                            {
+                                list = new List<ModuleEnviroSensor>();
+                                sensors[((ModuleEnviroSensor)module).sensorType] = list;
+                            }
+
+                            list.Add((ModuleEnviroSensor)module);
+                        }
+                    }
+                }
+
+            }
+            catch(Exception e)
+            {
+                PluginLogger.Log(e.Message);
+            }
+
+            theLock.ReleaseWriterLock();
+        }
+
+        public List<ModuleEnviroSensor> get(string ID)
+        {
+            theLock.AcquireReaderLock(0);
+
+            List<ModuleEnviroSensor> ret = new List<ModuleEnviroSensor>(sensors[ID]);                    
+ 
+            theLock.ReleaseReaderLock();
+            
+            return ret;
+        }
     }
 
     public class PausedDataLinkHandler : DataLinkHandler
@@ -215,11 +270,15 @@ namespace Telemachus
 
     public class APIEntry
     {
+        #region Fields
+
         public DataLinkHandler.APIDelegate function { get; set; }
-
         public string APIString { get; set; }
-
         public string name { get; set; }
+
+        #endregion
+
+        #region Initialisation
 
         public APIEntry(DataLinkHandler.APIDelegate function, string APIString, string name)
         {
@@ -227,5 +286,7 @@ namespace Telemachus
             this.APIString = APIString;
             this.name = name;
         }
+
+        #endregion
     }
 }

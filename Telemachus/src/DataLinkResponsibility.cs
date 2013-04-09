@@ -26,6 +26,7 @@ namespace Telemachus
         List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
         DataSources dataSources = new DataSources();
         DataSourceResultFormatter resultFormatter = new JavaScriptGeneralFormatter();
+        VesselChangeDetector vesselChangeDetector = new VesselChangeDetector();
 
         #endregion
 
@@ -48,7 +49,7 @@ namespace Telemachus
         {
             APIHandlers.Add(new PausedDataLinkHandler());
             APIHandlers.Add(new OrbitDataLinkHandler());
-            APIHandlers.Add(new SensorDataLinkHandler());
+            APIHandlers.Add(new SensorDataLinkHandler(vesselChangeDetector));
             APIHandlers.Add(new VesselDataLinkHandler());
             APIHandlers.Add(new DefaultDataLinkHandler());
         }
@@ -64,6 +65,7 @@ namespace Telemachus
                 dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
                 
                 dataSources.vessel = FlightGlobals.ActiveVessel;
+                vesselChangeDetector.update(FlightGlobals.ActiveVessel);
 
                 String returnMessage = new OKPage(
                    argumentsParse(
