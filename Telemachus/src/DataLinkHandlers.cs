@@ -22,11 +22,18 @@ namespace Telemachus
         protected void buildAPI()
         {
             registerAPI(new APIEntry(
-                dataSources => { dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Stage); return 0d; },
+                dataSources => { Staging.ActivateNextStage(); return 0d; },
                 "f.stage", "Stage"));
             registerAPI(new APIEntry(
                 dataSources => { throttleUp(); return 0d; },
                 "f.throttleUp", "Throttle Up"));
+            registerAPI(new APIEntry(
+                dataSources => { throttleZero(); return 0d; },
+                "f.throttleZero", "Throttle Zero"));
+            registerAPI(new APIEntry(
+                dataSources => { throttleFull(); return 0d; },
+                "f.throttleFull", "Throttle Full"));
+
             registerAPI(new APIEntry(
                 dataSources => { throttleDown(); return 0d; },
                 "f.throttleDown", "Throttle Down"));
@@ -154,6 +161,16 @@ namespace Telemachus
 
         #endregion
 
+        #region DataLinkHandler
+        
+        protected override bool pausedHandler()
+        {
+            return PausedDataLinkHandler.partPaused();
+        }
+
+        #endregion
+
+
         #region Flight Control
 
         private void throttleUp()
@@ -162,7 +179,7 @@ namespace Telemachus
 
             if (FlightInputHandler.state.mainThrottle > 1)
             {
-                FlightInputHandler.state.mainThrottle = 1;
+                FlightInputHandler.state.mainThrottle = 1f;
             }
         }
 
@@ -172,8 +189,18 @@ namespace Telemachus
 
             if (FlightInputHandler.state.mainThrottle < 0)
             {
-                FlightInputHandler.state.mainThrottle = 0;
+                FlightInputHandler.state.mainThrottle = 0f;
             }
+        }
+
+        private void throttleZero()
+        {
+            FlightInputHandler.state.mainThrottle = 0f;
+        }
+
+        private void throttleFull()
+        {
+            FlightInputHandler.state.mainThrottle = 1f;
         }
 
         #endregion
@@ -245,6 +272,12 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.orbit.timeToPe; },
                 "o.timeToPe", "Time to Pe"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.orbit.inclination; },
+                "o.inclination", "Inclination"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.orbit.argumentOfPeriapsis; },
+                "o.argumentOfPeriapsis", "Argument of Periapsis"));
         }
 
         #endregion
@@ -377,6 +410,23 @@ namespace Telemachus
         #endregion
     }
 
+    public class ResourceDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public ResourceDataLinkHandler()
+        {
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            
+        }
+
+        #endregion
+    }
+
     public class PausedDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
@@ -389,11 +439,16 @@ namespace Telemachus
         protected void buildAPI()
         {
             registerAPI(new APIEntry(
-                dataSources => { return FlightDriver.Pause || (!TelemachusPowerDrain.isActive || !TelemachusPowerDrain.activeToggle); },
+                dataSources => { return FlightDriver.Pause ||  partPaused(); },
                 "p.paused", "Paused"));
         }
 
         #endregion
+
+        public static bool partPaused()
+        {
+            return !TelemachusPowerDrain.isActive || !TelemachusPowerDrain.activeToggle;
+        }
     }
 
     public class DefaultDataLinkHandler : DataLinkHandler
@@ -410,6 +465,7 @@ namespace Telemachus
 
     public abstract class DataLinkHandler
     {
+
         #region API Delegates
 
         public delegate object APIDelegate(DataSources datasources);
@@ -420,6 +476,12 @@ namespace Telemachus
 
         Dictionary<string, APIEntry> APIEntries =
            new Dictionary<string, APIEntry>();
+        APIEntry nullAPI = new APIEntry(
+                dataSources =>
+                {
+                    return false;
+                },
+                "null", "null");
 
         #endregion
 
@@ -438,7 +500,15 @@ namespace Telemachus
             }
             else
             {
-                result = entry;
+                if (!pausedHandler())
+                {
+                    result = entry;
+                }
+                else
+                {
+                   result =  nullAPI;
+                }
+
                 return true;
             } 
         }
@@ -455,6 +525,11 @@ namespace Telemachus
         protected void registerAPI(APIEntry entry)
         {
             APIEntries.Add(entry.APIString, entry);
+        }
+
+        protected virtual bool pausedHandler()
+        {
+            return false;
         }
 
         #endregion

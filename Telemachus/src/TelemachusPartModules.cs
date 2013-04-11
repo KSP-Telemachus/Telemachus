@@ -51,7 +51,7 @@ namespace Telemachus
 
         static string[] dataUnits = new string[] { "Error", " bit/s", " kbit/s", " Mbit/s", "Gbit/s" };
 
-        static public bool isActive = true, activeToggle = true;
+        static public bool isActive = false, activeToggle = false;
 
         static public float powerConsumption = 0f;
 
@@ -93,7 +93,7 @@ namespace Telemachus
             {
                 float requiredPower = powerConsumption * TimeWarp.deltaTime;
                 float availPower = part.RequestResource("ElectricCharge", requiredPower);
-
+  
                 if (availPower < requiredPower)
                 {
                     isActive = false;

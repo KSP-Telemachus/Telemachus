@@ -9,7 +9,7 @@ function initKSPWAPIPoll(APIString, preUpdate, postUpdate, rawData){
     update();
 
 	function update() {
-	
+
 		if (rawData.length > 1) {
 			preUpdate(rawData);
 		}
@@ -21,12 +21,17 @@ function initKSPWAPIPoll(APIString, preUpdate, postUpdate, rawData){
 
 		var callback = function(response, status){
 			if (status == "success") {
-				p = true;
+				p = false;
 				d = new Object();
 				eval(response);
 
-				if (!p) {
+				if (!p || d.met == 0) {
 					postUpdate(rawData, d);
+				}
+
+				if(d.met == 0)
+				{
+					rawData.length = 2;
 				}
 
 				if (rawData.length > DATA_SIZE) {

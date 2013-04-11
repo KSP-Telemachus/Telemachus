@@ -1,30 +1,23 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Telemachus - Pressure</title>
+  <title>Telemachus - Orbital Inclination</title>
     <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script type="text/javascript" src="jKSPWAPIGraph.js"></script>
-
     <script type="text/javascript">
       google.setOnLoadCallback(onLoad);
 
       function onLoad() {
 
-      initKSPWAPIGraph("datalink?d.t=s.pressure&d.met=v.missionTime&p=p.paused", function(rawData, d){
-     
-      temp = d.t[0];
-      temp.splice(0, 0, "Mission Time");
-      rawData[0] = temp;
-      add = d.t[1];
-      add.splice(0, 0, d.met);
-      rawData.push(add);},
-      [['Mission Time', 'Pressure']],
+      initKSPWAPIGraph("datalink?d.in=o.inclination&d.aop=o.argumentOfPeriapsis&d.met=v.missionTime&p=p.paused", function(rawData, d){
+      rawData.push([d.met, d.in, d.aop]);},
+      [['Mission Time', 'Inclination', 'Argument of Periapsis']],
       {
-      title: 'Pressure Plot',
-      vAxis: { title: 'Pressure' },
+      title: 'Orbital Inclination',
+      vAxis: { title: 'Value (Degrees)' },
       hAxis: { title: 'Mission Time (s)' },
       legend: { position: 'bottom' }
       });

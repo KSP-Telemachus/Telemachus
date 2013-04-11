@@ -76,10 +76,13 @@
   <ItemGroup>
     <Content Include="PluginData\telemachus\altitude.html" />
     <Content Include="PluginData\telemachus\apoapsis-periapsis.html" />
+    <Content Include="PluginData\telemachus\inclination-aop.html" />
     <Content Include="PluginData\telemachus\jKSPWAPICore.js" />
     <Content Include="PluginData\telemachus\jKSPWAPIGraph.js" />
     <Content Include="PluginData\telemachus\config.xml" />
-    <Content Include="PluginData\telemachus\density.html" />
+    <Content Include="PluginData\telemachus\density.html">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="PluginData\telemachus\dynamic-pressure.html" />
     <Content Include="PluginData\telemachus\fit-to-screen.css" />
     <Content Include="PluginData\telemachus\flight-control.html" />
