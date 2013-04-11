@@ -12,3 +12,22 @@
     height: 100%;
     width: 100%;
 }
+
+button
+{
+	width: 100%; 
+	height:100%;
+}
+
+button.onButton {
+    background: green;
+}
+button.offButton {
+    background: red;
+}
+
+table
+{
+	width: 100%; 
+	height:100%;
+}

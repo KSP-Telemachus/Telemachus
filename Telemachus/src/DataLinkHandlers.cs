@@ -9,6 +9,176 @@ using System.Collections;
 
 namespace Telemachus
 {
+
+    public class FlightDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public FlightDataLinkHandler()
+        {
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources => { dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Stage); return 0d; },
+                "f.stage", "Stage"));
+            registerAPI(new APIEntry(
+                dataSources => { throttleUp(); return 0d; },
+                "f.throttleUp", "Throttle Up"));
+            registerAPI(new APIEntry(
+                dataSources => { throttleDown(); return 0d; },
+                "f.throttleDown", "Throttle Down"));
+            registerAPI(new APIEntry(
+                dataSources => { dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.RCS); 
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.RCS]; },
+                "f.rcs", "RCS"));
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.SAS);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.SAS];
+                },
+                "f.sas", "SAS"));
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Light);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Light];
+                },
+                "f.light", "Light"));
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Gear);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Gear];
+                },
+                "f.gear", "Gear"));
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Brakes);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Brakes];
+                },
+                "f.brake", "Brake"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Abort);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Abort];
+                },
+                "f.abort", "Abort"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom01);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom01];
+                },
+                "f.ag1", "AG1"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom02);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom02];
+                },
+                "f.ag2", "AG2"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom03);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom03];
+                },
+                "f.ag3", "AG3"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom04);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom04];
+                },
+                "f.ag4", "AG4"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom05);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom05];
+                },
+                "f.ag5", "AG5"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom06);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom06];
+                },
+                "f.ag6", "AG6"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom07);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom07];
+                },
+                "f.ag7", "AG7"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom08);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom08];
+                },
+                "f.ag8", "AG8"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom09);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom09];
+                },
+                "f.ag9", "AG9"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom10);
+                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom10];
+                },
+                "f.ag10", "AG10"));
+        }
+
+        #endregion
+
+        #region Flight Control
+
+        private void throttleUp()
+        {
+            FlightInputHandler.state.mainThrottle += 0.1f;
+
+            if (FlightInputHandler.state.mainThrottle > 1)
+            {
+                FlightInputHandler.state.mainThrottle = 1;
+            }
+        }
+
+        private void throttleDown()
+        {
+            FlightInputHandler.state.mainThrottle -= 0.1f;
+
+            if (FlightInputHandler.state.mainThrottle < 0)
+            {
+                FlightInputHandler.state.mainThrottle = 0;
+            }
+        }
+
+        #endregion
+    }
+
     public class VesselDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
@@ -83,7 +253,11 @@ namespace Telemachus
     public class SensorDataLinkHandler : DataLinkHandler
     {
 
+        #region Fields
+
         SensorCache sensorCache = new SensorCache();
+
+        #endregion
 
         #region Initialisation
 
@@ -132,8 +306,14 @@ namespace Telemachus
 
     public class SensorCache
     {
+        #region Fields
+
         ReaderWriterLock theLock = new ReaderWriterLock();
         Dictionary<string, List<ModuleEnviroSensor>> sensors = new Dictionary<string, List<ModuleEnviroSensor>>();
+
+        #endregion
+
+        #region Cache
 
         public void refresh(Vessel vessel)
         {
@@ -163,7 +343,6 @@ namespace Telemachus
                         }
                     }
                 }
-
             }
             catch(Exception e)
             {
@@ -175,14 +354,27 @@ namespace Telemachus
 
         public List<ModuleEnviroSensor> get(string ID)
         {
+            List<ModuleEnviroSensor> avail = null, ret = null;
+
             theLock.AcquireReaderLock(0);
 
-            List<ModuleEnviroSensor> ret = new List<ModuleEnviroSensor>(sensors[ID]);                    
+            sensors.TryGetValue(ID, out avail);
+
+            if (avail != null)
+            {
+                ret = new List<ModuleEnviroSensor>(avail);
+            }
+            else
+            {
+                ret = new List<ModuleEnviroSensor>();
+            }
  
             theLock.ReleaseReaderLock();
             
             return ret;
         }
+
+        #endregion
     }
 
     public class PausedDataLinkHandler : DataLinkHandler

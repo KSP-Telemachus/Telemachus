@@ -3,39 +3,89 @@
   <head>
     <title>Telemachus - Flight Control</title>
     <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
-    <script type="text/javascript" src="chart-const.js"></script>
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script type="text/javascript">
 
-        function command(a) {
-            var req = null;
-    
-            try { req = new XMLHttpRequest(); } catch (e) { }
-            if (!req) try { req = new ActiveXObject("Msxml2.XMLHTTP"); } catch (e) { }
-            if (!req) try { req = new ActiveXObject("Microsoft.XMLHTTP"); } catch (e) { }
-            req.open('GET', "datalink?ret=" + a, false);
-            req.send();
+      function command(command) {
 
-            if (req.status != 200) {
-                document.writeln(req.responseText);
-                return false;
-            }
+      KSPWAPICall("datalink?d.ret=" + command, function(d){return;});
+      }
 
-            return true;
-        }
+      function toggle(command, id){
+
+      KSPWAPICall("datalink?d.ret=" + command, function(d){
+      if(d.ret){
+      $(id).removeClass('offButton');
+      $(id).addClass('onButton');
+      }
+      else{
+      $(id).removeClass('onButton');
+      $(id).addClass('offButton');
+      }
+      });
+      }
+
     </script>
   </head>
   <body id="full">
    <div id="main">
-   <table border=0 style="width: 100%; height:100%;">
+   <table border="0">
   <tbody>
     <tr>
-      <td><button onclick="command('fcdl.stage')" style="width: 100%; height:100%;">Stage+</button></td>
-      <td><button onclick="command('fcdl.throttleUp')" style="width: 100%; height:100%;">Throttle+</button></td>
+      <td><button onclick="command('f.stage')">Stage+</button></td>
+      <td><button onclick="command('f.throttleUp')">Throttle+</button></td>
+      <td>
+        <button onclick="command('f.throttleDown')">Throttle-</button>
+      </td>
+      <td>
+        <button id="rcs" class="offButton" onclick="toggle('f.rcs', '#rcs')">RCS</button>
+      </td>
+      <td>
+        <button id="sas" class="offButton" onclick="toggle('f.sas', '#sas')">SAS</button>
+      </td>
+      <td>
+        <button id="light" class="offButton" onclick="toggle('f.light', '#light')">Light</button>
+      </td>
+      <td>
+        <button id="gear" class="offButton" onclick="toggle('f.gear', '#gear')">Landing Gear</button>
+      </td>
+      <td>
+        <button id="brake" class="offButton" onclick="toggle('f.brake', '#brake')">Brake</button>
+      </td>
+      <td>
+        <button id="abort" class="offButton" onclick="toggle('f.abort', '#abort')">Abort</button>
+      </td>
     </tr>
     <tr>
-      <td></td>
-      <td><button onclick="command('fcdl.throttleDown')" style="width: 100%; height:100%;">Throttle-</button</td>
+      <td><button id="ag1" class="offButton" onclick="toggle('f.ag1', '#ag1')">Group 1</button></td>
+      <td>
+        <button id="ag2" class="offButton" onclick="toggle('f.ag2', '#ag2')">Group 2</button>
+      </td>
+      <td>
+        <button id="ag3" class="offButton" onclick="toggle('f.ag3', '#ag3')">Group 3</button>
+      </td>
+      <td>
+        <button id="ag4" class="offButton" onclick="toggle('f.ag4', '#ag4')">Group 4</button>
+      </td>
+      <td>
+        <button id="ag5" class="offButton" onclick="toggle('f.ag5', '#ag5')">Group 5</button>
+      </td>
+      <td>
+        <button id="ag6" class="offButton" onclick="toggle('f.ag6', '#ag6')">Group 6</button>
+      </td>
+      <td>
+        <button id="ag7" class="offButton" onclick="toggle('f.ag7', '#ag7')">Group 7</button>
+      </td>
+      <td>
+        <button id="ag8" class="offButton" onclick="toggle('f.ag8', '#ag8')">Group 8</button>
+      </td>
+      <td>
+        <button id="ag9" class="offButton" onclick="toggle('f.ag9', '#ag9')">Group 9</button>
+      </td>
+      <td>
+        <button id="ag10" class="offButton" onclick="toggle('f.ag10', '#ag10')">Group 10</button>
+      </td>
     </tr>
   </tbody>
 </table>

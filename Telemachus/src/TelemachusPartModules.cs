@@ -10,20 +10,11 @@ using MinimalHTTPServer;
 
 namespace Telemachus
 {
-    public class TelemachusPart : Part
-    {
-        protected override void onFlightStart()
-        {
-            PluginLogger.Log("Flight start");
-            base.onFlightStart();
-        }
-    }
-
-    public class TelemachusDataLink : PartModule, IBasicFlightControl
+    public class TelemachusDataLink : PartModule
     {
         #region Fields
 
-        [KSPEvent(guiActive = true, guiName = "Display Browser")]
+        [KSPEvent(guiActive = true, guiName = "Open Link")]
         public void openBrowser()
         {
             Application.OpenURL("http://" + TelemachusBehaviour.getServerPrimaryIPAddress() + ":"
@@ -49,35 +40,6 @@ namespace Telemachus
         {
             PluginLogger.Log("Loading Partmodule");
             base.OnLoad(node);
-        }
-
-        #endregion
-
-        #region IBasicFlightControl
-
-        public void activateNextStage()
-        {
-            Staging.ActivateNextStage();
-        }
-
-        public void throttleUp()
-        {
-            FlightInputHandler.state.mainThrottle += 0.1f;
-
-            if (FlightInputHandler.state.mainThrottle > 1)
-            {
-                FlightInputHandler.state.mainThrottle = 1;
-            }
-        }
-
-        public void throttleDown()
-        {
-            FlightInputHandler.state.mainThrottle -= 0.1f;
- 
-            if (FlightInputHandler.state.mainThrottle < 0)
-            {
-                FlightInputHandler.state.mainThrottle = 0;
-            }
         }
 
         #endregion

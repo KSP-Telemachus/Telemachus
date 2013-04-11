@@ -81,7 +81,7 @@ namespace Telemachus
                 }
                 else
                 {
-                    return "[[No Sensors], [0]];";
+                    return "[['No Sensors of the Appropriate Type'], [0]];";
                 }
             }
             else

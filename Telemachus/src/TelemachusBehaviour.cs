@@ -130,8 +130,6 @@ namespace Telemachus
             startDataLink();
         }
 
-       
-
         #endregion
 
         #region DataRate

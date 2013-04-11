@@ -53,8 +53,6 @@
     <Compile Include="src\DataLinkHandlers.cs" />
     <Compile Include="src\DataLinkResponsibility.cs" />
     <Compile Include="src\ElseResponsibility.cs" />
-    <Compile Include="src\FlightControlDataLink.cs" />
-    <Compile Include="src\IBasicFlightControl.cs" />
     <Compile Include="src\InformationResponsibility.cs" />
     <Compile Include="src\IOPageResponsibility.cs" />
     <Compile Include="src\PluginLogger.cs" />
@@ -78,7 +76,8 @@
   <ItemGroup>
     <Content Include="PluginData\telemachus\altitude.html" />
     <Content Include="PluginData\telemachus\apoapsis-periapsis.html" />
-    <Content Include="PluginData\telemachus\jKSPWAPI.js" />
+    <Content Include="PluginData\telemachus\jKSPWAPICore.js" />
+    <Content Include="PluginData\telemachus\jKSPWAPIGraph.js" />
     <Content Include="PluginData\telemachus\config.xml" />
     <Content Include="PluginData\telemachus\density.html" />
     <Content Include="PluginData\telemachus\dynamic-pressure.html" />

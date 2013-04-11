@@ -51,6 +51,7 @@ namespace Telemachus
             APIHandlers.Add(new OrbitDataLinkHandler());
             APIHandlers.Add(new SensorDataLinkHandler(vesselChangeDetector));
             APIHandlers.Add(new VesselDataLinkHandler());
+            APIHandlers.Add(new FlightDataLinkHandler());
             APIHandlers.Add(new DefaultDataLinkHandler());
         }
 
