@@ -86,6 +86,19 @@ namespace Telemachus
 
         #endregion
 
+        #region API
+        
+        public void getAPIList(ref List<KeyValuePair<String, String>> APIList)
+        {
+            foreach (DataLinkHandler APIHandler in APIHandlers)
+            {
+                APIHandler.appendAPIList(ref APIList);
+            }
+
+        }
+            
+        #endregion
+
         #region Parse URL
 
         private String argumentsParse(String args, DataSources dataSources)

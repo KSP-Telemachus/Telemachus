@@ -8,13 +8,30 @@ namespace Telemachus
 {
     class InformationResponsibility : IHTTPRequestResponsibility
     {
+        #region Fields
+
+        IOPageResponsibility ipr = null;
+        DataLinkResponsibility dlr = null;
+
+        #endregion
+
+        #region Initialisation
+
+        public InformationResponsibility(IOPageResponsibility ipr, DataLinkResponsibility dlr)
+        {
+            this.ipr = ipr;
+            this.dlr = dlr;
+        }
+
+        #endregion
+
         #region IHTTPRequestResponsibility
 
         public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
             if (request.path.StartsWith("/telemachus/information"))
             {
-                cc.Send((new IOLessInformation()).ToString());
+                cc.Send((new IOLessInformation(ipr, dlr)).ToString());
                 return true;
             }
 
@@ -28,16 +45,21 @@ namespace Telemachus
     {
         #region Constructors
 
-        public IOLessInformation():base("")
+        public IOLessInformation(IOPageResponsibility ipr, DataLinkResponsibility dlr)
+            : base("")
         {
             StringBuilder sb = new StringBuilder();
 
             header(ref sb);
 
-            pages(ref sb);
+            pages(ref sb, ipr.getFiles());
 
 #if (DEBUG)
-            hash(ref sb);
+            hash(ref sb, ipr.getPageHashes());
+
+            List<KeyValuePair<String, String>> APIList = new List<KeyValuePair<String, String>>();
+            dlr.getAPIList(ref APIList);
+            api(ref sb, APIList);
 #endif
             footer(ref sb);
 
@@ -64,11 +86,10 @@ namespace Telemachus
             sb.Append("</br>");
         }
 
-        private void hash(ref StringBuilder sb)
+        private void hash(ref StringBuilder sb, List<String> theHashes)
         {
             sb.Append("<h1>Hash</h1>");
 
-            List<String> theHashes = IOPageResponsibility.getPageHashes();
             foreach (String hash in theHashes)
             {
                 sb.Append("\"" + hash + "\",</br>");
@@ -78,11 +99,23 @@ namespace Telemachus
             sb.Append("</br>");
         }
 
-        private void pages(ref StringBuilder sb)
+        private void api(ref StringBuilder sb, List<KeyValuePair<String, String>> APIList)
+        {
+            sb.Append("<h1>API</h1>");
+
+            foreach (KeyValuePair<String, String> entry in APIList)
+            {
+                sb.Append(entry + "</br>");
+            }
+
+            sb.Append("</br>");
+        }
+
+        private void pages(ref StringBuilder sb, string[] files)
         {
             sb.Append("<h1>Pages</h1>");
 
-            foreach (String page in IOPageResponsibility.files)
+            foreach (String page in files)
             {
                 //Ignore .css and .js
                 if (page.EndsWith(".html"))

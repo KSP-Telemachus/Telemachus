@@ -12,7 +12,7 @@
 
       function onLoad() {
 
-      initKSPWAPIGraph("datalink?d.o=v.orbitalVelocity&d.m=v.surfaceVelocity&d.av=v.angularVelocity&d.sv=v.surfaceSpeed&d.vs=v.verticalSpeed&d.met=v.missionTime&p=p.paused", function(rawData, d){
+      initKSPWAPIGraph("datalink?d.o=v.orbitalVelocity&d.m=v.surfaceVelocity&d.av=v.angularVelocity&d.sv=v.surfaceSpeed&d.vs=v.verticalSpeed&d.met=v.missionTime", function(rawData, d){
       rawData.push([d.met, d.m, d.vs, d.sv, d.av, d.o]);},
       [['Mission Time', 'Actual', 'Vertical', 'Surface', 'Angular', 'Orbital']],
       {

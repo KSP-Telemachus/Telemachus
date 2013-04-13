@@ -51,7 +51,7 @@ namespace Telemachus
 
         static string[] dataUnits = new string[] { "Error", " bit/s", " kbit/s", " Mbit/s", "Gbit/s" };
 
-        static public bool isActive = false, activeToggle = false;
+        static public bool isActive = true, activeToggle = true;
 
         static public float powerConsumption = 0f;
 
@@ -60,6 +60,9 @@ namespace Telemachus
         
         [KSPField]
         public float powerConsumptionBase = 0.02f;
+
+        [KSPField(guiActive = true, guiName = "Status")]
+        string statusString = "";
 
         [KSPField(guiActive = true, guiName = "Power Consumption")]
         string activeReading = "";
@@ -75,6 +78,7 @@ namespace Telemachus
         {
             if (activeToggle)
             {
+                statusString = "Disabled";
                 activeToggle = false;
             }
             else
@@ -96,11 +100,13 @@ namespace Telemachus
   
                 if (availPower < requiredPower)
                 {
+                    statusString = "Insufficient power";
                     isActive = false;
                     telemachusInactive();
                 }
                 else
                 {
+                    statusString = "Enabled";
                     isActive = true;
                     telemachusActive();
                 }

@@ -13,13 +13,13 @@ namespace Telemachus
             new Dictionary<string, string>();
         const String PAGE_PREFIX = "/telemachus";
 
-        public readonly static String[] files = new String[] { "altitude.html", 
+        readonly String[] files = new String[] { "altitude.html", 
                 "g-force.html", "velocity.html", 
                 "fit-to-screen.css", "dynamic-pressure.html", "apoapsis-periapsis.html",
                 "temperature.html", "pressure.html", "gravity.html", "chart-const.js", "density.html", 
                 "time-apoapsis-periapsis.html", "flight-control.html", "inclination-aop.html"};
 
-        static IOPageResponsibility()
+        public IOPageResponsibility()
         {
             String[] hashes = new String[] {"22-4B-9F-81-FA-30-F7-CB-16-BC-1D-CD-63-B9-B3-A9-A5-F7-A4-06",
                                             "AC-35-AB-FA-CE-DD-24-B6-AF-0E-8F-4E-67-43-74-9B-3B-54-88-17",
@@ -76,24 +76,7 @@ namespace Telemachus
             return false;
         }
 
-        private bool checkHash(String contents)
-        {
-            string hash = "";
-            using (var cryptoProvider = new SHA1CryptoServiceProvider())
-            {
-                hash = BitConverter
-                        .ToString(cryptoProvider.ComputeHash(stringToByteArray(contents)));
-            }
-
-            if (hashCheck.ContainsKey(hash))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public static List<String> getPageHashes()
+        public List<String> getPageHashes()
         {
             List<String> theHashes = new List<String>();
 
@@ -117,11 +100,33 @@ namespace Telemachus
             return theHashes;
         }
 
+        public String[] getFiles()
+        {
+            return files;
+        }
+
         private static byte[] stringToByteArray(string str)
         {
             byte[] bytes = new byte[str.Length * sizeof(char)];
             System.Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
             return bytes;
+        }
+
+        private bool checkHash(String contents)
+        {
+            string hash = "";
+            using (var cryptoProvider = new SHA1CryptoServiceProvider())
+            {
+                hash = BitConverter
+                        .ToString(cryptoProvider.ComputeHash(stringToByteArray(contents)));
+            }
+
+            if (hashCheck.ContainsKey(hash))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

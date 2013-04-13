@@ -21,6 +21,7 @@ namespace Telemachus
         private static PluginConfiguration config = PluginConfiguration.CreateForType<TelemachusBehaviour>();
         private static ServerConfiguration serverConfig = new ServerConfiguration();
         private static DataLinkResponsibility dataLinkResponsibility = null;
+        private static IOPageResponsibility ioPageResponsibility = null;
 
         static public string getServerPrimaryIPAddress()
         {
@@ -45,10 +46,11 @@ namespace Telemachus
                     server = new Server(serverConfig);
                     server.OnServerNotify += new Server.ServerNotify(serverOut);
                     server.addHTTPResponsibility(new ElseResponsibility());
-                    server.addHTTPResponsibility(new IOPageResponsibility());
+                    ioPageResponsibility = new IOPageResponsibility();
+                    server.addHTTPResponsibility(ioPageResponsibility);
                     dataLinkResponsibility = new DataLinkResponsibility();
                     server.addHTTPResponsibility(dataLinkResponsibility);
-                    server.addHTTPResponsibility(new InformationResponsibility());
+                    server.addHTTPResponsibility(new InformationResponsibility(ioPageResponsibility, dataLinkResponsibility));
                     server.startServing();
                  
                     PluginLogger.Out("Telemachus data link listening for requests on the following addresses: ("

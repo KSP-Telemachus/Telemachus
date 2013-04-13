@@ -5,7 +5,7 @@ var SPLICE_SIZE = 10;
 var SIG_FIG = 5;
 
 function initKSPWAPIPoll(APIString, preUpdate, postUpdate, rawData){
-
+	APIString = APIString + "&d.p=p.paused"
     update();
 
 	function update() {
@@ -21,17 +21,13 @@ function initKSPWAPIPoll(APIString, preUpdate, postUpdate, rawData){
 
 		var callback = function(response, status){
 			if (status == "success") {
-				p = false;
+				
 				d = new Object();
+				d.p = false;
 				eval(response);
 
-				if (!p || d.met == 0) {
+				if (!d.p) {
 					postUpdate(rawData, d);
-				}
-
-				if(d.met == 0)
-				{
-					rawData.length = 2;
 				}
 
 				if (rawData.length > DATA_SIZE) {

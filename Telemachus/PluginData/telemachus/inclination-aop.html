@@ -12,7 +12,7 @@
 
       function onLoad() {
 
-      initKSPWAPIGraph("datalink?d.in=o.inclination&d.aop=o.argumentOfPeriapsis&d.met=v.missionTime&p=p.paused", function(rawData, d){
+      initKSPWAPIGraph("datalink?d.in=o.inclination&d.aop=o.argumentOfPeriapsis&d.met=v.missionTime", function(rawData, d){
       rawData.push([d.met, d.in, d.aop]);},
       [['Mission Time', 'Inclination', 'Argument of Periapsis']],
       {

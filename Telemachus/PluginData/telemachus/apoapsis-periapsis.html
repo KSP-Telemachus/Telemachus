@@ -12,7 +12,7 @@
 
     function onLoad() {
 
-    initKSPWAPIGraph("datalink?d.pe=o.PeA&d.ap=o.ApA&d.met=v.missionTime&p=p.paused", function(rawData, d){
+    initKSPWAPIGraph("datalink?d.pe=o.PeA&d.ap=o.ApA&d.met=v.missionTime", function(rawData, d){
     rawData.push([d.met, d.pe, d.ap]);},
     [['Mission Time', 'Periapsis', 'Apoapsis']],
     {

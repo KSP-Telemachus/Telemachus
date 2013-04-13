@@ -5,14 +5,23 @@ using System.Text;
 
 public class VesselChangeDetector
 {
+    #region Fields
+
     Vessel previousVessel = null;
     public delegate void VesselChange(Vessel vessel);
     private event VesselChange vesselChangeEvent;
+    public static bool hasTelemachusPart = false;
+
+    #endregion
+
+    #region Events
 
     public void update(Vessel vessel){
 
         if (vessel != null)
         {
+            updateHasTelemachusPart(vessel);
+
             if (previousVessel != null)
             {
                 if (vessel.id != previousVessel.id || vessel.parts.Count != previousVessel.parts.Count)
@@ -41,5 +50,12 @@ public class VesselChangeDetector
             vesselChangeEvent(vessel);
         }
     }
+
+    private void updateHasTelemachusPart(Vessel vessel)
+    {
+        hasTelemachusPart = vessel.parts.FindAll(p => p.Modules.Contains("TelemachusDataLink")).Count > 0;
+    }
+
+    #endregion
 }
 

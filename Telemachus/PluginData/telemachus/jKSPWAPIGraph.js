@@ -1,7 +1,6 @@
 ﻿google.load("visualization", "1", { packages: ["corechart"] });
 
 function initKSPWAPIGraph(APIString, postUpdate, rawData, options){
-	$('#chart_div').html("Link established, waiting for flight start.")
 	chart = new google.visualization.LineChart(document.getElementById('chart_div'));
 	var postUpdateComposition = function(rawData, d){postUpdate(rawData, d); appendCurrentValueToLegend(rawData);};
 	initKSPWAPIPoll(APIString, function(rawData){drawChart(rawData);}, postUpdateComposition, rawData)

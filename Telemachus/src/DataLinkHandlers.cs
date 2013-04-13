@@ -322,7 +322,7 @@ namespace Telemachus
 
         protected List<ModuleEnviroSensor> getsSensorValues(DataSources datasources, string ID)
         {
-            return sensorCache.get(ID);
+            return sensorCache.get(ID, datasources);
         }
 
         #endregion
@@ -331,7 +331,7 @@ namespace Telemachus
 
         private void vesselChanged(Vessel vessel)
         {
-            sensorCache.refresh(vessel);
+            sensorCache.setDirty();
         }
 
         #endregion
@@ -341,16 +341,38 @@ namespace Telemachus
     {
         #region Fields
 
-        ReaderWriterLock theLock = new ReaderWriterLock();
+        ReaderWriterLock updateLock = new ReaderWriterLock(), dirtyLock = new ReaderWriterLock();
         Dictionary<string, List<ModuleEnviroSensor>> sensors = new Dictionary<string, List<ModuleEnviroSensor>>();
+        bool isDirty = true;
 
         #endregion
 
         #region Cache
 
-        public void refresh(Vessel vessel)
+        private void setDirty(bool value)
         {
-            theLock.AcquireWriterLock(0);
+            dirtyLock.AcquireWriterLock(0);
+            isDirty = value;
+            dirtyLock.ReleaseWriterLock();
+        }
+
+        private bool checkDirty()
+        {
+            dirtyLock.AcquireReaderLock(0);
+            bool ret = isDirty;
+            dirtyLock.ReleaseReaderLock();
+
+            return ret;
+        }
+
+        public void setDirty()
+        {
+            setDirty(true);
+        }
+
+        public void refresh(Vessel vessel, ReaderWriterLock inputLock)
+        {
+            LockCookie lockCookie = inputLock.UpgradeToWriterLock(0);
 
             try
             {
@@ -382,14 +404,19 @@ namespace Telemachus
                 PluginLogger.Log(e.Message);
             }
 
-            theLock.ReleaseWriterLock();
+            updateLock.DowngradeFromWriterLock(ref lockCookie);
         }
 
-        public List<ModuleEnviroSensor> get(string ID)
+        public List<ModuleEnviroSensor> get(string ID, DataSources dataSources)
         {
             List<ModuleEnviroSensor> avail = null, ret = null;
 
-            theLock.AcquireReaderLock(0);
+            updateLock.AcquireReaderLock(0);
+
+            if (checkDirty())
+            {
+                refresh(dataSources.vessel, updateLock);
+            }
 
             sensors.TryGetValue(ID, out avail);
 
@@ -402,7 +429,7 @@ namespace Telemachus
                 ret = new List<ModuleEnviroSensor>();
             }
  
-            theLock.ReleaseReaderLock();
+            updateLock.ReleaseReaderLock();
             
             return ret;
         }
@@ -439,7 +466,7 @@ namespace Telemachus
         protected void buildAPI()
         {
             registerAPI(new APIEntry(
-                dataSources => { return FlightDriver.Pause ||  partPaused(); },
+                dataSources => { return partPaused(); },
                 "p.paused", "Paused"));
         }
 
@@ -447,7 +474,10 @@ namespace Telemachus
 
         public static bool partPaused()
         {
-            return !TelemachusPowerDrain.isActive || !TelemachusPowerDrain.activeToggle;
+            return FlightDriver.Pause ||  
+                !TelemachusPowerDrain.isActive || 
+                !TelemachusPowerDrain.activeToggle || 
+                !VesselChangeDetector.hasTelemachusPart;
         }
     }
 
@@ -474,7 +504,7 @@ namespace Telemachus
 
         #region API Fields
 
-        Dictionary<string, APIEntry> APIEntries =
+        private Dictionary<string, APIEntry> APIEntries =
            new Dictionary<string, APIEntry>();
         APIEntry nullAPI = new APIEntry(
                 dataSources =>
@@ -515,10 +545,12 @@ namespace Telemachus
 
         public void appendAPIList(ref List<KeyValuePair<String, String>> APIList)
         {
-            while(APIEntries.GetEnumerator().MoveNext())
+           
+            foreach (KeyValuePair<String, APIEntry> entry in APIEntries)
             {
-                APIList.Add(new KeyValuePair<string, string>(
-                    APIEntries.GetEnumerator().Current.Key, APIEntries.GetEnumerator().Current.Value.name));
+
+                    APIList.Add(new KeyValuePair<string, string>(
+                        entry.Key, entry.Value.name));
             }
         }
 
