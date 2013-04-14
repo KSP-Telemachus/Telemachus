@@ -22,7 +22,9 @@ namespace Telemachus
         protected void buildAPI()
         {
             registerAPI(new APIEntry(
-                dataSources => { Staging.ActivateNextStage(); return 0d; },
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("stage", new APIEntry(
+                 (x) => { Staging.ActivateNextStage(); return 0d; },
+                "f.stage", "Stage"),UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d; },
                 "f.stage", "Stage"));
             registerAPI(new APIEntry(
                 dataSources => { throttleUp(); return 0d; },

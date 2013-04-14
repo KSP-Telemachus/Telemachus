@@ -147,5 +147,28 @@ namespace Telemachus
         }
 
         #endregion
+
+        List<APIEntry> actionQueue = new List<APIEntry>();
+
+        public void Update()
+        {
+            lock (actionQueue)
+            {
+                foreach (APIEntry entry in actionQueue)
+                {
+                    entry.function(null);
+                }
+
+                actionQueue.Clear();
+            }
+        }
+
+        public void stage(APIEntry entry)
+        {
+            lock (actionQueue)
+            {
+                actionQueue.Add(entry);
+            }
+        }
     }
 }

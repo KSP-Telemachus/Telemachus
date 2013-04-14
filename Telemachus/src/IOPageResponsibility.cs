@@ -58,10 +58,11 @@ namespace Telemachus
 
                     String fileContents = textReader.ReadToEnd();
 #if (!DEBUG)
-                    if(!checkHash(fileContents))
-                    {
-                        return false;
-                    }
+
+                    //if(!checkHash(fileContents))
+                    //{
+                    //    return false;
+                    //}
 #endif
 
                     cc.Send(new OKPage(fileContents, fileName).ToString());
