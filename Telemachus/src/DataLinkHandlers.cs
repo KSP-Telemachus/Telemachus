@@ -9,7 +9,6 @@ using System.Collections;
 
 namespace Telemachus
 {
-
     public class FlightDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
@@ -22,143 +21,120 @@ namespace Telemachus
         protected void buildAPI()
         {
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("stage", new APIEntry(
-                 (x) => { Staging.ActivateNextStage(); return 0d; },
-                "f.stage", "Stage"),UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d; },
-                "f.stage", "Stage"));
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => { Staging.ActivateNextStage(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                }, "f.stage", "Stage"));
+
             registerAPI(new APIEntry(
-                dataSources => { throttleUp(); return 0d; },
+               dataSources =>
+               {
+                   TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                       (x) => { throttleUp(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+               },
                 "f.throttleUp", "Throttle Up"));
+
             registerAPI(new APIEntry(
-                dataSources => { throttleZero(); return 0d; },
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { throttleZero(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
                 "f.throttleZero", "Throttle Zero"));
+
             registerAPI(new APIEntry(
-                dataSources => { throttleFull(); return 0d; },
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { throttleFull(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
                 "f.throttleFull", "Throttle Full"));
 
             registerAPI(new APIEntry(
-                dataSources => { throttleDown(); return 0d; },
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { throttleDown(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
                 "f.throttleDown", "Throttle Down"));
+
             registerAPI(new APIEntry(
-                dataSources => { dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.RCS); 
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.RCS]; },
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.RCS); return 0d; }), 
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
+                },
                 "f.rcs", "RCS"));
+
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.SAS);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.SAS];
-                },
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.SAS),
                 "f.sas", "SAS"));
+
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Light);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Light];
-                },
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.Light),
                 "f.light", "Light"));
+
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Gear);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Gear];
-                },
+               buildActionGroupToggleDelayedLamda(KSPActionGroup.Gear),
                 "f.gear", "Gear"));
+
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Brakes);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Brakes];
-                },
+               buildActionGroupToggleDelayedLamda(KSPActionGroup.Brakes),
                 "f.brake", "Brake"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Abort);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Abort];
-                },
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.Abort),
                 "f.abort", "Abort"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom01);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom01];
-                },
+               buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom01),
                 "f.ag1", "AG1"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom02);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom02];
-                },
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom02),
                 "f.ag2", "AG2"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom03);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom03];
-                },
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom03),
                 "f.ag3", "AG3"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom04);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom04];
-                },
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom04),
                 "f.ag4", "AG4"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom05);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom05];
-                },
+               buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom05),
                 "f.ag5", "AG5"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom06);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom06];
-                },
+               buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom06),
                 "f.ag6", "AG6"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom07);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom07];
-                },
+               buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom07),
                 "f.ag7", "AG7"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom08);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom08];
-                },
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom08),
                 "f.ag8", "AG8"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom09);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom09];
-                },
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom09),
                 "f.ag9", "AG9"));
 
             registerAPI(new APIEntry(
-                dataSources =>
-                {
-                    dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.Custom10);
-                    return dataSources.vessel.ActionGroups[KSPActionGroup.Custom10];
-                },
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom10),
                 "f.ag10", "AG10"));
+        }
+
+        private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
+        {
+            return dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { dataSources.vessel.ActionGroups.ToggleGroup(actionGroup); return 0d; }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
+                };
         }
 
         #endregion
@@ -171,7 +147,6 @@ namespace Telemachus
         }
 
         #endregion
-
 
         #region Flight Control
 
@@ -474,6 +449,8 @@ namespace Telemachus
 
         #endregion
 
+        #region Methods
+
         public static bool partPaused()
         {
             return FlightDriver.Pause ||  
@@ -481,6 +458,8 @@ namespace Telemachus
                 !TelemachusPowerDrain.activeToggle || 
                 !VesselChangeDetector.hasTelemachusPart;
         }
+
+        #endregion
     }
 
     public class DefaultDataLinkHandler : DataLinkHandler
@@ -586,6 +565,41 @@ namespace Telemachus
             this.function = function;
             this.APIString = APIString;
             this.name = name;
+        }
+
+        #endregion
+    }
+
+    public class DelayedAPIEntry : APIEntry
+    {
+        #region Fields
+
+        private DataSources dataSources = null;
+
+        #endregion
+
+        #region Initialisation
+
+        public DelayedAPIEntry(DataSources dataSources, DataLinkHandler.APIDelegate function)
+            :base(function, "", "")
+        {
+            this.dataSources = dataSources;
+        }
+
+        #endregion
+
+        #region Methods
+
+        public void call()
+        {
+            try
+            {
+                function(dataSources);
+            }
+            catch (Exception e)
+            {
+                PluginLogger.Log(e.Message);
+            }
         }
 
         #endregion

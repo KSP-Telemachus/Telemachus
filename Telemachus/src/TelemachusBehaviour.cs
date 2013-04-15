@@ -12,6 +12,7 @@ namespace Telemachus
         #region Fields
 
         public static GameObject instance;
+        private DelayedAPIRunner delayedAPIRunner = new DelayedAPIRunner();
 
         #endregion
 
@@ -132,6 +133,11 @@ namespace Telemachus
             startDataLink();
         }
 
+        public void Update()
+        {
+            delayedAPIRunner.execute();
+        }
+
         #endregion
 
         #region DataRate
@@ -148,27 +154,47 @@ namespace Telemachus
 
         #endregion
 
-        List<APIEntry> actionQueue = new List<APIEntry>();
+        #region Delayed API Runner
 
-        public void Update()
+        public void queueDelayedAPI(DelayedAPIEntry entry)
+        {
+            delayedAPIRunner.queue(entry);
+        }
+
+        #endregion
+    }
+
+    public class DelayedAPIRunner
+    {
+        #region Fields
+
+        List<DelayedAPIEntry> actionQueue = new List<DelayedAPIEntry>();
+
+        #endregion
+
+        #region Methods
+
+        public void execute()
         {
             lock (actionQueue)
             {
-                foreach (APIEntry entry in actionQueue)
+                foreach (DelayedAPIEntry entry in actionQueue)
                 {
-                    entry.function(null);
+                    entry.call();
                 }
 
                 actionQueue.Clear();
             }
         }
 
-        public void stage(APIEntry entry)
+        public void queue(DelayedAPIEntry delayedAPIEntry)
         {
-            lock (actionQueue)
+             lock (actionQueue)
             {
-                actionQueue.Add(entry);
+                actionQueue.Add(delayedAPIEntry);
             }
         }
+
+        #endregion
     }
 }
