@@ -16,8 +16,8 @@ namespace Telemachus
         readonly String[] files = new String[] { "altitude.html", 
                 "g-force.html", "velocity.html", 
                 "fit-to-screen.css", "dynamic-pressure.html", "apoapsis-periapsis.html",
-                "temperature.html", "pressure.html", "gravity.html", "chart-const.js", "density.html", 
-                "time-apoapsis-periapsis.html", "flight-control.html", "inclination-aop.html"};
+                "temperature.html", "pressure.html", "gravity.html", "density.html", 
+                "time-apoapsis-periapsis.html", "flight-control.html", "inclination-aop.html", "smart-ass.html"};
 
         public IOPageResponsibility()
         {

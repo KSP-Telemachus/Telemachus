@@ -85,6 +85,6 @@ function sigFigs(n, sig) {
 
 function KSPAPILog(msg) {
     setTimeout(function() {
-        throw new Error([jKSPWAPI] + msg);
+        throw new Error("[jKSPWAPI]" + msg);
     }, 0);
 }
