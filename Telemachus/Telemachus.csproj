@@ -76,7 +76,9 @@
   <ItemGroup>
     <Content Include="PluginData\telemachus\altitude.html" />
     <Content Include="PluginData\telemachus\apoapsis-periapsis.html" />
-    <Content Include="PluginData\telemachus\smart-ass.html" />
+    <Content Include="PluginData\telemachus\smart-ass.html">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="PluginData\telemachus\inclination-aop.html" />
     <Content Include="PluginData\telemachus\jKSPWAPICore.js" />
     <Content Include="PluginData\telemachus\jKSPWAPIGraph.js" />
