@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <title>Smart A.S.S.
+        </title>
+      
+        <link rel="stylesheet" href="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+        <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="jKSPWAPICore.js"></script>
+        <script src="https://s3.amazonaws.com/codiqa-cdn/jquery-1.7.2.min.js">
+        </script>
+        <script src="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.js">
+        </script>
+
+        <script>
+          function command(command) {
+            KSPWAPICall("datalink?d.ret=" + command, function(d){return;});
+          }
+
+          function execute(){
+            KSPWAPICall("datalink?d.ret=mj.surface[" + $('#heading').val() + "," + $('#pitch').val() + "]" , function(d){return;});
+          }
+        </script>
+    </head>
+    <body>
+        <!-- Home -->
+        <div data-role="page" id="page1">
+            <div data-role="content">
+              <input type="submit" data-inline="true"  data-iconpos="bottom" value="Off" onclick="command('mj.smartassoff')"/>
+              <input type="submit" data-inline="true" data-iconpos="bottom" value="Node"  onclick="command('mj.node')" />
+
+                <input type="submit" data-inline="true" data-icon="forward" data-iconpos="bottom" value="Retrograde" onclick="command('mj.retrograde')"/>
+                <input type="submit" data-inline="true" data-icon="back" data-iconpos="bottom" value="Prograde"  onclick="command('mj.prograde')" />
+                <input type="submit" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Normal" onclick="command('mj.normalplus')"/>
+                <input type="submit" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Normal" onclick="command('mj.normalminus')"/>
+                <input type="submit" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialplus')"/>
+                <input type="submit" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialminus')"/>
+
+                <div data-role="fieldcontain">
+                    <label for="slider2">
+                        Pitch
+                    </label>
+                    <input id="pitch" type="range" name="slider" value="90" min="0" max="360" data-highlight="false" />
+                </div>
+                <div data-role="fieldcontain">
+                    <label for="slider1">
+                        Heading
+                    </label>
+                    <input id="heading" type="range" name="slider" value="90" min="0" max="360" data-highlight="false" />
+                </div>
+                <input type="submit" value="Execute" onclick="execute()"/>
+            </div>
+        </div>
+    </body>
+</html>

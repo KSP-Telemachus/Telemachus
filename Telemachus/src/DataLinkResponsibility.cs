@@ -17,7 +17,6 @@ namespace Telemachus
         public const char ARGUMENTS_ASSIGN = '=';
         public const char ARGUMENTS_DELIMETER = '&';
         public const char ACCESS_DELIMITER = '.';
-        public const int INFINITE_WAIT = -1;
 
         #endregion
 
@@ -52,6 +51,7 @@ namespace Telemachus
             APIHandlers.Add(new SensorDataLinkHandler(vesselChangeDetector));
             APIHandlers.Add(new VesselDataLinkHandler());
             APIHandlers.Add(new FlightDataLinkHandler());
+            APIHandlers.Add(new MechJebDataLinkHandler());
             APIHandlers.Add(new ResourceDataLinkHandler());
             APIHandlers.Add(new DefaultDataLinkHandler());
         }
@@ -108,7 +108,10 @@ namespace Telemachus
 
             foreach (String arg in argsSplit)
             {
-                sb.Append(argumentParse(arg, dataSources));
+                string refArg = arg;
+                PluginLogger.Log("[Telemachus]" + refArg);
+                parseParams(ref refArg, ref dataSources);
+                sb.Append(argumentParse(refArg, dataSources));
 
                 //Only parse the paused argument if the active vessel is null
                 if (dataSources.vessel == null)
@@ -118,6 +121,32 @@ namespace Telemachus
             }
 
             return sb.ToString();
+        }
+
+        private void parseParams(ref String arg, ref DataSources dataSources)
+        {
+            dataSources.args.Clear();
+
+            try
+            {
+                if (arg.Contains("["))
+                {
+                    
+                    String[] argsSplit = arg.Split('[');
+                    argsSplit[1] = argsSplit[1].Substring(0, argsSplit[1].Length - 1);
+                    arg = argsSplit[0];
+                    String[] paramSplit = argsSplit[1].Split(',');
+
+                    for (int i = 0; i < paramSplit.Length; i++)
+                    {
+                        dataSources.args.Add(paramSplit[i]);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                PluginLogger.Log("[Telemachus] " + e.Message + " " + e.StackTrace);
+            }
         }
 
         private String argumentParse(String args, DataSources dataSources)
@@ -146,6 +175,7 @@ namespace Telemachus
         #region Fields
 
         public Vessel vessel;
+        public List<String> args = new List<String>();
 
         #endregion
     }

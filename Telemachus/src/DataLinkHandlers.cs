@@ -6,9 +6,172 @@ using System.Reflection;
 using MinimalHTTPServer;
 using System.Threading;
 using System.Collections;
+using UnityEngine;
 
 namespace Telemachus
 {
+    public class MechJebDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public MechJebDataLinkHandler()
+        {
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => { return reflectOff(dataSources); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.smartassoff", "Smart ASS Off"));
+
+            registerAPI(new APIEntry(
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => { return reflectAttitudeTo(dataSources, Vector3d.forward, "MANEUVER_NODE"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.node", "Node"));
+
+            registerAPI(new APIEntry(
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => { return reflectAttitudeTo(dataSources, Vector3d.forward, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.prograde", "Prograde"));
+
+            registerAPI(new APIEntry(
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => { return reflectAttitudeTo(dataSources, Vector3d.back, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.retrograde", "Retrograde"));
+
+            registerAPI(new APIEntry(
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => {  return reflectAttitudeTo(dataSources, Vector3d.left, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.normalplus", "Normal Plus"));
+
+            registerAPI(new APIEntry(
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => {  return reflectAttitudeTo(dataSources, Vector3d.right, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.normalminus", "Normal Minus"));
+
+            registerAPI(new APIEntry(
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => {  return reflectAttitudeTo(dataSources, Vector3d.up, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.radialplus", "Radial Plus"));
+
+            registerAPI(new APIEntry(
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => {  return reflectAttitudeTo(dataSources, Vector3d.down, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.radialminus", "Radial Minus"));
+
+            registerAPI(new APIEntry(
+                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                 (x) => {  return surface(dataSources); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.surface", "Surface"));
+        }
+
+        #endregion
+
+        #region Flight Control
+
+        private bool surface(DataSources dataSources)
+        {
+            Quaternion r = Quaternion.AngleAxis(float.Parse(dataSources.args[0]), Vector3.up) * Quaternion.AngleAxis(-float.Parse(dataSources.args[1]), Vector3.right);
+            return reflectAttitudeTo(dataSources, r * Vector3d.forward, "SURFACE_NORTH");
+        }
+
+        private bool reflectOff(DataSources dataSources)
+        {
+            object attitude = null;
+            Type attitudeType = getAttitudeType(dataSources, ref attitude);
+            if (attitudeType != null)
+            {
+                MethodInfo methodInfo = attitudeType.GetMethod("attitudeDeactivate");
+                methodInfo.Invoke(attitude, new object [] {});
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool reflectAttitudeTo(DataSources dataSources, Vector3d v, string reference)
+        {
+            object attitude = null;
+
+            Type attitudeType = getAttitudeType(dataSources, ref attitude);
+            if(attitudeType != null)
+            {
+                Type attitudeReferenceType = attitude.GetType().GetProperty("attitudeReference",
+                    BindingFlags.Public | BindingFlags.Instance).GetValue(attitude, null).GetType();
+            
+            
+                MethodInfo methodInfo = attitudeType.GetMethod("attitudeTo", new[] { typeof(Vector3d), 
+                            attitudeReferenceType, typeof(object) });
+
+                methodInfo.Invoke(attitude, new object[] { v, Enum.Parse(attitudeReferenceType, reference), this });
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private Type getAttitudeType(DataSources dataSources, ref object attitude)
+        {
+            PartModule mechJebCore = findMechJeb(dataSources.vessel);
+
+            if (mechJebCore == null)
+            {
+                PluginLogger.Log("[Telemachus] No Mechjeb part installed.");
+                return null;
+            }
+            else
+            {
+                try
+                {   
+                    PluginLogger.Log("[Telemachus] Mechjeb part installed, reflecting.");
+                    Type mechJebCoreType = mechJebCore.GetType();
+                    FieldInfo attitudeField = mechJebCoreType.GetField("attitude", BindingFlags.Public | BindingFlags.Instance);
+                    attitude = attitudeField.GetValue(mechJebCore);
+
+                    Type attitudeReferenceType = attitude.GetType().GetProperty("attitudeReference",
+                        BindingFlags.Public | BindingFlags.Instance).GetValue(attitude, null).GetType();
+
+                    return attitude.GetType();
+                }
+                catch (Exception e)
+                {
+                    PluginLogger.Log("[Telemachus]" + e.Message + " " +  e.StackTrace);
+                }
+
+                return null;
+            }
+        }
+
+        private static PartModule findMechJeb(Vessel vessel)
+        {
+            List<Part> pl = vessel.parts.FindAll(p => p.Modules.Contains("MechJebCore"));
+
+            foreach (PartModule m in pl[0].Modules)
+            {
+                if (m.GetType().Name.Equals("MechJebCore"))
+                {
+                    return m;
+                }
+            }
+
+            return null;
+        }
+  
+        #endregion
+    }
+
     public class FlightDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
@@ -328,14 +491,14 @@ namespace Telemachus
 
         private void setDirty(bool value)
         {
-            dirtyLock.AcquireWriterLock(0);
+            dirtyLock.AcquireWriterLock(Timeout.Infinite);
             isDirty = value;
             dirtyLock.ReleaseWriterLock();
         }
 
         private bool checkDirty()
         {
-            dirtyLock.AcquireReaderLock(0);
+            dirtyLock.AcquireReaderLock(Timeout.Infinite);
             bool ret = isDirty;
             dirtyLock.ReleaseReaderLock();
 
@@ -349,7 +512,7 @@ namespace Telemachus
 
         public void refresh(Vessel vessel, ReaderWriterLock inputLock)
         {
-            LockCookie lockCookie = inputLock.UpgradeToWriterLock(0);
+            LockCookie lockCookie = inputLock.UpgradeToWriterLock(Timeout.Infinite);
 
             try
             {
@@ -388,7 +551,7 @@ namespace Telemachus
         {
             List<ModuleEnviroSensor> avail = null, ret = null;
 
-            updateLock.AcquireReaderLock(0);
+            updateLock.AcquireReaderLock(Timeout.Infinite);
 
             if (checkDirty())
             {
