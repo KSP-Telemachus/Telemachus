@@ -54,13 +54,10 @@ namespace Telemachus
 
             pages(ref sb, ipr.getFiles());
 
-#if (DEBUG)
-            hash(ref sb, ipr.getPageHashes());
-
             List<KeyValuePair<String, String>> APIList = new List<KeyValuePair<String, String>>();
             dlr.getAPIList(ref APIList);
             api(ref sb, APIList);
-#endif
+
             footer(ref sb);
 
             content = sb.ToString();

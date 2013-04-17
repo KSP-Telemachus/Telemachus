@@ -73,7 +73,7 @@ namespace Telemachus
                 dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                  (x) => {  return surface(dataSources); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
-               "mj.surface", "Surface"));
+               "mj.surface", "Surface [float heading, float pitch]"));
         }
 
         #endregion
@@ -187,6 +187,22 @@ namespace Telemachus
                 dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                  (x) => { Staging.ActivateNextStage(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 }, "f.stage", "Stage"));
+
+            registerAPI(new APIEntry(
+               dataSources =>
+               {
+                   TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                       (x) => { setThrottle(x); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+               },
+                "f.setThrottle", "Set Throttle [float magnitude]"));
+
+            registerAPI(new APIEntry(
+               dataSources =>
+               {
+                   float t = FlightInputHandler.state.mainThrottle;
+                   return t;
+                },
+                "f.throttle", "Throttle"));
 
             registerAPI(new APIEntry(
                dataSources =>
@@ -343,6 +359,11 @@ namespace Telemachus
             FlightInputHandler.state.mainThrottle = 1f;
         }
 
+        private void setThrottle(DataSources dataSources)
+        {
+            FlightInputHandler.state.mainThrottle = float.Parse(dataSources.args[0]);
+        }
+
         #endregion
     }
 
@@ -383,7 +404,7 @@ namespace Telemachus
                 "v.verticalSpeed", "Vertical Speed"));
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.atmDensity; },
-                "v.atmosphericDensity", "Atmospheric Density"));
+                "v.atmosphericDensity", "Atmospheric Density"));  
         }
 
         #endregion

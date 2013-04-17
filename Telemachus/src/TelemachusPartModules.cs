@@ -45,13 +45,43 @@ namespace Telemachus
         #endregion
     }
 
+    public class TelemachusModuleAnimateGeneric : ModuleAnimateGeneric
+    {
+        #region Part Events
+
+        public override void OnUpdate()
+        {
+            if (animSwitch == TelemachusPowerDrain.activeToggle)
+            {
+                if(status.Equals("Locked"))
+                {
+                    Toggle();
+                }
+            }
+            
+            foreach(BaseEvent theEvent in Events)
+            {
+                theEvent.guiActive = false;
+            }
+                
+            base.OnUpdate();
+        }
+
+        #endregion
+    }
+
     public class TelemachusPowerDrain : PartModule
     {
         #region Fields
 
         static string[] dataUnits = new string[] { "Error", " bit/s", " kbit/s", " Mbit/s", "Gbit/s" };
 
-        static public bool isActive = true, activeToggle = true;
+        
+        static public bool isActive = true;
+
+        //On by default
+        [KSPField(isPersistant = true)]
+        static public bool activeToggle = true;
 
         static public float powerConsumption = 0f;
 
@@ -61,8 +91,8 @@ namespace Telemachus
         [KSPField]
         public float powerConsumptionBase = 0.02f;
 
-        [KSPField(guiActive = true, guiName = "Status")]
-        string statusString = "";
+        [KSPField(guiActive = true, guiName = "Antenna Status")]
+        string statusString = "Disabled";
 
         [KSPField(guiActive = true, guiName = "Power Consumption")]
         string activeReading = "";
@@ -78,11 +108,13 @@ namespace Telemachus
         {
             if (activeToggle)
             {
+                
                 statusString = "Disabled";
                 activeToggle = false;
             }
             else
             {
+                
                 activeToggle = true;
             }
         }
@@ -97,7 +129,7 @@ namespace Telemachus
             {
                 float requiredPower = powerConsumption * TimeWarp.deltaTime;
                 float availPower = part.RequestResource("ElectricCharge", requiredPower);
-  
+
                 if (availPower < requiredPower)
                 {
                     statusString = "Insufficient power";
@@ -113,7 +145,7 @@ namespace Telemachus
             }
             else
             {
-                 telemachusInactive();
+                telemachusInactive();
             }
         }
 
