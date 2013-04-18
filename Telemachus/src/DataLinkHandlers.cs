@@ -74,6 +74,16 @@ namespace Telemachus
                  (x) => {  return surface(dataSources); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.surface", "Surface [float heading, float pitch]"));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return reflectAttitudeTo(dataSources, double.Parse(dataSources.args[0]), 
+                            double.Parse(dataSources.args[1]), double.Parse(dataSources.args[2])
+                            ); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                },
+               "mj.surface2", "Surface [double heading, double pitch, double roll]"));
         }
 
         #endregion
@@ -115,6 +125,24 @@ namespace Telemachus
                             attitudeReferenceType, typeof(object) });
 
                 methodInfo.Invoke(attitude, new object[] { v, Enum.Parse(attitudeReferenceType, reference), this });
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool reflectAttitudeTo(DataSources dataSources, double heading, double pitch, double roll)
+        {
+            object attitude = null;
+
+            Type attitudeType = getAttitudeType(dataSources, ref attitude);
+            if (attitudeType != null)
+            {
+                MethodInfo methodInfo = attitudeType.GetMethod("attitudeTo", new[] { typeof(double),
+                    typeof(double),typeof(double), typeof(object) });
+
+                methodInfo.Invoke(attitude, new object[] { heading, pitch , roll, this });
 
                 return true;
             }
@@ -367,6 +395,54 @@ namespace Telemachus
         #endregion
     }
 
+    public class TimeWarpDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public TimeWarpDataLinkHandler()
+        {
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { TimeWarp.SetRate(int.Parse(x.args[0]),false); return 0d; }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
+                },
+                "t.timeWarp", "Time Warp (int rate)"));
+        }
+
+
+        #endregion
+
+    }
+
+    public class BodyDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public BodyDataLinkHandler()
+        {
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.orbit.referenceBody.name; },
+                "b.name", "Body Name"));
+            registerAPI(new APIEntry(
+               dataSources => { return dataSources.vessel.orbit.referenceBody.position; },
+               "b.position", "Body Position"));
+        }
+
+        #endregion
+    }
+
     public class VesselDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
@@ -404,7 +480,7 @@ namespace Telemachus
                 "v.verticalSpeed", "Vertical Speed"));
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.atmDensity; },
-                "v.atmosphericDensity", "Atmospheric Density"));  
+                "v.atmosphericDensity", "Atmospheric Density"));
         }
 
         #endregion
@@ -500,11 +576,18 @@ namespace Telemachus
 
     public class SensorCache
     {
+        #region Constants
+
+        const int ACCESS_REFRESH = 200;
+
+        #endregion
+
         #region Fields
 
         ReaderWriterLock updateLock = new ReaderWriterLock(), dirtyLock = new ReaderWriterLock();
         Dictionary<string, List<ModuleEnviroSensor>> sensors = new Dictionary<string, List<ModuleEnviroSensor>>();
         bool isDirty = true;
+        int accesses = 0;
 
         #endregion
 
@@ -570,6 +653,13 @@ namespace Telemachus
 
         public List<ModuleEnviroSensor> get(string ID, DataSources dataSources)
         {
+            accesses++;
+
+            if (accesses > ACCESS_REFRESH)
+            {
+                setDirty();
+            }
+
             List<ModuleEnviroSensor> avail = null, ret = null;
 
             updateLock.AcquireReaderLock(Timeout.Infinite);

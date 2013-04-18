@@ -18,11 +18,11 @@
 
         <script>
           function command(command) {
-            KSPWAPICall("datalink?d.ret=" + command, function(d){return;});
+          KSPWAPICall("datalink?d.ret=" + command, function(d){return;});
           }
 
           function execute(){
-            KSPWAPICall("datalink?d.ret=mj.surface[" + $('#heading').val() + "," + $('#pitch').val() + "]" , function(d){return;});
+          KSPWAPICall("datalink?d.ret=mj.surface2[" + $('#heading').val() + "," + $('#pitch').val() + "," + $('#roll').val() + "]" , function(d){return;});
           }
         </script>
     </head>
@@ -39,7 +39,7 @@
                 <input type="submit" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Normal" onclick="command('mj.normalminus')"/>
                 <input type="submit" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialplus')"/>
                 <input type="submit" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialminus')"/>
-
+              <center>
                 <div data-role="fieldcontain">
                     <label for="slider2">
                         Pitch
@@ -52,6 +52,13 @@
                     </label>
                     <input id="heading" type="range" name="slider" value="90" min="0" max="360" data-highlight="false" />
                 </div>
+              <div data-role="fieldcontain">
+                <label for="slider3">
+                  Roll
+                </label>
+                <input id="roll" type="range" name="slider" value="90" min="0" max="360" data-highlight="false" />
+              </div>
+              </center>
                 <input type="submit" value="Execute" onclick="execute()"/>
             </div>
         </div>

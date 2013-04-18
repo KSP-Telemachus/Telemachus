@@ -91,16 +91,16 @@ namespace Telemachus
         [KSPField]
         public float powerConsumptionBase = 0.02f;
 
-        [KSPField(guiActive = true, guiName = "Antenna Status")]
+        [KSPField(guiActive = true, guiName = "Data Link Status")]
         string statusString = "Disabled";
 
         [KSPField(guiActive = true, guiName = "Power Consumption")]
         string activeReading = "";
 
-        [KSPField(guiActive = true, guiName = "Uplink Rate")]
+        [KSPField(guiActive = true, guiName = "Up Link Rate")]
         string uplinkReading = "";
 
-        [KSPField(guiActive = true, guiName = "Downlink Rate")]
+        [KSPField(guiActive = true, guiName = "Down Link Rate")]
         string downlinkReading = "";
 
         [KSPEvent(guiActive = true, guiName = "Enable/Disable Data Link")]

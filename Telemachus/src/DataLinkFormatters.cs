@@ -17,6 +17,11 @@ namespace Telemachus
             {
                 return "'" + input.ToString() + "'" + JAVASCRIPT_DELIMITER;
             }
+            else if (type.Name.Equals("Vector3d"))
+            {
+                Vector3d vector = (Vector3d)input;
+                return "[" +  vector.x + "," + vector.y + "," + vector.z + "]" + JAVASCRIPT_DELIMITER;
+            }
             else if (type.Name.Equals("Boolean"))
             {
                 return input.ToString().ToLower() + JAVASCRIPT_DELIMITER;
