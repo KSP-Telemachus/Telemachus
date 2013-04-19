@@ -36,12 +36,6 @@ namespace Telemachus
             base.OnAwake();
         }
 
-        public override void OnLoad(ConfigNode node)
-        {
-            PluginLogger.Log("Loading Partmodule");
-            base.OnLoad(node);
-        }
-
         #endregion
     }
 
@@ -76,7 +70,6 @@ namespace Telemachus
 
         static string[] dataUnits = new string[] { "Error", " bit/s", " kbit/s", " Mbit/s", "Gbit/s" };
 
-        
         static public bool isActive = true;
 
         //On by default
@@ -122,6 +115,18 @@ namespace Telemachus
         #endregion
 
         #region Part Events
+
+        public override void OnStart(PartModule.StartState state)
+        {
+            base.OnStart(state);
+
+            if (!(state == StartState.Editor || state == StartState.None))
+            {
+                FlyByWireDataLinkHandler.reset();
+                vessel.OnFlyByWire -= FlyByWireDataLinkHandler.onFlyByWire;
+                vessel.OnFlyByWire += FlyByWireDataLinkHandler.onFlyByWire;
+            }
+        }
 
         public override void OnUpdate()
         {

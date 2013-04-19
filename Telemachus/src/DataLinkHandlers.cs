@@ -200,6 +200,96 @@ namespace Telemachus
         #endregion
     }
 
+    public class FlyByWireDataLinkHandler : DataLinkHandler
+    {
+        #region Fields
+
+        static float yaw = 0, pitch = 0, roll = 0, x = 0, y = 0, z = 0;
+
+        #endregion
+
+        #region Initialisation
+
+        public FlyByWireDataLinkHandler()
+        {
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                "v.setYaw", "Yaw [float yaw]"));
+
+            registerAPI(new APIEntry(
+                dataSources => { pitch = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                "v.setPitch", "Pitch [float pitch]"));
+
+            registerAPI(new APIEntry(
+                dataSources => { roll = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                "v.setRoll", "Roll [float roll]"));
+
+            registerAPI(new APIEntry(
+                dataSources => { x = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                "v.setX", "x [float x]"));
+
+            registerAPI(new APIEntry(
+                dataSources => { y = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                "v.setY", "y [float y]"));
+
+            registerAPI(new APIEntry(
+                dataSources => { z = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                "v.setZ", "z [float z]"));
+
+            registerAPI(new APIEntry(
+                dataSources => { 
+                    yaw = checkFlightStateParameters(float.Parse(dataSources.args[0]));
+                    pitch = checkFlightStateParameters(float.Parse(dataSources.args[1]));
+                    roll = checkFlightStateParameters(float.Parse(dataSources.args[2])); 
+                    return 0; 
+                },
+                "v.setYawPitchRoll", "Roll [float yaw, float pitch, float roll]"));
+        }
+
+        #endregion
+
+        #region Methods
+
+        public static void onFlyByWire(FlightCtrlState fcs)
+        {
+            fcs.yaw = yaw;
+            fcs.pitch = pitch;
+            fcs.roll = roll;
+
+            fcs.X = x;
+            fcs.Y = y;
+            fcs.Z = z;
+        }
+
+        public static void reset()
+        {
+            yaw = 0;
+            pitch = 0;
+            roll = 0;
+
+            x = 0;
+            y = 0;
+            z = 0;
+        }
+
+        private float checkFlightStateParameters(float f)
+        {
+            if(float.IsNaN(f))
+            {
+                f = 0;
+            }
+
+            return Mathf.Clamp(f, -1f, 1f);
+        }
+
+        #endregion
+    }
+
     public class FlightDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
@@ -332,6 +422,8 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom10),
                 "f.ag10", "AG10"));
+
+            
         }
 
         private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
@@ -418,7 +510,6 @@ namespace Telemachus
 
 
         #endregion
-
     }
 
     public class BodyDataLinkHandler : DataLinkHandler
@@ -568,7 +659,7 @@ namespace Telemachus
 
         private void vesselChanged(Vessel vessel)
         {
-            sensorCache.setDirty();
+            //sensorCache.setDirty();
         }
 
         #endregion
@@ -584,7 +675,7 @@ namespace Telemachus
 
         #region Fields
 
-        ReaderWriterLock updateLock = new ReaderWriterLock(), dirtyLock = new ReaderWriterLock();
+        ReaderWriterLock updateLock = new ReaderWriterLock();
         Dictionary<string, List<ModuleEnviroSensor>> sensors = new Dictionary<string, List<ModuleEnviroSensor>>();
         bool isDirty = true;
         int accesses = 0;
@@ -595,18 +686,12 @@ namespace Telemachus
 
         private void setDirty(bool value)
         {
-            dirtyLock.AcquireWriterLock(Timeout.Infinite);
             isDirty = value;
-            dirtyLock.ReleaseWriterLock();
         }
 
         private bool checkDirty()
         {
-            dirtyLock.AcquireReaderLock(Timeout.Infinite);
-            bool ret = isDirty;
-            dirtyLock.ReleaseReaderLock();
-
-            return ret;
+            return isDirty;
         }
 
         public void setDirty()

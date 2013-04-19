@@ -47,6 +47,7 @@ namespace Telemachus
         private void loadHandlers()
         {
             APIHandlers.Add(new PausedDataLinkHandler());
+            APIHandlers.Add(new FlyByWireDataLinkHandler());
             APIHandlers.Add(new OrbitDataLinkHandler());
             APIHandlers.Add(new SensorDataLinkHandler(vesselChangeDetector));
             APIHandlers.Add(new VesselDataLinkHandler());
