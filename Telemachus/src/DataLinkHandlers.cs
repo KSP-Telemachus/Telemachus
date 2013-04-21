@@ -204,8 +204,8 @@ namespace Telemachus
     {
         #region Fields
 
-        static float yaw = 0, pitch = 0, roll = 0, x = 0, y = 0, z = 0;
-        static bool data = false;
+        static float yaw = 0, pitch = 0, roll = 0;
+        static bool iyaw = false, ipitch = false, iroll = false;
 
         #endregion
 
@@ -219,35 +219,25 @@ namespace Telemachus
         protected void buildAPI()
         {
             registerAPI(new APIEntry(
-                dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true ; return 0; },
+                dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); iyaw = true ; return 0; },
                 "v.setYaw", "Yaw [float yaw]"));
 
             registerAPI(new APIEntry(
-                dataSources => { pitch = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
+                dataSources => { pitch = checkFlightStateParameters(float.Parse(dataSources.args[0])); ipitch = true; return 0; },
                 "v.setPitch", "Pitch [float pitch]"));
 
             registerAPI(new APIEntry(
-                dataSources => { roll = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
+                dataSources => { roll = checkFlightStateParameters(float.Parse(dataSources.args[0])); iroll = true; return 0; },
                 "v.setRoll", "Roll [float roll]"));
-
-            registerAPI(new APIEntry(
-                dataSources => { x = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
-                "v.setX", "x [float x]"));
-
-            registerAPI(new APIEntry(
-                dataSources => { y = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
-                "v.setY", "y [float y]"));
-
-            registerAPI(new APIEntry(
-                dataSources => { z = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
-                "v.setZ", "z [float z]"));
 
             registerAPI(new APIEntry(
                 dataSources => { 
                     yaw = checkFlightStateParameters(float.Parse(dataSources.args[0]));
                     pitch = checkFlightStateParameters(float.Parse(dataSources.args[1]));
                     roll = checkFlightStateParameters(float.Parse(dataSources.args[2]));
-                    data = true;
+                    iyaw = true;
+                    ipitch = true;
+                    iroll = true;
                     return 0; 
                 },
                 "v.setYawPitchRoll", "Roll [float yaw, float pitch, float roll]"));
@@ -259,17 +249,22 @@ namespace Telemachus
 
         public static void onFlyByWire(FlightCtrlState fcs)
         {
-            if (data)
+            if (iyaw)
             {
                 fcs.yaw = yaw;
-                fcs.pitch = pitch;
-                fcs.roll = roll;
+                iyaw = false;
+            }
 
-                fcs.X = x;
-                fcs.Y = y;
-                fcs.Z = z;
-                
-                data = false;
+            if (ipitch)
+            {
+                fcs.pitch = pitch;
+                ipitch = false;
+            }
+
+            if (iroll)
+            {
+                fcs.roll = roll;
+                iroll = false;
             }
         }
 
