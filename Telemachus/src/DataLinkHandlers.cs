@@ -273,10 +273,6 @@ namespace Telemachus
             yaw = 0;
             pitch = 0;
             roll = 0;
-
-            x = 0;
-            y = 0;
-            z = 0;
         }
 
         private float checkFlightStateParameters(float f)
@@ -387,45 +383,43 @@ namespace Telemachus
 
             registerAPI(new APIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom01),
-                "f.ag1", "AG1"));
+                "f.ag1", "Action Group 1"));
 
             registerAPI(new APIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom02),
-                "f.ag2", "AG2"));
+                "f.ag2", "Action Group 2"));
 
             registerAPI(new APIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom03),
-                "f.ag3", "AG3"));
+                "f.ag3", "Action Group 3"));
 
             registerAPI(new APIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom04),
-                "f.ag4", "AG4"));
+                "f.ag4", "Action Group 4"));
 
             registerAPI(new APIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom05),
-                "f.ag5", "AG5"));
+                "f.ag5", "Action Group 5"));
 
             registerAPI(new APIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom06),
-                "f.ag6", "AG6"));
+                "f.ag6", "Action Group 6"));
 
             registerAPI(new APIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom07),
-                "f.ag7", "AG7"));
+                "f.ag7", "Action Group 7"));
 
             registerAPI(new APIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom08),
-                "f.ag8", "AG8"));
+                "f.ag8", "Action Group 8"));
 
             registerAPI(new APIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom09),
-                "f.ag9", "AG9"));
+                "f.ag9", "Action Group 9"));
 
             registerAPI(new APIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom10),
-                "f.ag10", "AG10"));
-
-            
+                "f.ag10", "Action Group 10"));
         }
 
         private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
