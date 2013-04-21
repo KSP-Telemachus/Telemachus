@@ -24,7 +24,6 @@ namespace Telemachus
         
         List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
         DataSources dataSources = new DataSources();
-        DataSourceResultFormatter resultFormatter = new JavaScriptGeneralFormatter();
         VesselChangeDetector vesselChangeDetector = new VesselChangeDetector();
 
         #endregion
@@ -106,7 +105,9 @@ namespace Telemachus
 
         private String argumentsParse(String args, DataSources dataSources)
         {
-            StringBuilder sb = new StringBuilder();
+
+            APIEntry currentEntry = null;
+            List<string> APIResults = new List<string>(); 
             String[] argsSplit = args.Split(ARGUMENTS_DELIMETER);
 
             foreach (String arg in argsSplit)
@@ -114,7 +115,8 @@ namespace Telemachus
                 string refArg = arg;
                 PluginLogger.debug("[Telemachus]" + refArg);
                 parseParams(ref refArg, ref dataSources);
-                sb.Append(argumentParse(refArg, dataSources));
+                currentEntry = argumentParse(refArg, dataSources);
+                APIResults.Add(currentEntry.formatter.format(currentEntry.function(dataSources)));
 
                 //Only parse the paused argument if the active vessel is null
                 if (dataSources.vessel == null)
@@ -123,7 +125,7 @@ namespace Telemachus
                 }
             }
 
-            return sb.ToString();
+            return currentEntry.formatter.pack(APIResults);
         }
 
         private void parseParams(ref String arg, ref DataSources dataSources)
@@ -152,7 +154,7 @@ namespace Telemachus
             }
         }
 
-        private String argumentParse(String args, DataSources dataSources)
+        private APIEntry argumentParse(String args, DataSources dataSources)
         {
             String[] argsSplit = args.Split(ARGUMENTS_ASSIGN);
             APIEntry result = null;
@@ -164,10 +166,9 @@ namespace Telemachus
                     break;
                 }
             }
-            
-            object r = result.function(dataSources);
-            return resultFormatter.formatWithAssignment(
-                resultFormatter.format(r, r.GetType()), argsSplit[0]);
+
+            result.formatter.setVarName(argsSplit[0]);
+            return result;
         }
 
         #endregion

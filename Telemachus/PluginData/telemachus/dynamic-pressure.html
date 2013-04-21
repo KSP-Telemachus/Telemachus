@@ -13,7 +13,7 @@
 
       function onLoad() {
 
-      initKSPWAPIGraph("datalink?d.v=v.surfaceVelocity&d.d=v.atmosphericDensity&d.met=v.missionTime", function(rawData, d){
+      initKSPWAPIGraph("v=v.surfaceVelocity&d=v.atmosphericDensity&met=v.missionTime", function(rawData, d){
       rawData.push([d.met, (0.5 * d.d) * Math.pow(d.v, 2)]);
       },
       [['Mission Time', 'Dynamic Pressure']],
@@ -21,7 +21,7 @@
       title: 'Dynamic Pressure Plot',
       hAxis: { title: 'Mission Time (s)' },
       legend: { position: 'bottom' }
-      });
+      }, "chart_div");
       }
     </script>
   </head>

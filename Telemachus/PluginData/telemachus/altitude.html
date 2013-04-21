@@ -13,7 +13,7 @@
 
         function onLoad() {
 
-          initKSPWAPIGraph("datalink?d.alt=v.altitude&d.terrain=v.heightFromTerrain&d.met=v.missionTime", function(rawData, d){
+          initKSPWAPIGraph("alt=v.altitude&terrain=v.heightFromTerrain&met=v.missionTime", function(rawData, d){
                   rawData.push([d.met, d.alt, d.terrain, d.alt - d.terrain]);},
                   [['Mission Time', 'Altitude', 'Height from Terrain', 'Terrain Height']], 
                   {
@@ -21,7 +21,7 @@
                     vAxis: { title: 'Height (m)' },
                     hAxis: { title: 'Mission Time (s)' },
                     legend: {position: 'bottom'}
-                  });
+                  }, "chart_div");
         }
     </script>
   </head>

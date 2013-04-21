@@ -205,7 +205,7 @@ namespace Telemachus
         #region Fields
 
         static float yaw = 0, pitch = 0, roll = 0, x = 0, y = 0, z = 0;
-
+        static bool data = false;
         #endregion
 
         #region Initialisation
@@ -218,34 +218,35 @@ namespace Telemachus
         protected void buildAPI()
         {
             registerAPI(new APIEntry(
-                dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true ; return 0; },
                 "v.setYaw", "Yaw [float yaw]"));
 
             registerAPI(new APIEntry(
-                dataSources => { pitch = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                dataSources => { pitch = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
                 "v.setPitch", "Pitch [float pitch]"));
 
             registerAPI(new APIEntry(
-                dataSources => { roll = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                dataSources => { roll = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
                 "v.setRoll", "Roll [float roll]"));
 
             registerAPI(new APIEntry(
-                dataSources => { x = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                dataSources => { x = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
                 "v.setX", "x [float x]"));
 
             registerAPI(new APIEntry(
-                dataSources => { y = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                dataSources => { y = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
                 "v.setY", "y [float y]"));
 
             registerAPI(new APIEntry(
-                dataSources => { z = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
+                dataSources => { z = checkFlightStateParameters(float.Parse(dataSources.args[0])); data = true; return 0; },
                 "v.setZ", "z [float z]"));
 
             registerAPI(new APIEntry(
                 dataSources => { 
                     yaw = checkFlightStateParameters(float.Parse(dataSources.args[0]));
                     pitch = checkFlightStateParameters(float.Parse(dataSources.args[1]));
-                    roll = checkFlightStateParameters(float.Parse(dataSources.args[2])); 
+                    roll = checkFlightStateParameters(float.Parse(dataSources.args[2]));
+                    data = true;
                     return 0; 
                 },
                 "v.setYawPitchRoll", "Roll [float yaw, float pitch, float roll]"));
@@ -257,13 +258,18 @@ namespace Telemachus
 
         public static void onFlyByWire(FlightCtrlState fcs)
         {
-            fcs.yaw = yaw;
-            fcs.pitch = pitch;
-            fcs.roll = roll;
+            if (data)
+            {
+                fcs.yaw = yaw;
+                fcs.pitch = pitch;
+                fcs.roll = roll;
 
-            fcs.X = x;
-            fcs.Y = y;
-            fcs.Z = z;
+                fcs.X = x;
+                fcs.Y = y;
+                fcs.Z = z;
+                
+                data = false;
+            }
         }
 
         public static void reset()
@@ -525,10 +531,10 @@ namespace Telemachus
         {
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.orbit.referenceBody.name; },
-                "b.name", "Body Name"));
+                "b.name", "Body Name", new StringJSONFormatter()));
             registerAPI(new APIEntry(
                dataSources => { return dataSources.vessel.orbit.referenceBody.position; },
-               "b.position", "Body Position"));
+               "b.position", "Body Position", new Vector3dJSONFormatter()));
         }
 
         #endregion
@@ -632,16 +638,16 @@ namespace Telemachus
         {
             registerAPI(new APIEntry(
                 dataSources => { return getsSensorValues(dataSources, "TEMP"); },
-                "s.temperature", "Temperature"));
+                "s.temperature", "Temperature", new SensorModuleListJSONFormatter()));
             registerAPI(new APIEntry(
                 dataSources => { return getsSensorValues(dataSources, "ACC"); },
-                "s.acceleration", "Acceleration"));
+                "s.acceleration", "Acceleration", new SensorModuleListJSONFormatter()));
             registerAPI(new APIEntry(
                 dataSources => { return getsSensorValues(dataSources, "GRAV"); },
-                "s.gravity", "Gravity"));
+                "s.gravity", "Gravity", new SensorModuleListJSONFormatter()));
             registerAPI(new APIEntry(
                 dataSources => { return getsSensorValues(dataSources, "PRES"); },
-                "s.pressure", "Pressure"));
+                "s.pressure", "Pressure", new SensorModuleListJSONFormatter()));
         }
 
         #endregion
@@ -861,7 +867,10 @@ namespace Telemachus
         {
             APIEntry entry = null;
 
-            APIEntries.TryGetValue(API, out entry);
+            lock (this)
+            {
+                APIEntries.TryGetValue(API, out entry);
+            }
 
             if (entry == null)
             {
@@ -914,6 +923,7 @@ namespace Telemachus
         public DataLinkHandler.APIDelegate function { get; set; }
         public string APIString { get; set; }
         public string name { get; set; }
+        public DataSourceResultFormatter formatter { get; set;}
 
         #endregion
 
@@ -924,6 +934,16 @@ namespace Telemachus
             this.function = function;
             this.APIString = APIString;
             this.name = name;
+            this.formatter = new DefaultJSONFormatter();
+        }
+
+        public APIEntry(DataLinkHandler.APIDelegate function, string APIString, string name, 
+            DataSourceResultFormatter formatter)
+        {
+            this.function = function;
+            this.APIString = APIString;
+            this.name = name;
+            this.formatter = formatter;
         }
 
         #endregion

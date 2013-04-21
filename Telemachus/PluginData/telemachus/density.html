@@ -14,7 +14,7 @@
 
       function onLoad() {
 
-      initKSPWAPIGraph("datalink?d.d=v.atmosphericDensity&d.met=v.missionTime", function(rawData, d){
+      initKSPWAPIGraph("d=v.atmosphericDensity&met=v.missionTime", function(rawData, d){
       rawData.push([d.met, d.d]);},
       [['Mission Time', 'Atmospheric Density']],
       {
@@ -22,7 +22,7 @@
       vAxis: { title: 'Density' },
       hAxis: { title: 'Mission Time (s)' },
       legend: {position: 'bottom'}
-      });
+      }, "chart_div");
       }
 
     </script>

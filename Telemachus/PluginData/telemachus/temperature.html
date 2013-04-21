@@ -14,7 +14,7 @@
 
       function onLoad() {
 
-      initKSPWAPIGraph("datalink?d.t=s.temperature&d.met=v.missionTime", function(rawData, d){
+      initKSPWAPIGraph("t=s.temperature&met=v.missionTime", function(rawData, d){
       temp = d.t[0];
       temp.splice(0, 0, "Mission Time");
       rawData[0] = temp;
@@ -28,7 +28,7 @@
       vAxis: { title: 'Temperature' },
       hAxis: { title: 'Mission Time (s)' },
       legend: { position: 'bottom' }
-      });
+      }, "chart_div");
       }
     </script>
   </head>

@@ -5,7 +5,7 @@ var SPLICE_SIZE = 10;
 var SIG_FIG = 5;
 
 function initKSPWAPIPoll(APIString, preUpdate, postUpdate, rawData){
-	APIString = APIString + "&d.p=p.paused"
+	APIString = "datalink?" + APIString + "&p=p.paused"
     update();
 
 	function update() {
@@ -21,10 +21,9 @@ function initKSPWAPIPoll(APIString, preUpdate, postUpdate, rawData){
 
 		var callback = function(response, status){
 			if (status == "success") {
+
 				
-				d = new Object();
-				d.p = false;
-				eval(response);
+			    d = $.parseJSON(response);
 
 				if (!d.p) {
 					postUpdate(rawData, d);
