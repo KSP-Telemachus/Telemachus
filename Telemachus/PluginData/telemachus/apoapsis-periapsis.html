@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html>
   <head>
-  <title>Telemachus - Periapsis and Apoapsis</title>
-  <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
-  <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
-  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-  <script type="text/javascript" src="jKSPWAPICore.js"></script>
-  <script type="text/javascript" src="jKSPWAPIGraph.js"></script>
-  <script type="text/javascript">
-    google.setOnLoadCallback(onLoad);
+    <title>Telemachus - Periapsis and Apoapsis</title>
+    <link rel="stylesheet" type="text/css" href="jKSPWAPIGraph.css" />
+    
+    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="jKSPWAPICore.js"></script>
+    <script type="text/javascript" src="jKSPWAPIGraph.js"></script>
+    <script type="text/javascript">
+      google.setOnLoadCallback(onLoad);
 
-    function onLoad() {
+      function onLoad() {
 
-    initKSPWAPIGraph("datalink?d.pe=o.PeA&d.ap=o.ApA&d.met=v.missionTime", function(rawData, d){
-    rawData.push([d.met, d.pe, d.ap]);},
-    [['Mission Time', 'Periapsis', 'Apoapsis']],
-    {
-    title: 'Periapsis and Apoapsis',
-    vAxis: { title: 'Height (m)' },
-    hAxis: { title: 'Mission Time (s)' },
-    legend: { position: 'bottom' }
-    });
-    }
-
+      initKSPWAPIGraph("datalink?d.pe=o.PeA&d.ap=o.ApA&d.met=v.missionTime", function(rawData, d){
+      rawData.push([d.met, d.pe, d.ap]);},
+      [['Mission Time', 'Periapsis', 'Apoapsis']],
+      {
+      title: 'Periapsis and Apoapsis',
+      vAxis: { title: 'Height (m)' },
+      hAxis: { title: 'Mission Time (s)' },
+      legend: { position: 'bottom' }
+      });
+      }
    </script>
   </head>
-  <body id="full">
-   <div id="main">
-    <div id="chart_div" style="width: 100%; height:100%;"></div>
-    </div>
+  <body>
+    <div id="chart_div" class="full"></div>
   </body>
 </html>

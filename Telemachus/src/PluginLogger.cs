@@ -8,24 +8,19 @@ namespace Telemachus
 {
     class PluginLogger
     {
-        public static void Log(String s)
+        public static void debug(String s)
         {
 #if (DEBUG)
-            Debug.Log(s);
+            UnityEngine.Debug.Log("[Telemachus]" +  s);
 #endif
         }
 
-        public static void Out(String s)
+        public static void print(String s)
         {
-            Debug.Log(s);
+            UnityEngine.Debug.Log("[Telemachus]" + s);
         }
 
-        public static string FormatClassName(string s)
-        {
-            return "[" + s + "]";
-        }
-
-        public static string ListToString(List<int> l)
+        public static string listToString(List<int> l)
         {
             string ret = "[";
             foreach (int i in l)
@@ -43,7 +38,7 @@ namespace Telemachus
         {
             foreach (Part part in parts)
             {
-                Log(part.partInfo.name);
+                debug(part.partInfo.name);
             }
         }
     }

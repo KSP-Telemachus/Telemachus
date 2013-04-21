@@ -2,13 +2,13 @@
 <html>
   <head>
     <title>Telemachus - Altitude</title>
-    <link rel="stylesheet" type="text/css" href="fit-to-screen.css" />
+    <link rel="stylesheet" type="text/css" href="jKSPWAPIGraph.css" />
+    
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script type="text/javascript" src="jKSPWAPIGraph.js"></script>
-    
-      <script type="text/javascript">
+    <script type="text/javascript">
         google.setOnLoadCallback(onLoad);
 
         function onLoad() {
@@ -23,12 +23,9 @@
                     legend: {position: 'bottom'}
                   });
         }
-
     </script>
   </head>
-  <body id="full">
-   <div id="main">
-    <div id="chart_div" style="width: 100%; height:100%;"></div>
-   </div>
+  <body>
+    <div id="chart_div" class="full"></div>
   </body>
 </html>

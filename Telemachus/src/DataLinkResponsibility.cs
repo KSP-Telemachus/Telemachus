@@ -112,7 +112,7 @@ namespace Telemachus
             foreach (String arg in argsSplit)
             {
                 string refArg = arg;
-                PluginLogger.Log("[Telemachus]" + refArg);
+                PluginLogger.debug("[Telemachus]" + refArg);
                 parseParams(ref refArg, ref dataSources);
                 sb.Append(argumentParse(refArg, dataSources));
 
@@ -148,7 +148,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                PluginLogger.Log("[Telemachus] " + e.Message + " " + e.StackTrace);
+                PluginLogger.debug("[Telemachus] " + e.Message + " " + e.StackTrace);
             }
         }
 

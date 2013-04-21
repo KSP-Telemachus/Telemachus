@@ -40,7 +40,7 @@ namespace Telemachus
             {
                 try
                 {
-                    PluginLogger.Out("Telemachus data link starting");
+                    PluginLogger.print("Telemachus data link starting");
 
                     readConfiguration();
 
@@ -54,14 +54,14 @@ namespace Telemachus
                     server.addHTTPResponsibility(new InformationResponsibility(ioPageResponsibility, dataLinkResponsibility));
                     server.startServing();
                  
-                    PluginLogger.Out("Telemachus data link listening for requests on the following addresses: ("
+                    PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
                         + server.getIPsAsString() +
                         "). Try putting them into your web browser, some of them might not work.");
                 }
                 catch (Exception e)
                 {
-                    PluginLogger.Out(e.Message);
-                    PluginLogger.Out(e.StackTrace);
+                    PluginLogger.print(e.Message);
+                    PluginLogger.print(e.StackTrace);
                 }
             }
         }
@@ -85,7 +85,7 @@ namespace Telemachus
             }
             else
             {
-                PluginLogger.Log("No port in configuration file.");
+                PluginLogger.print("No port in configuration file.");
             }
 
             String ip = config.GetValue<String>("IPADDRESS");
@@ -98,12 +98,12 @@ namespace Telemachus
                 }
                 catch
                 {
-                    PluginLogger.Log("Invalid IP address in configuration file, falling back to find.");
+                    PluginLogger.print("Invalid IP address in configuration file, falling back to find.");
                 }
             }
             else
             {
-                PluginLogger.Log("No IP address in configuration file.");
+                PluginLogger.print("No IP address in configuration file.");
             }
         }
 
@@ -111,7 +111,7 @@ namespace Telemachus
         {
             if (server != null)
             {
-                PluginLogger.Out("Telemachus data link shutting down.");
+                PluginLogger.print("Telemachus data link shutting down.");
                 server.stopServing();
                 server = null;
             }
@@ -119,7 +119,7 @@ namespace Telemachus
 
         static private void serverOut(String message)
         {
-            PluginLogger.Log(message);
+            PluginLogger.debug(message);
         }
 
         #endregion

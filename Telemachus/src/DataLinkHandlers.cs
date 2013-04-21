@@ -156,14 +156,14 @@ namespace Telemachus
 
             if (mechJebCore == null)
             {
-                PluginLogger.Log("[Telemachus] No Mechjeb part installed.");
+                PluginLogger.debug("No Mechjeb part installed.");
                 return null;
             }
             else
             {
                 try
                 {   
-                    PluginLogger.Log("[Telemachus] Mechjeb part installed, reflecting.");
+                    PluginLogger.debug("[Telemachus] Mechjeb part installed, reflecting.");
                     Type mechJebCoreType = mechJebCore.GetType();
                     FieldInfo attitudeField = mechJebCoreType.GetField("attitude", BindingFlags.Public | BindingFlags.Instance);
                     attitude = attitudeField.GetValue(mechJebCore);
@@ -175,7 +175,7 @@ namespace Telemachus
                 }
                 catch (Exception e)
                 {
-                    PluginLogger.Log("[Telemachus]" + e.Message + " " +  e.StackTrace);
+                    PluginLogger.debug("[Telemachus]" + e.Message + " " +  e.StackTrace);
                 }
 
                 return null;
@@ -730,7 +730,7 @@ namespace Telemachus
             }
             catch(Exception e)
             {
-                PluginLogger.Log(e.Message);
+                PluginLogger.debug(e.Message);
             }
 
             updateLock.DowngradeFromWriterLock(ref lockCookie);
@@ -957,7 +957,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                PluginLogger.Log(e.Message);
+                PluginLogger.debug(e.Message);
             }
         }
 
