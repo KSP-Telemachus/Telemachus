@@ -9,11 +9,11 @@
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script type="text/javascript" src="jKSPWAPIGraph.js"></script>
     <script type="text/javascript">
-        google.setOnLoadCallback(onLoad);
+      google.setOnLoadCallback(onLoad);
 
-        function onLoad() {
-
-          initKSPWAPIGraph("alt=v.altitude&terrain=v.heightFromTerrain&met=v.missionTime", function(rawData, d){
+      function onLoad() {
+      jQuery(document).ready(function($) {
+                  initKSPWAPIGraph("alt=v.altitude&terrain=v.heightFromTerrain&met=v.missionTime", function(rawData, d){
                   rawData.push([d.met, d.alt, d.terrain, d.alt - d.terrain]);},
                   [['Mission Time', 'Altitude', 'Height from Terrain', 'Terrain Height']], 
                   {
@@ -22,6 +22,7 @@
                     hAxis: { title: 'Mission Time (s)' },
                     legend: {position: 'bottom'}
                   }, "chart_div");
+                  });
         }
     </script>
   </head>

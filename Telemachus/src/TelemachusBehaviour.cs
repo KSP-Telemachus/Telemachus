@@ -51,7 +51,6 @@ namespace Telemachus
                     server.addHTTPResponsibility(ioPageResponsibility);
                     dataLinkResponsibility = new DataLinkResponsibility();
                     server.addHTTPResponsibility(dataLinkResponsibility);
-                    server.addHTTPResponsibility(new InformationResponsibility(ioPageResponsibility, dataLinkResponsibility));
                     server.startServing();
                  
                     PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("

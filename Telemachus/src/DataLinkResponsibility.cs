@@ -46,15 +46,16 @@ namespace Telemachus
         private void loadHandlers()
         {
             APIHandlers.Add(new PausedDataLinkHandler());
+            APIHandlers.Add(new FlightDataLinkHandler());
             APIHandlers.Add(new FlyByWireDataLinkHandler());
+            APIHandlers.Add(new MechJebDataLinkHandler());
             APIHandlers.Add(new OrbitDataLinkHandler());
             APIHandlers.Add(new SensorDataLinkHandler(vesselChangeDetector));
             APIHandlers.Add(new VesselDataLinkHandler());
-            APIHandlers.Add(new FlightDataLinkHandler());
             APIHandlers.Add(new BodyDataLinkHandler());
             APIHandlers.Add(new TimeWarpDataLinkHandler());
-            APIHandlers.Add(new MechJebDataLinkHandler());
             APIHandlers.Add(new ResourceDataLinkHandler());
+            APIHandlers.Add(new APIDataLinkHandler(this));
             APIHandlers.Add(new DefaultDataLinkHandler());
         }
 
@@ -67,9 +68,17 @@ namespace Telemachus
             if (request.path.StartsWith(PAGE_PREFIX))
             {
                 dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
-                
-                dataSources.vessel = FlightGlobals.ActiveVessel;
-                vesselChangeDetector.update(FlightGlobals.ActiveVessel);
+
+
+                try
+                {
+                    dataSources.vessel = FlightGlobals.ActiveVessel;
+                    vesselChangeDetector.update(FlightGlobals.ActiveVessel);
+                }
+                catch (Exception e)
+                {
+                    PluginLogger.debug(e.Message + " "  + e.StackTrace);
+                }
 
                 String returnMessage = new OKPage(
                    argumentsParse(

@@ -13,7 +13,7 @@
       google.setOnLoadCallback(onLoad);
 
       function onLoad() {
-
+      jQuery(document).ready(function($) {
       initKSPWAPIGraph("t=s.pressure&met=v.missionTime", function(rawData, d){
 
       temp = d.t[0];
@@ -28,7 +28,7 @@
       vAxis: { title: 'Pressure' },
       hAxis: { title: 'Mission Time (s)' },
       legend: { position: 'bottom' }
-      }, "chart_div");
+      }, "chart_div");});
       }
     </script>
   </head>

@@ -206,6 +206,7 @@ namespace Telemachus
 
         static float yaw = 0, pitch = 0, roll = 0, x = 0, y = 0, z = 0;
         static bool data = false;
+
         #endregion
 
         #region Initialisation
@@ -578,6 +579,15 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.atmDensity; },
                 "v.atmosphericDensity", "Atmospheric Density"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.longitude; },
+                "v.long", "Longitude"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.latitude; },
+                "v.lat", "Latitude"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.name; },
+                "v.name", "Name", new StringJSONFormatter()));
         }
 
         #endregion
@@ -822,6 +832,37 @@ namespace Telemachus
                 !TelemachusPowerDrain.isActive || 
                 !TelemachusPowerDrain.activeToggle || 
                 !VesselChangeDetector.hasTelemachusPart;
+        }
+
+        #endregion
+    }
+
+    public class APIDataLinkHandler : DataLinkHandler
+    {
+        #region Fields
+
+        DataLinkResponsibility dataLinkResponsibility = null;
+        
+        #endregion
+
+        #region Initialisation
+
+        public APIDataLinkHandler(DataLinkResponsibility dataLinkResponsibility)
+        {
+            this.dataLinkResponsibility = dataLinkResponsibility;
+            buildAPI();
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources => { List<KeyValuePair<String, String>> APIList = new List<KeyValuePair<String, String>>(); 
+                    dataLinkResponsibility.getAPIList(ref APIList); return APIList;},
+                "a.api", "API Listing", new APIEntryJSONFormatter()));
+
+            registerAPI(new APIEntry(
+                dataSources => { return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(); },
+                "a.version", "Telemachus Version", new StringJSONFormatter()));
         }
 
         #endregion

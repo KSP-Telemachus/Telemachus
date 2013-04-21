@@ -53,7 +53,7 @@ function KSPWAPICall(APIString, postUpdate){
 
 	var callback = function(response, status){
 			d = new Object();
-			eval(response);
+			d = $.parseJSON(response);
 			postUpdate(d);
 		};
 

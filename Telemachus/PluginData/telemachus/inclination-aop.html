@@ -12,7 +12,7 @@
       google.setOnLoadCallback(onLoad);
 
       function onLoad() {
-
+      jQuery(document).ready(function($) {
       initKSPWAPIGraph("in=o.inclination&aop=o.argumentOfPeriapsis&met=v.missionTime", function(rawData, d){
       rawData.push([d.met, d.in, d.aop]);},
       [['Mission Time', 'Inclination', 'Argument of Periapsis']],
@@ -21,7 +21,7 @@
       vAxis: { title: 'Value (Degrees)' },
       hAxis: { title: 'Mission Time (s)' },
       legend: { position: 'bottom' }
-      }, "chart_div");
+      }, "chart_div");});
       }
     </script>
   </head>

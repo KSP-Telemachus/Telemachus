@@ -73,6 +73,35 @@ namespace Telemachus
         }
     }
 
+    public class APIEntryJSONFormatter : JSONFormatter
+    {
+        public override string format(object input)
+        {
+            StringBuilder sb = new StringBuilder();
+            List<KeyValuePair<String, String>> APIList = (List<KeyValuePair<String, String>>)input;
+            
+            sb.Append("[");
+
+            for (int i = 0; i < APIList.Count; i++)
+            {
+                sb.Append("[");
+                sb.Append("\"" + APIList[i].Key + "\"");
+                sb.Append(",");
+                sb.Append("\"" + APIList[i].Value + "\"");
+                sb.Append("]");
+
+                if (i < APIList.Count - 1)
+                {
+                    sb.Append(",");
+                }
+            }
+
+            sb.Append("]");
+
+            return varName + JSON_ASSIGN + sb.ToString();
+        }
+    }
+
     public class SensorModuleListJSONFormatter : JSONFormatter
     {
         public override string format(object input)

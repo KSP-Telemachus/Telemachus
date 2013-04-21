@@ -12,7 +12,7 @@
       google.setOnLoadCallback(onLoad);
 
       function onLoad() {
-
+      jQuery(document).ready(function($) {
       initKSPWAPIGraph("pe=o.PeA&ap=o.ApA&met=v.missionTime", function(rawData, d){
       rawData.push([d.met, d.pe, d.ap]);},
       [['Mission Time', 'Periapsis', 'Apoapsis']],
@@ -21,7 +21,7 @@
       vAxis: { title: 'Height (m)' },
       hAxis: { title: 'Mission Time (s)' },
       legend: { position: 'bottom' }
-      }, "chart_div");
+      }, "chart_div");});
       }
    </script>
   </head>

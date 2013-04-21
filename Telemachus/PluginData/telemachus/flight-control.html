@@ -1,108 +1,124 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Telemachus - Flight Control</title>
-    <link rel="stylesheet" type="text/css" href="jKSPWAPIInput.css" />
-    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
-    <script type="text/javascript" src="jKSPWAPICore.js"></script>
-    <script type="text/javascript">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+        <title>Smart A.S.S.
+        </title>
+      
+        <link rel="stylesheet" href="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+        <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+        <script type="text/javascript" src="jKSPWAPICore.js"></script>
+        <script src="https://s3.amazonaws.com/codiqa-cdn/jquery-1.7.2.min.js">
+        </script>
+        <script src="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.js">
+        </script>
 
-      function command(command) {
+        <script>
 
-      KSPWAPICall("datalink?d.ret=" + command, function(d){return;});
-      }
+          function onLoad()
+          {
+          var isSlide = false;
+          $(document).ready(function() {
+          
+          rawData = [];
+          initKSPWAPIPoll("t=f.throttle", function(rawData){}, function(rawData, d){if(!isSlide){$('#throttle').val(d.t*100); $('#throttle').slider("refresh");}}, rawData);
 
-      function toggle(command, id){
+          $("#s1").mouseup(function(){
+          isSlide=false;
+          });
+          
+          $("#s1").mousedown(function(){
+          isSlide=true;
+          });
 
-      KSPWAPICall("datalink?d.p=p.paused&d.ret=" + command, function(d){
-      if(!d.p){
-      if(d.ret){
-      $(id).removeClass('offButton');
-      $(id).addClass('onButton');
-      }
-      else{
-      $(id).removeClass('onButton');
-      $(id).addClass('offButton');
-      }
-      }
-      });
+          });
+          }
 
-      }
+          function command(command) {
 
-    </script>
-  </head>
-  <body id="full">
-   <div id="main">
-   <table border="0">
-  <tbody>
-    <tr>
-      <td><button onclick="command('f.stage')">Stage+</button></td>
-      <td><button onclick="command('f.throttleUp')">Throttle+</button></td>
-      <td>
-        <button onclick="command('f.throttleDown')">Throttle-</button>
-      </td>
-      <td>
-        <button onclick="command('f.throttleZero')">0%</button>
-      </td>
-      <td>
-        <button onclick="command('f.throttleFull')">100%</button>
-      </td>
-      <td>
-        <button id="rcs" class="offButton" onclick="toggle('f.rcs', '#rcs')">RCS</button>
-      </td>
-      <td>
-        <button id="sas" class="offButton" onclick="toggle('f.sas', '#sas')">SAS</button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <button id="light" class="offButton" onclick="toggle('f.light', '#light')">Light</button>
-      </td>
-      <td>
-        <button id="gear" class="offButton" onclick="toggle('f.gear', '#gear')">Gear</button>
-      </td>
-      <td>
-        <button id="brake" class="offButton" onclick="toggle('f.brake', '#brake')">Brake</button>
-      </td>
-      <td>
-        <button id="abort" class="offButton" onclick="toggle('f.abort', '#abort')">Abort</button>
-      </td>
-    
-    
-      <td><button id="ag1" class="offButton" onclick="toggle('f.ag1', '#ag1')">Group 1</button></td>
-      <td>
-        <button id="ag2" class="offButton" onclick="toggle('f.ag2', '#ag2')">Group 2</button>
-      </td>
-      <td>
-        <button id="ag3" class="offButton" onclick="toggle('f.ag3', '#ag3')">Group 3</button>
-      </td>
-      </tr>
-      <tr>
-      <td>
-        <button id="ag4" class="offButton" onclick="toggle('f.ag4', '#ag4')">Group 4</button>
-      </td>
-      <td>
-        <button id="ag5" class="offButton" onclick="toggle('f.ag5', '#ag5')">Group 5</button>
-      </td>
-      <td>
-        <button id="ag6" class="offButton" onclick="toggle('f.ag6', '#ag6')">Group 6</button>
-      </td>
-      <td>
-        <button id="ag7" class="offButton" onclick="toggle('f.ag7', '#ag7')">Group 7</button>
-      </td>
-      <td>
-        <button id="ag8" class="offButton" onclick="toggle('f.ag8', '#ag8')">Group 8</button>
-      </td>
-      <td>
-        <button id="ag9" class="offButton" onclick="toggle('f.ag9', '#ag9')">Group 9</button>
-      </td>
-      <td>
-        <button id="ag10" class="offButton" onclick="toggle('f.ag10', '#ag10')">Group 10</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-    
-    </div>
-  </body>
+          KSPWAPICall("datalink?d.ret=" + command, function(d){return;});
+          }
+
+          function toggle(command, id){
+
+          KSPWAPICall("datalink?d.p=p.paused&d.ret=" + command, function(d){
+
+          });
+
+          }
+          function onSlide()
+          {
+          
+          KSPWAPICall("datalink?d.p=p.paused&d.ret=f.setThrottle[" + $('#throttle').val()/100 + "]", function(d){
+
+          });
+          }
+          
+          function onMouseUp()
+          {
+          alert("lol");
+          }
+        </script>
+    </head>
+    <body onload="onLoad()">
+        <div data-role="page" id="page1">
+            <div data-role="content">
+
+                      <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.stage')">Stage+</button>
+              
+                      <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleUp')">Throttle+</button>
+           
+                      <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleDown')">Throttle-</button>
+                  
+                      <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleZero')">0%</button>
+                   
+                      <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleFull')">100%</button>
+                  
+                      <button data-inline="true" id="rcs" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.rcs', '#rcs')">RCS</button>
+                   
+                      <button data-inline="true" id="sas" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.sas', '#sas')">SAS</button>
+               
+                      <button data-inline="true" id="light" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.light', '#light')">Light</button>
+                   
+                      <button data-inline="true" id="gear" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.gear', '#gear')">Gear</button>
+                   
+                      <button data-inline="true" id="brake" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.brake', '#brake')">Brake</button>
+                  
+                      <button data-inline="true" id="abort" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.abort', '#abort')">Abort</button>
+                   
+                      <button data-inline="true" id="ag1" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag1', '#ag1')">Group 1</button>
+                   
+                      <button data-inline="true" id="ag2" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag2', '#ag2')">Group 2</button>
+                   
+                      <button data-inline="true" id="ag3" data-icon="grid" data-iconpos="bottom"  onclick="toggle('f.ag3', '#ag3')">Group 3</button>
+             
+                   
+                      <button data-inline="true" id="ag4" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag4', '#ag4')">Group 4</button>
+                  
+                      <button data-inline="true"  id="ag5" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag5', '#ag5')">Group 5</button>
+                 
+                      <button data-inline="true" id="ag6" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag6', '#ag6')">Group 6</button>
+                 
+                      <button data-inline="true" id="ag7" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag7', '#ag7')">Group 7</button>
+                  
+                      <button data-inline="true" id="ag8" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag8', '#ag8')">Group 8</button>
+                    
+                      <button data-inline="true" id="ag9" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag9', '#ag9')">Group 9</button>
+                    
+                      <button data-inline="true" id="ag10" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag10', '#ag10')">Group 10</button>
+
+              <center>
+                <div id="s1" data-role="fieldcontain">
+                  <label for="slider1">
+                    Throttle
+                  </label>
+                  <input id="throttle" type="range" mouseup="onMouseUp()" onchange="onSlide()" name="slider" value="0" min="0" max="100" data-highlight="false" />
+                </div>
+              </center>
+            </div>
+        </div>
+    </body>
 </html>

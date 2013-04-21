@@ -1,0 +1,227 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Telemachus</title>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="information.css" />
+    
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"></script>
+    <script type="text/javascript" src="jKSPWAPICore.js"></script>
+    <script>
+
+      function onLoad()
+      {
+
+      $(function() {
+      $( "#tabs" ).tabs();
+      });
+
+      $(function() {
+      $( "#about-accordion" ).accordion({heightStyle: "content"});
+
+      });
+      $(function() {
+      $( "#pages-accordion" ).accordion({heightStyle: "content"});
+
+      });
+      $(function() {
+      $( "#api-accordion" ).accordion({heightStyle: "content"});
+
+      });
+      
+      $(document).ready(function() {
+      displayVersionNumber();
+      displayAPIList();
+      });
+      }
+
+      function displayVersionNumber()
+      {
+      KSPWAPICall("datalink?version=a.version", function(d){
+      $( "#version" ).html(d.version);});
+      }
+
+      function displayAPIList()
+      {
+      KSPWAPICall("datalink?api=a.api", function(d){
+      var state = $("#api-accordion").accordion( "option", "active" );
+      for (var i = 0; i < d.api.length; i++) {
+      $( "#api-accordion" ).append("<h3>" + d.api[i][1] + "</h3><div><p>" + d.api[i][0] + "</p></div>");
+      }
+      $( "#api-accordion" ).accordion("destroy").accordion({heightStyle: "content"});
+      $("#api-accordion").accordion( "option", "active", state );
+      });
+
+      }
+
+      </script>
+  </head>
+  <body onload="onLoad()">
+
+    <div id="tabs">
+      <ul>
+        <li>
+          <a href="#tabs-1">Telemachus</a>
+        </li>
+        <li>
+          <a href="#tabs-2">API</a>
+        </li>
+        <li>
+          <a href="#tabs-3">About</a>
+        </li>
+      </ul>
+      <div id="tabs-1">
+
+        <div id="pages-accordion">
+          <h3>Altitude</h3>
+          <div>
+            <p>
+              Display a graph visualising your crafts current altitude.
+            </p>
+            <p>
+              <button onclick="window.open('altitude.html')">Open</button>
+            </p>
+          </div>
+          <h3>Apoapsis and Periapsis</h3>
+          <div>
+            <p>
+              Display a graph visualising the apoapsis and periapsis of your crafts orbit.
+            </p>
+            <p>
+              <button onclick="window.open('apoapsis-periapsis.html')">Open</button>
+            </p>
+          </div>
+          <h3>Atmospheric Density</h3>
+          <div>
+            <p>
+              Display a graph visualising the atmospheric density at your crafts current location.
+            </p>
+            <p>
+              <button onclick="window.open('density.html')">Open</button>
+            </p>
+          </div>
+          <h3>Dynamic Pressure</h3>
+          <div>
+            <p>
+              Display a graph visualising the dynamic pressure currently acting on your craft.
+            </p>
+            <p>
+              <button onclick="window.open('dynamic-pressure.html')">Open</button>
+            </p>
+          </div>
+          <h3>g-force</h3>
+          <div>
+            <p>
+              Display a graph visualising the g-force acting on your craft.
+            </p>
+            <p>
+              <button onclick="window.open('g-force.html')">Open</button>
+            </p>
+          </div>
+          <h3>Gravity</h3>
+          <div>
+            <p>
+              Display a graph visualising the magnitude of the gravity at your crafts current location.
+            </p>
+            <p>
+              <button onclick="window.open('gravity.html')">Open</button>
+            </p>
+          </div>
+          <h3>Inclination and Argument of Periapsis</h3>
+          <div>
+            <p>
+              Display a graph visualising the inclination and the argument of periapsis of your crafts orbit.
+            </p>
+            <p>
+              <button onclick="window.open('inclination-aop.html')">Open</button>
+            </p>
+          </div>
+          <h3>Pressure</h3>
+          <div>
+            <p>
+              Display a graph visualising the atmospheric pressure at your crafts current location.
+            </p>
+            <p>
+              <button onclick="window.open('pressure.html')">Open</button>
+            </p>
+          </div>
+          <h3>Temperature</h3>
+          <div>
+            <p>
+              Display a graph visualising the results from the temperature sensors on your craft.
+            </p>
+            <p>
+              <button onclick="window.open('temperature.html')">Open</button>
+            </p>
+          </div>
+          <h3>Time to Apoapsis and Periapsis</h3>
+          <div>
+            <p>
+              Display a graph visualising the time to apoapsis and periapsis
+            </p>
+            <p>
+              <button onclick="window.open('time-apoapsis-periapsis.html')">Open</button>
+            </p>
+          </div>
+          <h3>Velocity</h3>
+          <div>
+            <p>
+              Display a graph visualising your crafts velocity.
+            </p>
+            <p>
+              <button onclick="window.open('velocity.html')">Open</button>
+            </p>
+          </div>
+          <h3>Basic Flight Control</h3>
+          <div>
+            <p>
+              Use this interface to send basic commands to your vessel, such as staging, setting the throttle and toggling ASAS.
+            </p>
+            <p>
+              <button onclick="window.open('flight-control.html')">Open</button>
+            </p>
+          </div>
+          <h3>Smart A.S.S.</h3>
+          <div>
+            <p>
+              This page interfaces with MechJeb2 and allows you to use some of the Smart A.S.S. functions. If you do not have MechJeb2 installed then it will not function.
+            </p>
+            <p>
+              <button onclick="window.open('smart-ass.html')">Open</button>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div id="tabs-2">
+        <div id="api-accordion">
+          
+
+        </div>
+      </div>
+      <div id="tabs-3">
+        <div id="about-accordion">
+          <h3>Version</h3>
+          <div>
+            <p id="version">
+              Unknown
+            </p>
+          </div>
+          <h3>Credits</h3>
+          <div>
+            <p>
+              <ul>
+                <li>Telemachus and Server Plugins - <b>Rich</b></li>
+                <li>Telemachus Antenna Part - <b>Borklund</b></li>
+                <li>FusTek Telemachus Antenna - <b>Fusty</b></li>
+              </ul>
+            </p>
+          </div>
+         
+        </div>
+      </div>
+    </div>
+
+
+  </body>
+</html>

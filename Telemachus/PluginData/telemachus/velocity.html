@@ -12,7 +12,7 @@
       google.setOnLoadCallback(onLoad);
 
       function onLoad() {
-
+      jQuery(document).ready(function($) {
       initKSPWAPIGraph("o=v.orbitalVelocity&m=v.surfaceVelocity&av=v.angularVelocity&sv=v.surfaceSpeed&vs=v.verticalSpeed&met=v.missionTime", function(rawData, d){
       rawData.push([d.met, d.m, d.vs, d.sv, d.av, d.o]);},
       [['Mission Time', 'Actual', 'Vertical', 'Surface', 'Angular', 'Orbital']],
@@ -21,7 +21,7 @@
       vAxis: { title: 'Velocity (m/s)' },
       hAxis: { title: 'Mission Time (s)' },
       legend: { position: 'bottom' }
-      }, "chart_div");
+      }, "chart_div");});
       }
     </script>
   </head>

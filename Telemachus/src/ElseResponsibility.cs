@@ -33,7 +33,7 @@ namespace Telemachus
             protocol = "HTTP/1.0";
             responseType = "Moved Permanently";
             responseCode = "301";
-            attributes.Add("Location", "/telemachus/information");
+            attributes.Add("Location", "/telemachus/information.html");
         }
 
         #endregion

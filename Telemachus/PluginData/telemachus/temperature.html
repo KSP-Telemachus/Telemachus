@@ -13,7 +13,7 @@
       google.setOnLoadCallback(onLoad);
 
       function onLoad() {
-
+      jQuery(document).ready(function($) {
       initKSPWAPIGraph("t=s.temperature&met=v.missionTime", function(rawData, d){
       temp = d.t[0];
       temp.splice(0, 0, "Mission Time");
@@ -28,7 +28,7 @@
       vAxis: { title: 'Temperature' },
       hAxis: { title: 'Mission Time (s)' },
       legend: { position: 'bottom' }
-      }, "chart_div");
+      }, "chart_div");});
       }
     </script>
   </head>
