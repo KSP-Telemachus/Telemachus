@@ -5,7 +5,7 @@
         <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-        <title>Smart A.S.S.
+        <title>Flight Control
         </title>
       
         <link rel="stylesheet" href="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
@@ -18,24 +18,6 @@
 
         <script>
 
-          function onLoad()
-          {
-          var isSlide = false;
-          $(document).ready(function() {
-          
-          rawData = [];
-          initKSPWAPIPoll("t=f.throttle", function(rawData){}, function(rawData, d){if(!isSlide){$('#throttle').val(d.t*100); $('#throttle').slider("refresh");}}, rawData);
-
-          $("#s1").mouseup(function(){
-          isSlide=false;
-          });
-          
-          $("#s1").mousedown(function(){
-          isSlide=true;
-          });
-
-          });
-          }
 
           function command(command) {
 
@@ -44,22 +26,8 @@
 
           function toggle(command, id){
 
-          KSPWAPICall("datalink?d.p=p.paused&d.ret=" + command, function(d){
+          KSPWAPICall("datalink?d.p=p.paused&d.ret=" + command, function(d){});
 
-          });
-
-          }
-          function onSlide()
-          {
-          
-          KSPWAPICall("datalink?d.p=p.paused&d.ret=f.setThrottle[" + $('#throttle').val()/100 + "]", function(d){
-
-          });
-          }
-          
-          function onMouseUp()
-          {
-          alert("lol");
           }
         </script>
     </head>
@@ -73,9 +41,9 @@
            
                       <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleDown')">Throttle-</button>
                   
-                      <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleZero')">0%</button>
+                      <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleFull')">0%</button>
                    
-                      <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleFull')">100%</button>
+                      <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleZero')">100%</button>
                   
                       <button data-inline="true" id="rcs" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.rcs', '#rcs')">RCS</button>
                    
@@ -109,15 +77,6 @@
                       <button data-inline="true" id="ag9" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag9', '#ag9')">Group 9</button>
                     
                       <button data-inline="true" id="ag10" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag10', '#ag10')">Group 10</button>
-
-              <center>
-                <div id="s1" data-role="fieldcontain">
-                  <label for="slider1">
-                    Throttle
-                  </label>
-                  <input id="throttle" type="range" mouseup="onMouseUp()" onchange="onSlide()" name="slider" value="0" min="0" max="100" data-highlight="false" />
-                </div>
-              </center>
             </div>
         </div>
     </body>
