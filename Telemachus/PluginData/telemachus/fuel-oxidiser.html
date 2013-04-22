@@ -13,7 +13,7 @@
 
       function onLoad() {
       jQuery(document).ready(function($) {
-                  initKSPWAPIGraph("fuel=r.[LiquidFuel]&oxidiser=r.[Oxidizer]&met=v.missionTime", function(rawData, d){
+                  initKSPWAPIGraph("fuel=r.resource[LiquidFuel]&oxidiser=r.resource[Oxidizer]&met=v.missionTime", function(rawData, d){
                   rawData.push([d.met, d.fuel, d.oxidiser]);},
                   [['Mission Time', 'Liquid Fuel', 'Oxidiser']], 
                   {

@@ -639,7 +639,7 @@ namespace Telemachus
         {
             registerAPI(new APIEntry(
                 dataSources => { return getsSensorValues(dataSources); },
-                "s.", "Sensor Information [string sensor type]", new SensorModuleListJSONFormatter()));
+                "s.sensor", "Sensor Information [string sensor type]", new SensorModuleListJSONFormatter()));
         }
 
         #endregion
@@ -685,7 +685,7 @@ namespace Telemachus
         {
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
-                "r.", "Resource Information [string resource type]", new ResourceListJSONFormatter()));
+                "r.resource", "Resource Information [string resource type]", new ResourceListJSONFormatter()));
         }
 
         #endregion
@@ -749,7 +749,7 @@ namespace Telemachus
 
             lock (this)
             {
-                accesses++;
+                accesses = 0;
 
                 if (accesses >= ACCESS_REFRESH)
                 {
@@ -793,13 +793,11 @@ namespace Telemachus
 
                 foreach (Part part in vessel.parts)
                 {
-                    PluginLogger.debug("1");
                     if (part.Resources.Count > 0)
                     {
                         
                         foreach (PartResource partResource in part.Resources)
                         {
-                            PluginLogger.debug(partResource.resourceName);
                             List<PartResource> list = null;
                             partModules.TryGetValue(partResource.resourceName, out list);
                             if (list == null)
