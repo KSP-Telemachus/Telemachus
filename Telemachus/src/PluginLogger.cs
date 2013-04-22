@@ -15,6 +15,13 @@ namespace Telemachus
 #endif
         }
 
+        public static void fine(String s)
+        {
+#if (DEBUG && FINE)
+            UnityEngine.Debug.Log("[Telemachus]" + s);
+#endif
+        }
+
         public static void print(String s)
         {
             UnityEngine.Debug.Log("[Telemachus]" + s);

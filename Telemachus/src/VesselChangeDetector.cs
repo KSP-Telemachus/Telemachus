@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Telemachus;
 
 public class VesselChangeDetector
 {
@@ -53,7 +54,15 @@ public class VesselChangeDetector
 
     private void updateHasTelemachusPart(Vessel vessel)
     {
-        hasTelemachusPart = vessel.parts.FindAll(p => p.Modules.Contains("TelemachusDataLink")).Count > 0;
+        try
+        {
+
+            hasTelemachusPart = vessel.parts.FindAll(p => p.Modules.Contains("TelemachusDataLink")).Count > 0;
+        }
+        catch(Exception e)
+        {
+            PluginLogger.debug(e.Message + " " + e.StackTrace);
+        }
     }
 
     #endregion

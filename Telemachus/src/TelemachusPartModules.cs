@@ -18,7 +18,7 @@ namespace Telemachus
         public void openBrowser()
         {
             Application.OpenURL("http://" + TelemachusBehaviour.getServerPrimaryIPAddress() + ":"
-                + TelemachusBehaviour.getServerPort() + "/telemachus/information");
+                + TelemachusBehaviour.getServerPort() + "/telemachus/information.html");
         }
 
         #endregion

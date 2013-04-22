@@ -54,7 +54,7 @@ namespace Telemachus
             APIHandlers.Add(new VesselDataLinkHandler());
             APIHandlers.Add(new BodyDataLinkHandler());
             APIHandlers.Add(new TimeWarpDataLinkHandler());
-            APIHandlers.Add(new ResourceDataLinkHandler());
+            APIHandlers.Add(new ResourceDataLinkHandler(vesselChangeDetector));
             APIHandlers.Add(new APIDataLinkHandler(this));
             APIHandlers.Add(new DefaultDataLinkHandler());
         }
@@ -122,7 +122,7 @@ namespace Telemachus
             foreach (String arg in argsSplit)
             {
                 string refArg = arg;
-                PluginLogger.debug("[Telemachus]" + refArg);
+                PluginLogger.fine(refArg);
                 parseParams(ref refArg, ref dataSources);
                 currentEntry = argumentParse(refArg, dataSources);
                 APIResults.Add(currentEntry.formatter.format(currentEntry.function(dataSources)));
@@ -159,7 +159,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                PluginLogger.debug("[Telemachus] " + e.Message + " " + e.StackTrace);
+                PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
         }
 

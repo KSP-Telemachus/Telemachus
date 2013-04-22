@@ -163,7 +163,7 @@ namespace Telemachus
             {
                 try
                 {   
-                    PluginLogger.debug("[Telemachus] Mechjeb part installed, reflecting.");
+                    PluginLogger.debug("Mechjeb part installed, reflecting.");
                     Type mechJebCoreType = mechJebCore.GetType();
                     FieldInfo attitudeField = mechJebCoreType.GetField("attitude", BindingFlags.Public | BindingFlags.Instance);
                     attitude = attitudeField.GetValue(mechJebCore);
@@ -175,7 +175,7 @@ namespace Telemachus
                 }
                 catch (Exception e)
                 {
-                    PluginLogger.debug("[Telemachus]" + e.Message + " " +  e.StackTrace);
+                    PluginLogger.debug(e.Message + " " +  e.StackTrace);
                 }
 
                 return null;
@@ -184,14 +184,21 @@ namespace Telemachus
 
         private static PartModule findMechJeb(Vessel vessel)
         {
-            List<Part> pl = vessel.parts.FindAll(p => p.Modules.Contains("MechJebCore"));
-
-            foreach (PartModule m in pl[0].Modules)
+            try
             {
-                if (m.GetType().Name.Equals("MechJebCore"))
+                List<Part> pl = vessel.parts.FindAll(p => p.Modules.Contains("MechJebCore"));
+
+                foreach (PartModule m in pl[0].Modules)
                 {
-                    return m;
+                    if (m.GetType().Name.Equals("MechJebCore"))
+                    {
+                        return m;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
 
             return null;
@@ -631,26 +638,17 @@ namespace Telemachus
         protected void buildAPI()
         {
             registerAPI(new APIEntry(
-                dataSources => { return getsSensorValues(dataSources, "TEMP"); },
-                "s.temperature", "Temperature", new SensorModuleListJSONFormatter()));
-            registerAPI(new APIEntry(
-                dataSources => { return getsSensorValues(dataSources, "ACC"); },
-                "s.acceleration", "Acceleration", new SensorModuleListJSONFormatter()));
-            registerAPI(new APIEntry(
-                dataSources => { return getsSensorValues(dataSources, "GRAV"); },
-                "s.gravity", "Gravity", new SensorModuleListJSONFormatter()));
-            registerAPI(new APIEntry(
-                dataSources => { return getsSensorValues(dataSources, "PRES"); },
-                "s.pressure", "Pressure", new SensorModuleListJSONFormatter()));
+                dataSources => { return getsSensorValues(dataSources); },
+                "s.", "Sensor Information [string sensor type]", new SensorModuleListJSONFormatter()));
         }
 
         #endregion
 
         #region Sensors
 
-        protected List<ModuleEnviroSensor> getsSensorValues(DataSources datasources, string ID)
+        protected List<ModuleEnviroSensor> getsSensorValues(DataSources datasources)
         {
-            return sensorCache.get(ID, datasources);
+            return sensorCache.get(datasources);
         }
 
         #endregion
@@ -659,37 +657,82 @@ namespace Telemachus
 
         private void vesselChanged(Vessel vessel)
         {
-            //sensorCache.setDirty();
+            
         }
 
         #endregion
     }
 
-    public class SensorCache
+
+    public class ResourceDataLinkHandler : DataLinkHandler
+    {
+
+        #region Fields
+
+        ResourceCache resourceCache = new ResourceCache();
+
+        #endregion
+
+        #region Initialisation
+
+        public ResourceDataLinkHandler(VesselChangeDetector vesselChangeDetector)
+        {
+            buildAPI();
+            vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
+        }
+
+        protected void buildAPI()
+        {
+            registerAPI(new APIEntry(
+                dataSources => { return getsResourceValues(dataSources); },
+                "r.", "Resource Information [string resource type]", new ResourceListJSONFormatter()));
+        }
+
+        #endregion
+
+        #region Sensors
+
+        protected List<PartResource> getsResourceValues(DataSources datasources)
+        {
+            return resourceCache.get(datasources);
+        }
+
+        #endregion
+
+        #region VesselChangeDetector
+
+        private void vesselChanged(Vessel vessel)
+        {
+
+        }
+
+        #endregion
+    }
+
+    public abstract class ModuleCache<T>
     {
         #region Constants
 
-        const int ACCESS_REFRESH = 200;
+        protected const int ACCESS_REFRESH = 0;
 
         #endregion
 
         #region Fields
 
-        ReaderWriterLock updateLock = new ReaderWriterLock();
-        Dictionary<string, List<ModuleEnviroSensor>> sensors = new Dictionary<string, List<ModuleEnviroSensor>>();
-        bool isDirty = true;
-        int accesses = 0;
+        protected Dictionary<string, List<T>> partModules = new Dictionary<string, List<T>>();
+        protected bool isDirty = true;
+        protected int accesses = 0;
 
         #endregion
 
         #region Cache
 
-        private void setDirty(bool value)
+        protected void setDirty(bool value)
         {
             isDirty = value;
         }
 
-        private bool checkDirty()
+        protected bool checkDirty()
         {
             return isDirty;
         }
@@ -699,13 +742,96 @@ namespace Telemachus
             setDirty(true);
         }
 
-        public void refresh(Vessel vessel, ReaderWriterLock inputLock)
+        public List<T> get(DataSources dataSources)
         {
-            LockCookie lockCookie = inputLock.UpgradeToWriterLock(Timeout.Infinite);
+            string ID = dataSources.args[0];
+            List<T> avail = null, ret = null;
 
+            lock (this)
+            {
+                accesses++;
+
+                if (accesses >= ACCESS_REFRESH)
+                {
+                    setDirty();
+                }
+
+                if (checkDirty())
+                {
+                    refresh(dataSources.vessel);
+                }
+
+                partModules.TryGetValue(ID, out avail);
+            }
+
+            if (avail != null)
+            {
+                ret = new List<T>(avail);
+            }
+            else
+            {
+                ret = new List<T>();
+            }
+
+            return ret;
+        }
+
+        protected abstract void refresh(Vessel vessel);
+
+        #endregion
+    }
+
+    public class ResourceCache : ModuleCache<PartResource>
+    {
+        #region ModuleCache
+
+        protected override void refresh(Vessel vessel)
+        {
             try
             {
-                sensors.Clear();
+                partModules.Clear();
+
+                foreach (Part part in vessel.parts)
+                {
+                    PluginLogger.debug("1");
+                    if (part.Resources.Count > 0)
+                    {
+                        
+                        foreach (PartResource partResource in part.Resources)
+                        {
+                            PluginLogger.debug(partResource.resourceName);
+                            List<PartResource> list = null;
+                            partModules.TryGetValue(partResource.resourceName, out list);
+                            if (list == null)
+                            {
+                                list = new List<PartResource>();
+                                partModules[partResource.resourceName] = list;
+                                
+                            }
+
+                            list.Add(partResource);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                PluginLogger.debug(e.Message);
+            }
+        }
+
+        #endregion
+    }
+
+    public class SensorCache : ModuleCache<ModuleEnviroSensor>
+    {
+        #region ModuleCache
+
+        protected override void refresh(Vessel vessel)
+        {
+            try
+            {
+                partModules.Clear();
 
                 List<Part> partsWithSensors = vessel.parts.FindAll(p => p.Modules.Contains("ModuleEnviroSensor"));
 
@@ -716,11 +842,13 @@ namespace Telemachus
                         if (module.GetType().Equals(typeof(ModuleEnviroSensor)))
                         {
                             List<ModuleEnviroSensor> list = null;
-                            sensors.TryGetValue(((ModuleEnviroSensor)module).sensorType, out list);
+                            partModules.TryGetValue(((ModuleEnviroSensor)module).sensorType, out list);
                             if (list == null)
                             {
+                                PluginLogger.debug(((ModuleEnviroSensor)module).sensorType);
                                 list = new List<ModuleEnviroSensor>();
-                                sensors[((ModuleEnviroSensor)module).sensorType] = list;
+                                partModules[((ModuleEnviroSensor)module).sensorType] = list;
+                                
                             }
 
                             list.Add((ModuleEnviroSensor)module);
@@ -728,63 +856,10 @@ namespace Telemachus
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                PluginLogger.debug(e.Message);
+                PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
-
-            updateLock.DowngradeFromWriterLock(ref lockCookie);
-        }
-
-        public List<ModuleEnviroSensor> get(string ID, DataSources dataSources)
-        {
-            accesses++;
-
-            if (accesses > ACCESS_REFRESH)
-            {
-                setDirty();
-            }
-
-            List<ModuleEnviroSensor> avail = null, ret = null;
-
-            updateLock.AcquireReaderLock(Timeout.Infinite);
-
-            if (checkDirty())
-            {
-                refresh(dataSources.vessel, updateLock);
-            }
-
-            sensors.TryGetValue(ID, out avail);
-
-            if (avail != null)
-            {
-                ret = new List<ModuleEnviroSensor>(avail);
-            }
-            else
-            {
-                ret = new List<ModuleEnviroSensor>();
-            }
- 
-            updateLock.ReleaseReaderLock();
-            
-            return ret;
-        }
-
-        #endregion
-    }
-
-    public class ResourceDataLinkHandler : DataLinkHandler
-    {
-        #region Initialisation
-
-        public ResourceDataLinkHandler()
-        {
-            buildAPI();
-        }
-
-        protected void buildAPI()
-        {
-            
         }
 
         #endregion
@@ -892,10 +967,7 @@ namespace Telemachus
         {
             APIEntry entry = null;
 
-            lock (this)
-            {
-                APIEntries.TryGetValue(API, out entry);
-            }
+            APIEntries.TryGetValue(API, out entry);
 
             if (entry == null)
             {

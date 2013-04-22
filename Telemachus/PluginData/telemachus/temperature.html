@@ -14,7 +14,7 @@
 
       function onLoad() {
       jQuery(document).ready(function($) {
-      initKSPWAPIGraph("t=s.temperature&met=v.missionTime", function(rawData, d){
+      initKSPWAPIGraph("t=s.[TEMP]&met=v.missionTime", function(rawData, d){
       temp = d.t[0];
       temp.splice(0, 0, "Mission Time");
       rawData[0] = temp;

@@ -102,6 +102,22 @@ namespace Telemachus
         }
     }
 
+    public class ResourceListJSONFormatter : JSONFormatter
+    {
+        public override string format(object input)
+        {
+            List<PartResource> resources = (List<PartResource>)input;
+            double amount = 0d;
+
+            foreach (PartResource p in resources)
+            {
+                amount += p.amount; 
+            }
+
+            return varName + JSON_ASSIGN + amount.ToString();
+        }
+    }
+
     public class SensorModuleListJSONFormatter : JSONFormatter
     {
         public override string format(object input)
