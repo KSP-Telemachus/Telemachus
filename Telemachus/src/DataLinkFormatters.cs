@@ -107,14 +107,20 @@ namespace Telemachus
         public override string format(object input)
         {
             List<PartResource> resources = (List<PartResource>)input;
-            double amount = 0d;
 
-            foreach (PartResource p in resources)
+            if (resources.Count > 0)
             {
-                amount += p.amount; 
+                double amount = 0d;
+
+                foreach (PartResource p in resources)
+                {
+                    amount += p.amount;
+                }
+
+                return varName + JSON_ASSIGN + amount.ToString(); 
             }
 
-            return varName + JSON_ASSIGN + amount.ToString();
+            return varName + JSON_ASSIGN + "-1";
         }
     }
 

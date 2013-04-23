@@ -9,7 +9,10 @@ function initKSPWAPIGraph(APIString, postUpdate, rawData, options, divName){
 		try{
 			chart.draw(google.visualization.arrayToDataTable(rawData), options);
 		}
-		catch(e){rawData.length = 0;}
+		catch(e){
+			//Sensor graph reset when the number of sensors changes.
+			rawData.length = 1;
+		}
 	}
 
 	function appendCurrentValueToLegend(rawData) {

@@ -43,6 +43,7 @@ function initKSPWAPIPoll(APIString, preUpdate, postUpdate, rawData){
 
 		$.get(APIString, callback).error(function() {
 			rawData.length = 1;
+			rawData.push(new Array(rawData[0].length+1).join('0').split('').map(parseFloat));
 			t = setTimeout(
 				function(){update();}, IDLE_UPDATE_INTERVAL);
 		});

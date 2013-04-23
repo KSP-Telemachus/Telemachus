@@ -713,7 +713,7 @@ namespace Telemachus
     {
         #region Constants
 
-        protected const int ACCESS_REFRESH = 0;
+        protected const int ACCESS_REFRESH = 10;
 
         #endregion
 
@@ -749,7 +749,7 @@ namespace Telemachus
 
             lock (this)
             {
-                accesses = 0;
+                accesses++;
 
                 if (accesses >= ACCESS_REFRESH)
                 {

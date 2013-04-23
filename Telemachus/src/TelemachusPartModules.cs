@@ -17,8 +17,18 @@ namespace Telemachus
         [KSPEvent(guiActive = true, guiName = "Open Link")]
         public void openBrowser()
         {
-            Application.OpenURL("http://" + TelemachusBehaviour.getServerPrimaryIPAddress() + ":"
-                + TelemachusBehaviour.getServerPort() + "/telemachus/information.html");
+            try
+            {
+
+                Application.OpenURL("http://" + TelemachusBehaviour.getServerPrimaryIPAddress() + ":"
+                    + TelemachusBehaviour.getServerPort() + "/telemachus/information.html");
+
+            }
+            catch
+            {
+                PluginLogger.print(
+                    "Unable to open the data link. Please try to edit the Telemachus configuration file manually");
+            }
         }
 
         #endregion

@@ -14,7 +14,13 @@
       function onLoad() {
       jQuery(document).ready(function($) {
                   initKSPWAPIGraph("el=r.resource[ElectricCharge]&met=v.missionTime", function(rawData, d){
-                  rawData.push([d.met, d.el]);},
+                  if(d.el == -1){
+                       rawData.length = 1;
+                       rawData.push([0, 0]);
+                  }
+                  else{
+                    rawData.push([d.met, d.el]);},
+                  }
                   [['Mission Time', 'Electrcity']], 
                   {
                     title: 'Electricity Plot',

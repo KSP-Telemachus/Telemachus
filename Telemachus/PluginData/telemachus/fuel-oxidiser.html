@@ -14,7 +14,15 @@
       function onLoad() {
       jQuery(document).ready(function($) {
                   initKSPWAPIGraph("fuel=r.resource[LiquidFuel]&oxidiser=r.resource[Oxidizer]&met=v.missionTime", function(rawData, d){
-                  rawData.push([d.met, d.fuel, d.oxidiser]);},
+                    if(isNaN(d.fuel) || isNaN(d.oxidiser)){
+                       rawData.length = 1;
+                       rawData.push([0, 0, 0]);
+                    }
+                    else
+                    {
+                        rawData.push([d.met, d.fuel, d.oxidiser]);
+                    }
+                  },
                   [['Mission Time', 'Liquid Fuel', 'Oxidiser']], 
                   {
                     title: 'Fuel and Oxidiser Plot',
