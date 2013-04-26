@@ -105,7 +105,9 @@
     <Content Include="PluginData\telemachus\pressure.html" />
     <Content Include="PluginData\telemachus\temperature.html" />
     <Content Include="PluginData\telemachus\time-apoapsis-periapsis.html" />
-    <Content Include="PluginData\telemachus\velocity.html" />
+    <Content Include="PluginData\telemachus\velocity.html">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

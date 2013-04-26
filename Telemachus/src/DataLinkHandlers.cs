@@ -759,6 +759,7 @@ namespace Telemachus
                 if (checkDirty())
                 {
                     refresh(dataSources.vessel);
+                    accesses = 0;
                 }
 
                 partModules.TryGetValue(ID, out avail);

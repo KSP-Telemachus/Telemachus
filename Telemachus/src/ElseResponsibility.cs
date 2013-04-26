@@ -34,6 +34,19 @@ namespace Telemachus
             responseType = "Moved Permanently";
             responseCode = "301";
             attributes.Add("Location", "/telemachus/information.html");
+
+            try
+            {
+                KSP.IO.TextReader textReader = null;
+                textReader = KSP.IO.TextReader.CreateForType<TelemachusDataLink>("information.html");
+                textReader.Peek();
+
+            }
+            catch
+            {
+                throw new SoftException("Unable to find the Telemachus index page. Is it installed in the PluginData folder?");
+            }
+
         }
 
         #endregion
