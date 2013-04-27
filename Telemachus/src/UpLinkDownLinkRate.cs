@@ -97,7 +97,16 @@ namespace Telemachus
 
                     if (irel > 0)
                     {
-                        return ((double)totalBytes) / newestTime.Subtract(lastTime).TotalSeconds;
+                        double delta = newestTime.Subtract(lastTime).TotalSeconds;
+
+                        if (delta == 0)
+                        {
+                            return (double)totalBytes;
+                        }
+                        else
+                        {
+                            return ((double)totalBytes) / delta;
+                        }
                     }
                     else
                     {

@@ -11,7 +11,7 @@ namespace Telemachus
         public static void debug(String s)
         {
 #if (DEBUG)
-            UnityEngine.Debug.Log("[Telemachus Debug]" +  s);
+            UnityEngine.Debug.Log("[Telemachus Debug] " +  s);
 #endif
         }
 
@@ -24,7 +24,7 @@ namespace Telemachus
 
         public static void print(String s)
         {
-            UnityEngine.Debug.Log("[Telemachus]" + s);
+            UnityEngine.Debug.Log("[Telemachus] " + s);
         }
 
         public static string listToString(List<int> l)

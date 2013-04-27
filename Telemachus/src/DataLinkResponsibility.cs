@@ -69,7 +69,6 @@ namespace Telemachus
             {
                 dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
 
-
                 try
                 {
                     dataSources.vessel = FlightGlobals.ActiveVessel;

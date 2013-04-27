@@ -40,7 +40,6 @@ namespace Telemachus
                 KSP.IO.TextReader textReader = null;
                 textReader = KSP.IO.TextReader.CreateForType<TelemachusDataLink>("information.html");
                 textReader.Peek();
-
             }
             catch
             {
