@@ -16,62 +16,75 @@ namespace Telemachus
 
         public MechJebDataLinkHandler()
         {
-            buildAPI();
-        }
-
-        protected void buildAPI()
-        {
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => { return reflectOff(dataSources); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return reflectOff(dataSources); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.smartassoff", "Smart ASS Off"));
 
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => { return reflectAttitudeTo(dataSources, Vector3d.forward, "MANEUVER_NODE"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return reflectAttitudeTo(dataSources, Vector3d.forward, "MANEUVER_NODE"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.node", "Node"));
 
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => { return reflectAttitudeTo(dataSources, Vector3d.forward, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return reflectAttitudeTo(dataSources, Vector3d.forward, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.prograde", "Prograde"));
 
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => { return reflectAttitudeTo(dataSources, Vector3d.back, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return reflectAttitudeTo(dataSources, Vector3d.back, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.retrograde", "Retrograde"));
 
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => {  return reflectAttitudeTo(dataSources, Vector3d.left, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return reflectAttitudeTo(dataSources, Vector3d.left, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.normalplus", "Normal Plus"));
 
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => {  return reflectAttitudeTo(dataSources, Vector3d.right, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return reflectAttitudeTo(dataSources, Vector3d.right, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.normalminus", "Normal Minus"));
 
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => {  return reflectAttitudeTo(dataSources, Vector3d.up, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return reflectAttitudeTo(dataSources, Vector3d.up, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.radialplus", "Radial Plus"));
 
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => {  return reflectAttitudeTo(dataSources, Vector3d.down, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return reflectAttitudeTo(dataSources, Vector3d.down, "ORBIT"); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.radialminus", "Radial Minus"));
 
             registerAPI(new APIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => {  return surface(dataSources); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return surface(dataSources); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.surface", "Surface [float heading, float pitch]"));
 
@@ -79,9 +92,12 @@ namespace Telemachus
                 dataSources =>
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                        (x) => { return reflectAttitudeTo(dataSources, double.Parse(dataSources.args[0]), 
-                            double.Parse(dataSources.args[1]), double.Parse(dataSources.args[2])
-                            ); }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
+                        (x) =>
+                        {
+                            return reflectAttitudeTo(dataSources, double.Parse(dataSources.args[0]),
+                                double.Parse(dataSources.args[1]), double.Parse(dataSources.args[2])
+                                );
+                        }), UnityEngine.SendMessageOptions.DontRequireReceiver); return 0d;
                 },
                "mj.surface2", "Surface [double heading, double pitch, double roll]"));
         }
@@ -221,11 +237,6 @@ namespace Telemachus
 
         public FlyByWireDataLinkHandler()
         {
-            buildAPI();
-        }
-
-        protected void buildAPI()
-        {
             registerAPI(new APIEntry(
                 dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); iyaw = true ; return 0; },
                 "v.setYaw", "Yaw [float yaw]"));
@@ -295,11 +306,6 @@ namespace Telemachus
         #region Initialisation
 
         public FlightDataLinkHandler()
-        {
-            buildAPI();
-        }
-
-        protected void buildAPI()
         {
             registerAPI(new APIEntry(
                 dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
@@ -491,11 +497,6 @@ namespace Telemachus
 
         public TimeWarpDataLinkHandler()
         {
-            buildAPI();
-        }
-
-        protected void buildAPI()
-        {
             registerAPI(new APIEntry(
                 dataSources =>
                 {
@@ -516,11 +517,6 @@ namespace Telemachus
 
         public BodyDataLinkHandler()
         {
-            buildAPI();
-        }
-
-        protected void buildAPI()
-        {
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.orbit.referenceBody.name; },
                 "b.name", "Body Name", new StringJSONFormatter()));
@@ -537,11 +533,6 @@ namespace Telemachus
         #region Initialisation
         
         public VesselDataLinkHandler()
-        {
-            buildAPI();
-        }
-        
-        protected void buildAPI()
         {
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.altitude; }, 
@@ -590,11 +581,6 @@ namespace Telemachus
 
         public OrbitDataLinkHandler()
         {
-            buildAPI();
-        }
-
-        protected void buildAPI()
-        {
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.orbit.PeA; },
                 "o.PeA", "PeA"));
@@ -631,15 +617,11 @@ namespace Telemachus
 
         public SensorDataLinkHandler(VesselChangeDetector vesselChangeDetector)
         {
-            buildAPI();
             vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
-        }
 
-        protected void buildAPI()
-        {
             registerAPI(new APIEntry(
-                dataSources => { return getsSensorValues(dataSources); },
-                "s.sensor", "Sensor Information [string sensor type]", new SensorModuleListJSONFormatter()));
+               dataSources => { return getsSensorValues(dataSources); },
+               "s.sensor", "Sensor Information [string sensor type]", new SensorModuleListJSONFormatter()));
         }
 
         #endregion
@@ -677,12 +659,7 @@ namespace Telemachus
 
         public ResourceDataLinkHandler(VesselChangeDetector vesselChangeDetector)
         {
-            buildAPI();
             vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
-        }
-
-        protected void buildAPI()
-        {
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
                 "r.resource", "Resource Information [string resource type]", new ResourceListJSONFormatter()));
@@ -870,11 +847,6 @@ namespace Telemachus
 
         public PausedDataLinkHandler()
         {
-            buildAPI();
-        }
-
-        protected void buildAPI()
-        {
             registerAPI(new APIEntry(
                 dataSources => { return partPaused(); },
                 "p.paused", "Paused"));
@@ -897,21 +869,9 @@ namespace Telemachus
 
     public class APIDataLinkHandler : DataLinkHandler
     {
-        #region Fields
-
-        DataLinkResponsibility dataLinkResponsibility = null;
-        
-        #endregion
-
         #region Initialisation
 
         public APIDataLinkHandler(DataLinkResponsibility dataLinkResponsibility)
-        {
-            this.dataLinkResponsibility = dataLinkResponsibility;
-            buildAPI();
-        }
-
-        protected void buildAPI()
         {
             registerAPI(new APIEntry(
                 dataSources => { List<KeyValuePair<String, String>> APIList = new List<KeyValuePair<String, String>>(); 
@@ -921,6 +881,24 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources => { return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(); },
                 "a.version", "Telemachus Version", new StringJSONFormatter()));
+        }
+
+        #endregion
+    }
+
+    public class CompoundDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public CompoundDataLinkHandler(List<DataLinkHandler> APIHandlers)
+        {
+            foreach (DataLinkHandler dlh in APIHandlers)
+            {
+                foreach (KeyValuePair<string, APIEntry> entry in dlh.API)
+                {
+                    registerAPI(entry.Value);
+                }
+            }
         }
 
         #endregion
@@ -961,6 +939,14 @@ namespace Telemachus
         #endregion
 
         #region DataLinkHandler
+
+        public IEnumerable<KeyValuePair<string, APIEntry>> API
+        {
+            get
+            {
+                return APIEntries;
+            }
+        }
 
         public virtual bool process(String API, out APIEntry result)
         {

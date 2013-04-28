@@ -46,16 +46,22 @@ namespace Telemachus
         private void loadHandlers()
         {
             APIHandlers.Add(new PausedDataLinkHandler());
-            APIHandlers.Add(new FlightDataLinkHandler());
             APIHandlers.Add(new FlyByWireDataLinkHandler());
+            APIHandlers.Add(new FlightDataLinkHandler());
             APIHandlers.Add(new MechJebDataLinkHandler());
-            APIHandlers.Add(new OrbitDataLinkHandler());
-            APIHandlers.Add(new SensorDataLinkHandler(vesselChangeDetector));
-            APIHandlers.Add(new VesselDataLinkHandler());
-            APIHandlers.Add(new BodyDataLinkHandler());
             APIHandlers.Add(new TimeWarpDataLinkHandler());
-            APIHandlers.Add(new ResourceDataLinkHandler(vesselChangeDetector));
-            APIHandlers.Add(new APIDataLinkHandler(this));
+
+            APIHandlers.Add(new CompoundDataLinkHandler(
+                new List<DataLinkHandler>() { 
+                    new OrbitDataLinkHandler(),
+                    new SensorDataLinkHandler(vesselChangeDetector),
+                    new VesselDataLinkHandler(),
+                    new BodyDataLinkHandler(),
+                    new ResourceDataLinkHandler(vesselChangeDetector),
+                    new APIDataLinkHandler(this)
+                    }
+                ));
+
             APIHandlers.Add(new DefaultDataLinkHandler());
         }
 
