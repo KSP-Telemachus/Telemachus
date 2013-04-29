@@ -1,4 +1,4 @@
-﻿using MinimalHTTPServer;
+﻿using Servers.MinimalHTTPServer;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,9 +9,12 @@ namespace Telemachus
     {
         #region IHTTPRequestResponsibility
 
-        public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
+        public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
-            cc.Send(new IOLessDataLinkRedirectToApplication().ToString());
+            IOLessDataLinkRedirectToApplication page = new IOLessDataLinkRedirectToApplication();
+            page.setServerName("Telemachus " +
+                    System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            cc.Send(page.ToString());
             return true;
         }
 
@@ -35,17 +38,10 @@ namespace Telemachus
             responseCode = "301";
             attributes.Add("Location", "/telemachus/information.html");
 
-            try
-            {
-                KSP.IO.TextReader textReader = null;
-                textReader = KSP.IO.TextReader.CreateForType<TelemachusDataLink>("information.html");
-                textReader.Peek();
-            }
-            catch
+            if (!KSP.IO.FileInfo.CreateForType<TelemachusDataLink>("information.html").Exists)
             {
                 throw new SoftException("Unable to find the Telemachus index page. Is it installed in the PluginData folder?");
             }
-
         }
 
         #endregion

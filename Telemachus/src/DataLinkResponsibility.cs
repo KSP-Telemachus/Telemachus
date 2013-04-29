@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using MinimalHTTPServer;
+using Servers.MinimalHTTPServer;
 using System.Threading;
 using System.Reflection;
 
@@ -69,7 +69,7 @@ namespace Telemachus
 
         #region IHTTPRequestResponsibility
 
-        public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
+        public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
             if (request.path.StartsWith(PAGE_PREFIX))
             {
