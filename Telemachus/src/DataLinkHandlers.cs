@@ -597,6 +597,9 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.orbit.inclination; },
                 "o.inclination", "Inclination"));
             registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.orbit.eccentricity; },
+                "o.eccentricity", "Eccentricity"));
+            registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.orbit.argumentOfPeriapsis; },
                 "o.argumentOfPeriapsis", "Argument of Periapsis"));
         }

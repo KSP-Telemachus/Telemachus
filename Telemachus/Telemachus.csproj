@@ -79,6 +79,7 @@
     <Content Include="Parts\FustekAntenna\model001.png" />
     <Content Include="PluginData\telemachus\altitude.html" />
     <Content Include="PluginData\telemachus\apoapsis-periapsis.html" />
+    <Content Include="PluginData\telemachus\orbital-information.html" />
     <Content Include="PluginData\telemachus\electricity.html" />
     <Content Include="PluginData\telemachus\fuel-oxidiser.html" />
     <Content Include="PluginData\telemachus\information.css" />
