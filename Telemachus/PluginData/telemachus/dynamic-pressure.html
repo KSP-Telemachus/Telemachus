@@ -13,8 +13,8 @@
 
       function onLoad() {
       jQuery(document).ready(function($) {
-      initKSPWAPIGraph("v=v.surfaceVelocity&d=v.atmosphericDensity&met=v.missionTime", function(rawData, d){
-      rawData.push([d.met, (0.5 * d.d) * Math.pow(d.v, 2)]);
+      initKSPWAPIGraph("dp=v.dynamicPressure&met=v.missionTime", function(rawData, d){
+      rawData.push([d.met, d.dp]);
       },
       [['Mission Time', 'Dynamic Pressure']],
       {

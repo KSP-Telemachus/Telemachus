@@ -6,73 +6,30 @@
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
+    <script type="text/javascript" src="jKSPWAPITable.js"></script>
 
     <script type="text/javascript">
-      google.load('visualization', '1', {packages:['table']});
+      
       google.setOnLoadCallback(onLoad);
 
       function onLoad() {
       jQuery(document).ready(function($) {
-
-      var data = new google.visualization.DataTable();
-      data.addColumn('string', 'Value Name');
-      data.addColumn('number', 'Value');
-      data.addColumn('string', 'Value Name');
-      data.addColumn('number', 'Value');
-
-      data.addRows([
-      ['Orbital Speed',  {v: 0, f: ''}, 'Apoapsis',  {v: 0, f: '' },],
-      ['Periapsis',  {v: 0, f: ''}, 'Argument of Periapsis',  {v: 0, f: '' },],
-      ['Time to Periapsis',  {v: 0, f: ''}, 'Time to Apoapsis',  {v: 0, f: '' }],
-      ['Eccentricity',  {v: 0, f: ''}, 'Inclination',  {v: 0, f: '' }]
-      ]);
-
-      var table = new google.visualization.Table(document.getElementById('table_div'));
-
-      rawData = [[0]];
-      initKSPWAPIPoll("e=o.eccentricity&pe=o.PeA&ap=o.ApA&in=o.inclination&ov=v.orbitalVelocity&aop=o.argumentOfPeriapsis&tpe=o.timeToPe&tap=o.timeToAp", function(rawData){}, function(rawData, d){drawTable(d);}, rawData);
-
-      function drawTable(d) {
-      
-      data.setCell(0, 1, d.ov, formatSpeed(d.ov));
-      data.setCell(0, 3, d.ap, formatDistance(d.ap));
-      data.setCell(1, 1, d.pe, formatDistance(d.pe));
-      data.setCell(1, 3, d.aop, formatTime(d.aop));
-      data.setCell(2, 1, d.tap, formatTime(d.tap));
-      data.setCell(2, 3, d.tpe, formatTime(d.tpe));
-      data.setCell(3, 1, d.e, formatUnitless(d.e));
-      data.setCell(3, 3, d.in, formatDeg(d.in));
-      
-      table.draw(data);
+        initKSPWAPITable(
+        [
+        ["o.period", "Orbital Period", "time"],
+        ["o.eccentricity", "Eccentricity", "unitless"],
+        ["o.PeA", "Periapsis", "distance"],
+        ["o.ApA", "Apoapsis", "distance"],
+        ["o.inclination", "Inclination", "deg"],
+        ["v.orbitalVelocity", "Orbital Velocity", "speed"],
+        ["o.argumentOfPeriapsis", "Argument of Periapsis", "deg"],
+        ["o.timeToPe", "Time to Periapsis", "time"],
+        ["o.timeToAp", "Time to Apoapsis", "time"]
+        ], "table_div"); 
       }
-
-      function formatSpeed(v){
-
-      return sigFigs(v, SIG_FIG) + ' m/s';
-      }
-
-      function formatDistance(v){
-
-      return sigFigs(v, SIG_FIG) + ' m';
-      }
-
-      function formatUnitless(v){
-
-      return sigFigs(v,SIG_FIG);
-      }
-
-      function formatTime(v){
-
-      return sigFigs(v,SIG_FIG) + ' s';
-      }
-
-      function formatDeg(v){
-      return sigFigs(v,SIG_FIG) + '\xB0';
-      }}
       );
       }
-
-
+      
     </script>
   </head>
   <body>

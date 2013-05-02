@@ -538,8 +538,11 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.altitude; }, 
                 "v.altitude", "Altitude"));
             registerAPI(new APIEntry(
-                dataSources => { return dataSources.vessel.heightFromTerrain; }, 
+                dataSources => { return dataSources.vessel.altitude - dataSources.vessel.heightFromTerrain; }, 
                 "v.heightFromTerrain", "Height from Terrain"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.heightFromTerrain; },
+                "v.terrainHeight", "Terrain Height"));
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.missionTime; }, 
                 "v.missionTime", "Mission Time"));
@@ -567,6 +570,9 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.latitude; },
                 "v.lat", "Latitude"));
+            registerAPI(new APIEntry(
+                dataSources => { return (dataSources.vessel.atmDensity * 0.5) + Math.Pow(dataSources.vessel.srf_velocity.magnitude, 2); },
+                "v.dynamicPressure", "Dynamic Pressure"));
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.name; },
                 "v.name", "Name", new StringJSONFormatter()));
@@ -599,6 +605,9 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.orbit.eccentricity; },
                 "o.eccentricity", "Eccentricity"));
+            registerAPI(new APIEntry(
+                dataSources => { return dataSources.vessel.orbit.period; },
+                "o.period", "Orbital Period"));
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.orbit.argumentOfPeriapsis; },
                 "o.argumentOfPeriapsis", "Argument of Periapsis"));

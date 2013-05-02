@@ -17,13 +17,17 @@ function initKSPWAPIPoll(APIString, preUpdate, postUpdate, rawData){
 		readStream()
 	}
 
+	function sanitise(str){
+
+		return str.replace("nan", "0");
+	}
+
 	function readStream() {
 
 		var callback = function(response, status){
 			if (status == "success") {
-
 				
-			    d = $.parseJSON(response);
+			    d = $.parseJSON(sanitise(response));
 
 				if (!d.p) {
 					postUpdate(rawData, d);
@@ -87,4 +91,31 @@ function KSPAPILog(msg) {
     setTimeout(function() {
         throw new Error("[jKSPWAPI]" + msg);
     }, 0);
+}
+
+function KSPWAPIFormatters(){
+
+	  this.speed = function(v){
+
+      return sigFigs(v, SIG_FIG) + ' m/s';
+      }
+
+      this.distance = function(v){
+
+      return sigFigs(v, SIG_FIG) + ' m';
+      }
+
+      this.unitless = function(v){
+
+      return sigFigs(v,SIG_FIG);
+      }
+
+      this.time = function(v){
+
+      return sigFigs(v,SIG_FIG) + ' s';
+      }
+
+      this.deg = function(v){
+      return sigFigs(v,SIG_FIG) + '\xB0';
+      }
 }
