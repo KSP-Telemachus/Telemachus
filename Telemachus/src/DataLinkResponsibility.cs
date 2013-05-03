@@ -103,14 +103,29 @@ namespace Telemachus
         #endregion
 
         #region API
-        
-        public void getAPIList(ref List<KeyValuePair<String, String>> APIList)
+
+        public void getAPIList(ref List<APIEntry> APIList)
         {
             foreach (DataLinkHandler APIHandler in APIHandlers)
             {
                 APIHandler.appendAPIList(ref APIList);
             }
 
+        }
+
+        public void getAPIEntry(string APIString, ref List<APIEntry> APIList)
+        {
+            APIEntry result = null;
+
+            foreach (DataLinkHandler APIHandler in APIHandlers)
+            {
+                if (APIHandler.process(APIString, out result))
+                {
+                    break;
+                }
+            }
+
+            APIList.Add(result);
         }
             
         #endregion

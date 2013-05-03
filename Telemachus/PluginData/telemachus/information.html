@@ -29,7 +29,7 @@
       $( "#api-accordion" ).accordion({heightStyle: "content"});
 
       });
-      
+
       $(document).ready(function() {
       displayVersionNumber();
       displayAPIList();
@@ -38,16 +38,22 @@
 
       function displayVersionNumber()
       {
-      KSPWAPICall("datalink?version=a.version", function(d){
+      KSPWAPICall("version=a.version", function(d){
       $( "#version" ).html(d.version);});
       }
 
       function displayAPIList()
       {
-      KSPWAPICall("datalink?api=a.api", function(d){
+
+      KSPWAPIGetAPI(function(d){
       var state = $("#api-accordion").accordion( "option", "active" );
       for (var i = 0; i < d.api.length; i++) {
-      $( "#api-accordion" ).append("<h3>" + d.api[i][1] + "</h3><div><p>" + d.api[i][0] + "</p></div>");
+      $( "#api-accordion" ).append("<h3>" + d.api[i].name + 
+      "</h3><div>" +
+      "<p>" + d.api[i].apistring + "</p>" +
+      "<p>" + d.api[i].units + "</p>" +
+      (d.api[i].plotable ? "<p>This value can be plotted/placed into a table</p>" : "<p>This value cannot be plotted/placed into a table</p>") +
+        "</div>");
       }
       $( "#api-accordion" ).accordion("destroy").accordion({heightStyle: "content"});
       $("#api-accordion").accordion( "option", "active", state );

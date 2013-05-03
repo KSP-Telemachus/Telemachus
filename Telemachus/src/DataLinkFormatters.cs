@@ -78,17 +78,21 @@ namespace Telemachus
         public override string format(object input)
         {
             StringBuilder sb = new StringBuilder();
-            List<KeyValuePair<String, String>> APIList = (List<KeyValuePair<String, String>>)input;
+            List<APIEntry> APIList = (List<APIEntry>)input;
             
             sb.Append("[");
 
             for (int i = 0; i < APIList.Count; i++)
             {
-                sb.Append("[");
-                sb.Append("\"" + APIList[i].Key + "\"");
+                sb.Append("{");
+                sb.Append("\"apistring\": \"" + APIList[i].APIString + "\"");
                 sb.Append(",");
-                sb.Append("\"" + APIList[i].Value + "\"");
-                sb.Append("]");
+                sb.Append("\"name\": \"" + APIList[i].name + "\"");
+                sb.Append(",");
+                sb.Append("\"units\": \"" + APIList[i].units + "\"");
+                sb.Append(",");
+                sb.Append("\"plotable\": " + APIList[i].plotable.ToString().ToLower());
+                sb.Append("}");
 
                 if (i < APIList.Count - 1)
                 {

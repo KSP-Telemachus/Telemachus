@@ -18,11 +18,11 @@
 
         <script>
           function command(command) {
-          KSPWAPICall("datalink?d.ret=" + command, function(d){return;});
+          KSPWAPICall("d.ret=" + command, function(d){return;});
           }
 
           function execute(){
-          KSPWAPICall("datalink?d.ret=mj.surface2[" + $('#heading').val() + "," + $('#pitch').val() + "," + $('#roll').val() + "]" , function(d){return;});
+          KSPWAPICall("d.ret=mj.surface2[" + $('#heading').val() + "," + $('#pitch').val() + "," + $('#roll').val() + "]" , function(d){return;});
           }
         </script>
     </head>
