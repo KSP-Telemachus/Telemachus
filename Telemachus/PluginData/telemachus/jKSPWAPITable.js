@@ -40,10 +40,14 @@ function initKSPWAPITable(APIArray, divName){
       
 			for (var i=0;i<APIArray.length;i++)
 			{ 
-				data.setCell(i, 1, d["a" + i], f[APIInformation.api[i].units.toLowerCase()](d["a" + i]));
+				data.setCell(i, 1, d["a" + i], 
+					f.pad(
+					f[APIInformation.api[i].units.toLowerCase()](d["a" + i])));
 			}
 
-			table.draw(data);
+			table.draw(data,  {
+			  allowHtml: true
+			  });
 		} 
 	});
 }

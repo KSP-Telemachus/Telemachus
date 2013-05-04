@@ -190,7 +190,7 @@ function initKSPWAPIPoll(APIString, preUpdate, postUpdate, rawData){
 			rawData.length = 1;
 			rawData.push(new Array(rawData[0].length+1).join('0').split('').map(parseFloat));
 			if(!nolink){
-				sNotify.addToQueue("Disconnected, waiting for reconnect.");
+				sNotify.addToQueue("Exited flight, Telemachus signal lost");
 				nolink=true;
 			}
 			t = setTimeout(
@@ -232,29 +232,70 @@ function KSPAPILog(msg) {
 
 function KSPWAPIFormatters(){
 
-	  this.velocity = function(v){
+	this.velocity = function(v){
+		f = formatScale(v, 1000, ["Too Large", "m/s", "Km/s", "Mm/s", "Gm/s", "Tm/s"]);
+		return sigFigs(f.value, SIG_FIG) + " " + f.unit;
+	}
 
-      return sigFigs(v, SIG_FIG) + ' m/s';
-      }
+	this.distance = function(v){
+		f = formatScale(v, 1000, ["Too Large", "m", "Km", "Mm", "Gm", "Tm"]);
+		return sigFigs(f.value, SIG_FIG) + " " + f.unit;
+	}
 
-      this.distance = function(v){
+	function formatScale(v, s, u){
+		var i = 1;
+		var isNeg = v < 0;
+		
+		v = Math.abs(v);
 
-      return sigFigs(v, SIG_FIG) + ' m';
-      }
+		while(v > s){
+			v = v / s;
+			i = i + 1;
+		}
 
-      this.unitless = function(v){
+		if(i >= u.length){
+			i = 0;
+		}
 
-      return sigFigs(v,SIG_FIG);
-      }
+		if(isNeg){
+			v=v*-1;
+		}
 
-      this.time = function(v){
+		return { "value":v, "unit":u[i]};
+	}
 
-      return sigFigs(v,SIG_FIG) + ' s';
-      }
+	this.unitless = function(v){
 
-      this.deg = function(v){
-      return sigFigs(v,SIG_FIG) + '\xB0';
-      }
+		return sigFigs(v,SIG_FIG);
+	}
+
+	this.time = function(v){
+		
+		v = Math.round(v);
+		hours = v / 3600;
+		v %= 3600;
+		minutes = v / 60;
+		seconds = v % 60;
+
+		if(minutes < 10){
+			minutes = "0" + minutes;
+		}
+
+		if(seconds < 10){
+			seconds = "0" + seconds;
+		}
+
+		return Math.round(hours) + "h " + Math.round(minutes) + "m " + Math.round(seconds) + "s";
+	}
+
+	this.deg = function(v){
+		return sigFigs(v,SIG_FIG) + '\xB0';
+	}
+
+	this.pad = function(v){
+		return ("\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0" + 
+			v).slice(-20)
+	}
 }
 
 function sigFigs(n, sig) {
