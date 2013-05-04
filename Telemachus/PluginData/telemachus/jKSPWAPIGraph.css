@@ -19,32 +19,3 @@
 	top:0px;
     left:0px;
 }
-
-.sNotify_message {
-	width: 250px;
-	padding: 20px;
-	background-color: white;
-	position: absolute;
-	display: none;
-	right: 0px;
-	top: 20px;
-	margin-bottom: 20px;
-	text-align: justify;
-	border: 1px solid #808080;
-}
-
-.sNotify_close {
-	display: block;
-	background-color: black;
-	padding: 3px;
-	position: absolute;
-	top: -5px;
-	right: -5px;
-	color: white;
-	font-weight: bold;
-	width: 10px;
-	height: 10px;
-	cursor: pointer;
-	text-align: center;
-	line-height: 10px;
-}

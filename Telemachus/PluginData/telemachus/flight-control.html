@@ -8,23 +8,28 @@
         <title>Flight Control</title>
       
         <link rel="stylesheet" href="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+        <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
+      
         <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
         <script type="text/javascript" src="jKSPWAPICore.js"></script>
-        <script src="https://s3.amazonaws.com/codiqa-cdn/jquery-1.7.2.min.js">
-        </script>
-        <script src="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.js">
-        </script>
+        <script src="https://s3.amazonaws.com/codiqa-cdn/jquery-1.7.2.min.js"></script>
+        <script src="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
 
         <script>
           function command(command) {
-
-          KSPWAPICall("d.ret=" + command, function(d){return;});
+            jKSPWAPI.call("ret=" + command, function(d){
+              if(d.ret > 0){
+                jKSPWAPI.generateNotificationWithCode(d.ret);
+              }
+            });
           }
 
           function toggle(command, id){
-
-          KSPWAPICall("d.p=p.paused&d.ret=" + command, function(d){});
-
+            jKSPWAPI.call("ret=" + command, function(d){
+              if(d.ret > 0){
+                jKSPWAPI.generateNotificationWithCode(d.ret);
+              }
+            });
           }
         </script>
     </head>

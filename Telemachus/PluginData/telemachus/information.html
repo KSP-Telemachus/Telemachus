@@ -3,6 +3,7 @@
     <meta charset="utf-8" />
     <title>Telemachus</title>
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
     <link rel="stylesheet" type="text/css" href="information.css" />
     
     <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
@@ -38,14 +39,14 @@
 
       function displayVersionNumber()
       {
-      KSPWAPICall("version=a.version", function(d){
+      jKSPWAPI.call("version=a.version", function(d){
       $( "#version" ).html(d.version);});
       }
 
       function displayAPIList()
       {
 
-      KSPWAPIGetAPI(function(d){
+      jKSPWAPI.getAPI(function(d){
       var state = $("#api-accordion").accordion( "option", "active" );
       for (var i = 0; i < d.api.length; i++) {
       $( "#api-accordion" ).append("<h3>" + d.api[i].name + 
@@ -195,6 +196,15 @@
             </p>
             <p>
               <button onclick="window.open('electricity.html')">Open</button>
+            </p>
+          </div>
+          <h3>Orbital Information</h3>
+          <div>
+            <p>
+             Table of orbital information.
+            </p>
+            <p>
+              <button onclick="window.open('orbital-information.html')">Open</button>
             </p>
           </div>
           <h3>Basic Flight Control</h3>

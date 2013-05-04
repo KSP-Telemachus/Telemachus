@@ -2,18 +2,16 @@
 
 function initKSPWAPITable(APIArray, divName){
 	
-	KSPWAPIGetAPISubset(APIArray,function(APIInformation){
+	jKSPWAPI.getAPISubset(APIArray,function(APIInformation){
 		var data = new google.visualization.DataTable();
 		data.addColumn('string', '');
 		data.addColumn('number', '');
-
-		var f = new KSPWAPIFormatters();
 
 		buildRows(APIInformation.api);
 
 		var table = new google.visualization.Table(document.getElementById('table_div'));
 
-		initKSPWAPIPoll(buildAPIString(), function(rawData){}, function(rawData, d){drawTable(d);}, [[0]]);
+		jKSPWAPI.initPoll(buildAPIString(), function(rawData){}, function(rawData, d){drawTable(d);}, [[0]]);
 
 		function buildAPIString(){
 			APIString = "";
@@ -41,8 +39,8 @@ function initKSPWAPITable(APIArray, divName){
 			for (var i=0;i<APIArray.length;i++)
 			{ 
 				data.setCell(i, 1, d["a" + i], 
-					f.pad(
-					f[APIInformation.api[i].units.toLowerCase()](d["a" + i])));
+					jKSPWAPI.formatters.pad(
+					jKSPWAPI.formatters[APIInformation.api[i].units.toLowerCase()](d["a" + i])));
 			}
 
 			table.draw(data,  {

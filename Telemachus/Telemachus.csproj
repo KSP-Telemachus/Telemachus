@@ -91,7 +91,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="PluginData\telemachus\information.html" />
-    <Content Include="PluginData\telemachus\jKSPWAPIInput.css" />
+    <Content Include="PluginData\telemachus\jKSPWAPICore.css" />
     <Content Include="PluginData\telemachus\smart-ass.html">
       <SubType>Designer</SubType>
     </Content>
