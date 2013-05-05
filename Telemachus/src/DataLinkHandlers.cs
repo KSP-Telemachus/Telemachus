@@ -595,27 +595,40 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources => {
 
-                    return dataSources.vessel.GetTransform().localEulerAngles.z;
+                    return 0 ;
                 },
-                "n.z", "Z"));
+                "n.z", "P"));
 
             registerAPI(new APIEntry(
                dataSources =>
                {
 
-                   return dataSources.vessel.GetTransform().localEulerAngles.y;
+                   return CalculatePitch2();
                },
-               "n.y", "Y", new StringJSONFormatter()));
+               "n.y", "Y"));
 
             registerAPI(new APIEntry(
                dataSources =>
                {
-                   return dataSources.vessel.GetTransform().localEulerAngles.x;
+                   return 0;
                },
-               "n.x", "X"));
+               "n.x", "R"));
         }
 
         #endregion
+
+        private float CalculatePitch()
+        {
+            Transform transform = FlightGlobals.ActiveVessel.transform;
+            Vector3 cam_transform = Vector3d.zero - transform.position;
+            return Mathf.DeltaAngle(Mathf.Atan2(transform.forward.x, transform.forward.z) * Mathf.Rad2Deg, Mathf.Atan2(cam_transform.x, cam_transform.z) * Mathf.Rad2Deg);
+        }
+
+        private double CalculatePitch2()
+        {
+            return (Vector3d.Angle((FlightGlobals.ActiveVessel.CoM - FlightGlobals.ActiveVessel.mainBody.position).normalized, FlightGlobals.ActiveVessel.transform.up) - 90) *-1;
+        }
+
     }
 
     public class VesselDataLinkHandler : DataLinkHandler
