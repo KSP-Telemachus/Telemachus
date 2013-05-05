@@ -143,6 +143,7 @@ var jKSPWAPI = {
 	SPLICE_SIZE: 10,
 	SIG_FIG: 5,
 	NOTIFICATIONS: true,
+	rawData: [],
 	
 	initPoll: function(APIString, preUpdate, postUpdate, rawData){
 
@@ -150,6 +151,7 @@ var jKSPWAPI = {
 		update();
 		var nolink = false;
 		var previous = -1;
+		this.rawData = rawData;
 
 		function update() {
 

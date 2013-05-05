@@ -317,7 +317,6 @@ namespace Telemachus
                 fcs.pitch = pitch;
                 fcs.roll = roll;
             }
-
         }
 
         public static void reset()
@@ -582,6 +581,38 @@ namespace Telemachus
             registerAPI(new APIEntry(
                dataSources => { return dataSources.vessel.orbit.referenceBody.position; },
                "b.position", "Body Position", new Vector3dJSONFormatter()));
+        }
+
+        #endregion
+    }
+
+    public class NavBallDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public NavBallDataLinkHandler()
+        {
+            registerAPI(new APIEntry(
+                dataSources => {
+
+                    return dataSources.vessel.GetTransform().localEulerAngles.z;
+                },
+                "n.z", "Z"));
+
+            registerAPI(new APIEntry(
+               dataSources =>
+               {
+
+                   return dataSources.vessel.GetTransform().localEulerAngles.y;
+               },
+               "n.y", "Y", new StringJSONFormatter()));
+
+            registerAPI(new APIEntry(
+               dataSources =>
+               {
+                   return dataSources.vessel.GetTransform().localEulerAngles.x;
+               },
+               "n.x", "X"));
         }
 
         #endregion

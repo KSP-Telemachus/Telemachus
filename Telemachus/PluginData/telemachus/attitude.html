@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Telemachus - Attitude</title>
+    <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
+    <link rel="stylesheet" type="text/css" href="jKSPWAPITable.css" />
+    
+    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="jKSPWAPICore.js"></script>
+    <script type="text/javascript" src="jKSPWAPITable.js"></script>
+
+    <script type="text/javascript">
+      
+      google.setOnLoadCallback(onLoad);
+
+      function onLoad() {
+      jQuery(document).ready(function($) {
+        initKSPWAPITable(
+        [
+        "n.z",
+        "n.y",
+        "n.x"
+        ], "table_div"); 
+      }
+      );
+      }
+      
+    </script>
+  </head>
+  <body>
+    <div id="table_div" class="full"></div>
+  </body>
+</html>

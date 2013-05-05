@@ -58,7 +58,8 @@ namespace Telemachus
                     new VesselDataLinkHandler(),
                     new BodyDataLinkHandler(),
                     new ResourceDataLinkHandler(vesselChangeDetector),
-                    new APIDataLinkHandler(this)
+                    new APIDataLinkHandler(this),
+                    new NavBallDataLinkHandler()
                     }
                 ));
 
