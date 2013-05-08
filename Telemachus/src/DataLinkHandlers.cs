@@ -577,7 +577,7 @@ namespace Telemachus
         {
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.orbit.referenceBody.name; },
-                "b.name", "Body Name", new StringJSONFormatter()));
+                "b.name", "Body Name",new StringJSONFormatter(), APIEntry.UnitType.STRING, false));
             registerAPI(new APIEntry(
                dataSources => { return dataSources.vessel.orbit.referenceBody.position; },
                "b.position", "Body Position", new Vector3dJSONFormatter()));
@@ -588,6 +588,12 @@ namespace Telemachus
 
     public class NavBallDataLinkHandler : DataLinkHandler
     {
+        #region Constants
+        
+        double EPS = 0.005;
+
+        #endregion
+
         #region Initialisation
 
         public NavBallDataLinkHandler()
@@ -595,40 +601,65 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources => {
 
-                    return 0 ;
+                    return calculateHeading(dataSources.vessel);
                 },
-                "n.z", "P"));
+                "n.heading", "Heading", APIEntry.UnitType.DEG, true));
 
             registerAPI(new APIEntry(
                dataSources =>
                {
-
-                   return CalculatePitch2();
+                   return calculatePitch(dataSources.vessel);
                },
-               "n.y", "Y"));
+               "n.pitch", "Pitch", APIEntry.UnitType.DEG, true));
 
             registerAPI(new APIEntry(
                dataSources =>
                {
-                   return 0;
+                   return calculateRoll(dataSources.vessel);
                },
-               "n.x", "R"));
+               "n.roll", "Roll", APIEntry.UnitType.DEG, true));
         }
 
         #endregion
 
-        private float CalculatePitch()
+        #region Methods
+
+        private double calculatePitch(Vessel v)
         {
-            Transform transform = FlightGlobals.ActiveVessel.transform;
-            Vector3 cam_transform = Vector3d.zero - transform.position;
-            return Mathf.DeltaAngle(Mathf.Atan2(transform.forward.x, transform.forward.z) * Mathf.Rad2Deg, Mathf.Atan2(cam_transform.x, cam_transform.z) * Mathf.Rad2Deg);
+            return (Vector3d.Angle((v.CoM - v.mainBody.position).normalized,
+                v.transform.up) - 90) * -1;
         }
 
-        private double CalculatePitch2()
+        private double calculateHeading(Vessel v)
         {
-            return (Vector3d.Angle((FlightGlobals.ActiveVessel.CoM - FlightGlobals.ActiveVessel.mainBody.position).normalized, FlightGlobals.ActiveVessel.transform.up) - 90) *-1;
+            Vector3d up = (v.CoM - v.mainBody.position).normalized;
+            double heading = 90 - Vector3d.Angle(
+                v.mainBody.getRFrmVel(v.findWorldCenterOfMass()).normalized, v.transform.up -
+                (Vector3.Dot(v.transform.up, up) * up));
+
+            if (heading < 0)
+            {
+                heading = 360 + heading;
+            }
+
+            return heading;
         }
 
+        private double calculateRoll(Vessel v)
+        {
+
+            if (Math.Abs(Math.Abs(calculatePitch(v)) - 90) > EPS)
+            {
+                Vector3d up = (v.CoM - v.mainBody.position).normalized;
+                return 90 - Vector3d.Angle(v.transform.right,
+                    up - (Vector3.Dot(up, v.transform.up) * v.transform.up));
+
+            }
+
+            return 0;
+        }
+
+        #endregion
     }
 
     public class VesselDataLinkHandler : DataLinkHandler
@@ -647,8 +678,8 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.heightFromTerrain; },
                 "v.terrainHeight", "Terrain Height"));
             registerAPI(new APIEntry(
-                dataSources => { return dataSources.vessel.missionTime; }, 
-                "v.missionTime", "Mission Time"));
+                dataSources => { return dataSources.vessel.missionTime; },
+                "v.missionTime", "Mission Time", APIEntry.UnitType.TIME, true));
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.srf_velocity.magnitude; },
                 "v.surfaceVelocity", "Surface Velocity"));
@@ -669,10 +700,10 @@ namespace Telemachus
                 "v.atmosphericDensity", "Atmospheric Density"));
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.longitude; },
-                "v.long", "Longitude"));
+                "v.long", "Longitude", APIEntry.UnitType.DEG, true));
             registerAPI(new APIEntry(
                 dataSources => { return dataSources.vessel.latitude; },
-                "v.lat", "Latitude"));
+                "v.lat", "Latitude", APIEntry.UnitType.DEG, true));
             registerAPI(new APIEntry(
                 dataSources => { return (dataSources.vessel.atmDensity * 0.5) + Math.Pow(dataSources.vessel.srf_velocity.magnitude, 2); },
                 "v.dynamicPressure", "Dynamic Pressure"));
@@ -1169,7 +1200,7 @@ namespace Telemachus
     {
         #region Enumeration
 
-        public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME};
+        public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME, STRING};
 
         #endregion
 

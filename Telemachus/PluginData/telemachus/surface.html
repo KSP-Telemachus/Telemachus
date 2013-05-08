@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Telemachus - Attitude</title>
+    <title>Telemachus - Surface</title>
     <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
     <link rel="stylesheet" type="text/css" href="jKSPWAPITable.css" />
     
@@ -18,9 +18,13 @@
       jQuery(document).ready(function($) {
         initKSPWAPITable(
         [
-        "n.z",
-        "n.y",
-        "n.x"
+        "v.missionTime",
+        "v.lat",
+        "v.long",
+        "n.pitch",
+        "n.heading",
+        "n.roll",
+        "b.name"
         ], "table_div"); 
       }
       );

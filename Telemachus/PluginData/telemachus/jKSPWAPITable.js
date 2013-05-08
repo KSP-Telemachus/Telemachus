@@ -38,9 +38,14 @@ function initKSPWAPITable(APIArray, divName){
       
 			for (var i=0;i<APIArray.length;i++)
 			{ 
+				if(APIInformation.api[i].units.toLowerCase() == "string"){
+					data.setCell(i, 1, 0, d["a" + i]); 
+				}
+				else{
 				data.setCell(i, 1, d["a" + i], 
 					jKSPWAPI.formatters.pad(
 					jKSPWAPI.formatters[APIInformation.api[i].units.toLowerCase()](d["a" + i])));
+				}
 			}
 
 			table.draw(data,  {
