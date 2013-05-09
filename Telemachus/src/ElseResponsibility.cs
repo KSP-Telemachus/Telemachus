@@ -11,10 +11,7 @@ namespace Telemachus
 
         public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
-            IOLessDataLinkRedirectToApplication page = new IOLessDataLinkRedirectToApplication();
-            page.setServerName("Telemachus " +
-                    System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
-            cc.Send(page.ToString());
+            ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new IOLessDataLinkRedirectToApplication());
             return true;
         }
 
@@ -40,7 +37,7 @@ namespace Telemachus
 
             if (!KSP.IO.FileInfo.CreateForType<TelemachusDataLink>("information.html").Exists)
             {
-                throw new SoftException("Unable to find the Telemachus index page. Is it installed in the PluginData folder?");
+                throw new ExceptionResponsePage("Unable to find the Telemachus index page. Is it installed in the PluginData folder?");
             }
         }
 

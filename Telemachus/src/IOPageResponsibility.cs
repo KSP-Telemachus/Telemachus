@@ -17,7 +17,7 @@ namespace Telemachus
 
         #region Delegates
 
-        static OKPage.ByteReader KSPByteReader = fileName => 
+        static OKResponsePage.ByteReader KSPByteReader = fileName => 
         {
             KSP.IO.BinaryReader binaryReader = null;
             long fileLen = 0;
@@ -27,7 +27,7 @@ namespace Telemachus
 
                 if (fileLen > int.MaxValue)
                 {
-                    throw new SoftException("Unable to serve file, too large.");
+                    throw new ExceptionResponsePage("Unable to serve file, too large.");
                 }
 
                 binaryReader = KSP.IO.BinaryReader.CreateForType<TelemachusDataLink>
@@ -39,7 +39,7 @@ namespace Telemachus
             return content;
         };
 
-        static OKPage.TextReader KSPTextReader = fileName => 
+        static OKResponsePage.TextReader KSPTextReader = fileName => 
         {
             KSP.IO.TextReader textReader = null;
             if (fileName.Length > 0)
@@ -63,12 +63,10 @@ namespace Telemachus
             {
                 try
                 {   
-                    OKPage page = new OKPage(
+                    OKResponsePage page = new OKResponsePage(
                             KSPByteReader, KSPTextReader, 
                             request.path.Substring(PAGE_PREFIX.Length - 1));
-                    page.setServerName("Telemachus " +
-                    System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
-                    cc.Send(page.ToBytes());
+                    ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(page);
 
                     return true;
                 }

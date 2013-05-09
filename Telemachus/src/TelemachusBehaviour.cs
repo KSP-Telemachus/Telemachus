@@ -104,6 +104,10 @@ namespace Telemachus
             {
                 PluginLogger.print("No IP address in configuration file.");
             }
+
+            serverConfig.maxRequestLength = 8000;
+            serverConfig.version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            serverConfig.name = "Telemachus";
         }
 
         static private void stopDataLink()

@@ -86,14 +86,13 @@ namespace Telemachus
                     PluginLogger.debug(e.Message + " "  + e.StackTrace);
                 }
 
-                String returnMessage = new OKPage(
-                   argumentsParse(
-                   request.path.Remove(
-                   0, request.path.IndexOf(ARGUMENTS_START) + 1), dataSources)
-                   ).ToString();
-                cc.Send(returnMessage);
-
-                dataRates.addDownLinkPoint(System.DateTime.Now, returnMessage.Length);
+                dataRates.addDownLinkPoint(
+                    System.DateTime.Now, 
+                    ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
+                        argumentsParse(request.path.Remove(0, 
+                            request.path.IndexOf(ARGUMENTS_START) + 1), 
+                            dataSources)
+                   )));
 
                 return true;
             }

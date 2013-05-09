@@ -1102,7 +1102,7 @@ namespace Telemachus
 
         public override bool process(String API, out APIEntry result)
         {
-            throw new SoftException("Bad data link reference.");
+            throw new ExceptionResponsePage("Bad data link reference.");
         }
 
         #endregion
