@@ -38,32 +38,32 @@ namespace Telemachus
 
         #region Initialisation
 
-        public DataLinkResponsibility()
+        public DataLinkResponsibility(FormatterProvider formatters)
         {
-            loadHandlers();
+            loadHandlers(formatters);
         }
 
-        private void loadHandlers()
+        private void loadHandlers(FormatterProvider formatters)
         {
-            APIHandlers.Add(new PausedDataLinkHandler());
-            APIHandlers.Add(new FlyByWireDataLinkHandler());
-            APIHandlers.Add(new FlightDataLinkHandler());
-            APIHandlers.Add(new MechJebDataLinkHandler());
-            APIHandlers.Add(new TimeWarpDataLinkHandler());
+            APIHandlers.Add(new PausedDataLinkHandler(formatters));
+            APIHandlers.Add(new FlyByWireDataLinkHandler(formatters));
+            APIHandlers.Add(new FlightDataLinkHandler(formatters));
+            APIHandlers.Add(new MechJebDataLinkHandler(formatters));
+            APIHandlers.Add(new TimeWarpDataLinkHandler(formatters));
 
             APIHandlers.Add(new CompoundDataLinkHandler(
                 new List<DataLinkHandler>() { 
-                    new OrbitDataLinkHandler(),
-                    new SensorDataLinkHandler(vesselChangeDetector),
-                    new VesselDataLinkHandler(),
-                    new BodyDataLinkHandler(),
-                    new ResourceDataLinkHandler(vesselChangeDetector),
-                    new APIDataLinkHandler(this),
-                    new NavBallDataLinkHandler()
-                    }
+                    new OrbitDataLinkHandler(formatters),
+                    new SensorDataLinkHandler(vesselChangeDetector, formatters),
+                    new VesselDataLinkHandler(formatters),
+                    new BodyDataLinkHandler(formatters),
+                    new ResourceDataLinkHandler(vesselChangeDetector, formatters),
+                    new APIDataLinkHandler(this,formatters),
+                    new NavBallDataLinkHandler(formatters)
+                    }, formatters
                 ));
 
-            APIHandlers.Add(new DefaultDataLinkHandler());
+            APIHandlers.Add(new DefaultDataLinkHandler(formatters));
         }
 
         #endregion

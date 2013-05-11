@@ -49,7 +49,7 @@ namespace Telemachus
                     server.addHTTPResponsibility(new ElseResponsibility());
                     ioPageResponsibility = new IOPageResponsibility();
                     server.addHTTPResponsibility(ioPageResponsibility);
-                    dataLinkResponsibility = new DataLinkResponsibility();
+                    dataLinkResponsibility = new DataLinkResponsibility(JSONFormatterProvider.Instance);
                     server.addHTTPResponsibility(dataLinkResponsibility);
                     server.startServing();
                  
