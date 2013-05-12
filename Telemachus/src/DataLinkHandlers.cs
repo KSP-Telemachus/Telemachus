@@ -774,6 +774,22 @@ namespace Telemachus
                dataSources => { return getsSensorValues(dataSources); },
                "s.sensor", "Sensor Information [string sensor type]", formatters.SensorModuleList, 
                APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { dataSources.args.Add("TEMP"); return getsSensorValues(dataSources); },
+               "s.sensor.temp", "Temperature sensor information", formatters.SensorModuleList,
+               APIEntry.UnitType.TEMP));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { dataSources.args.Add("PRES"); return getsSensorValues(dataSources); },
+               "s.sensor.pres", "Pressure sensor information", formatters.SensorModuleList,
+               APIEntry.UnitType.PRES));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { dataSources.args.Add("GRAV"); return getsSensorValues(dataSources); },
+               "s.sensor.grav", "Gravity sensor information", formatters.SensorModuleList,
+               APIEntry.UnitType.GRAV));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { dataSources.args.Add("ACC"); return getsSensorValues(dataSources); },
+               "s.sensor.acc", "Acceleration sensor information", formatters.SensorModuleList,
+               APIEntry.UnitType.ACC));
         }
 
         #endregion
@@ -1218,7 +1234,7 @@ namespace Telemachus
     {
         #region Enumeration
 
-        public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME, STRING};
+        public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME, STRING, TEMP, PRES, GRAV, ACC};
 
         #endregion
 

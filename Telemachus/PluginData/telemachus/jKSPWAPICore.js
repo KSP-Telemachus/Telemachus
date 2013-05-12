@@ -310,22 +310,47 @@ var jKSPWAPI = {
 		},
 
 		time: function(v){
-		
+			
+
+			f = [86400, 3600, 60, 60];
+			u = ["d", "h", "m", "s"];
+			vprime = [0, 0, 0, 0]
+
 			v = Math.floor(v);
-			hours = Math.floor(v / 3600);
-			v %= 3600;
-			minutes = Math.floor(v / 60);
-			seconds = v % 60;
 
-			if(minutes < 10){
-				minutes = "0" + minutes;
+			for(var i = 0; i < f.length;i++){
+				vprime[i] = Math.floor(v / f[i]);
+				v %= f[i];
+			}
+			vprime[f.length-1] = v;
+
+			var val = false;
+			var pos = 1;
+			for(var i = 1; i < f.length;i++){
+				
+				if(vprime[i] > 0){
+					val = true;
+				}
+
+				if(!val){
+					pos=pos+1;
+				}
+
+				if(vprime[i] < 10){
+					vprime[i] = "0" + vprime[i];
+				}
 			}
 
-			if(seconds < 10){
-				seconds = "0" + seconds;
+			var formatted = "";
+			for(var i = pos; i < f.length;i++){
+				formatted = formatted + vprime[i] + u[i] + " ";
 			}
 
-			return hours + "h " + minutes + "m " + seconds + "s";
+			if(formatted == ""){
+				formatted = 0 + u[u.length-1];
+			}
+			
+			return formatted;
 		},
 
 		deg: function(v){

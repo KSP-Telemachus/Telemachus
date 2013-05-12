@@ -27,3 +27,9 @@
 	text-align: center;
 	line-height: 10px;
 }
+
+span.sup {
+    font-size: 80%;
+    position: relative;
+    bottom: 1ex;
+}
