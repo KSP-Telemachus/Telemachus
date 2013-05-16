@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using System.Speech.Recognition;
+using System.Speech.Synthesis;
 
 namespace Telemachus
 {
@@ -199,5 +201,79 @@ namespace Telemachus
         }
 
         #endregion
+    }
+
+    public class KSPAPI : IKSPAPI
+    {
+        List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
+
+
+        public KSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector)
+        {
+            APIHandlers.Add(new PausedDataLinkHandler(formatters));
+            APIHandlers.Add(new FlyByWireDataLinkHandler(formatters));
+            APIHandlers.Add(new FlightDataLinkHandler(formatters));
+            APIHandlers.Add(new MechJebDataLinkHandler(formatters));
+            APIHandlers.Add(new TimeWarpDataLinkHandler(formatters));
+
+            APIHandlers.Add(new CompoundDataLinkHandler(
+                new List<DataLinkHandler>() { 
+                    new OrbitDataLinkHandler(formatters),
+                    new SensorDataLinkHandler(vesselChangeDetector, formatters),
+                    new VesselDataLinkHandler(formatters),
+                    new BodyDataLinkHandler(formatters),
+                    new ResourceDataLinkHandler(vesselChangeDetector, formatters),
+                    new APIDataLinkHandler(this, formatters),
+                    new NavBallDataLinkHandler(formatters)
+                    }, formatters
+                ));
+
+            APIHandlers.Add(new DefaultDataLinkHandler(formatters));
+        }
+
+        public void getAPIList(ref List<APIEntry> APIList)
+        {
+            foreach (DataLinkHandler APIHandler in APIHandlers)
+            {
+                APIHandler.appendAPIList(ref APIList);
+            }
+
+        }
+
+        public void getAPIEntry(string APIString, ref List<APIEntry> APIList)
+        {
+            APIEntry result = null;
+
+            foreach (DataLinkHandler APIHandler in APIHandlers)
+            {
+                if (APIHandler.process(APIString, out result))
+                {
+                    break;
+                }
+            }
+
+            APIList.Add(result);
+        }
+
+        public void process(String API, out APIEntry apiEntry)
+        {
+            APIEntry result = null;
+            foreach (DataLinkHandler APIHandler in APIHandlers)
+            {
+                if (APIHandler.process(API, out result))
+                {
+                    break;
+                }
+            }
+
+            apiEntry = result;
+        }
+    }
+
+    public interface IKSPAPI
+    {
+        void getAPIEntry(string APIString, ref List<APIEntry> APIList);
+        void getAPIList(ref List<APIEntry> APIList);
+        void process(String API, out APIEntry apiEntry);
     }
 }

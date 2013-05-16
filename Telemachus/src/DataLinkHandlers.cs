@@ -1067,13 +1067,14 @@ namespace Telemachus
     {
         #region Initialisation
 
-        public APIDataLinkHandler(DataLinkResponsibility dataLinkResponsibility, FormatterProvider formatters) : base(formatters)
+        public APIDataLinkHandler(IKSPAPI kspAPI, FormatterProvider formatters)
+            : base(formatters)
         {
             registerAPI(new PlotableAPIEntry(
                 dataSources =>
                 {
                     List<APIEntry> APIList = new List<APIEntry>(); 
-                    dataLinkResponsibility.getAPIList(ref APIList); return APIList;},
+                    kspAPI.getAPIList(ref APIList); return APIList;},
                 "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.STRING));
 
             registerAPI(new APIEntry(
@@ -1082,7 +1083,7 @@ namespace Telemachus
                     List<APIEntry> APIList = new List<APIEntry>();
                     foreach(string apiRequest in dataSources.args)
                     {
-                        dataLinkResponsibility.getAPIEntry(apiRequest, ref APIList);
+                        kspAPI.getAPIEntry(apiRequest, ref APIList);
                     }
 
                     return APIList;

@@ -22,8 +22,8 @@ namespace Telemachus
 
         #region Fields
         
-        List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
         DataSources dataSources = new DataSources();
+        KSPAPI kspAPI = null;
         VesselChangeDetector vesselChangeDetector = new VesselChangeDetector();
 
         #endregion
@@ -40,30 +40,7 @@ namespace Telemachus
 
         public DataLinkResponsibility(FormatterProvider formatters)
         {
-            loadHandlers(formatters);
-        }
-
-        private void loadHandlers(FormatterProvider formatters)
-        {
-            APIHandlers.Add(new PausedDataLinkHandler(formatters));
-            APIHandlers.Add(new FlyByWireDataLinkHandler(formatters));
-            APIHandlers.Add(new FlightDataLinkHandler(formatters));
-            APIHandlers.Add(new MechJebDataLinkHandler(formatters));
-            APIHandlers.Add(new TimeWarpDataLinkHandler(formatters));
-
-            APIHandlers.Add(new CompoundDataLinkHandler(
-                new List<DataLinkHandler>() { 
-                    new OrbitDataLinkHandler(formatters),
-                    new SensorDataLinkHandler(vesselChangeDetector, formatters),
-                    new VesselDataLinkHandler(formatters),
-                    new BodyDataLinkHandler(formatters),
-                    new ResourceDataLinkHandler(vesselChangeDetector, formatters),
-                    new APIDataLinkHandler(this,formatters),
-                    new NavBallDataLinkHandler(formatters)
-                    }, formatters
-                ));
-
-            APIHandlers.Add(new DefaultDataLinkHandler(formatters));
+            kspAPI = new KSPAPI(formatters, vesselChangeDetector);
         }
 
         #endregion
@@ -102,30 +79,16 @@ namespace Telemachus
 
         #endregion
 
-        #region API
+        #region IKSPAPI
 
         public void getAPIList(ref List<APIEntry> APIList)
         {
-            foreach (DataLinkHandler APIHandler in APIHandlers)
-            {
-                APIHandler.appendAPIList(ref APIList);
-            }
-
+            kspAPI.getAPIList(ref APIList);
         }
 
         public void getAPIEntry(string APIString, ref List<APIEntry> APIList)
         {
-            APIEntry result = null;
-
-            foreach (DataLinkHandler APIHandler in APIHandlers)
-            {
-                if (APIHandler.process(APIString, out result))
-                {
-                    break;
-                }
-            }
-
-            APIList.Add(result);
+            kspAPI.getAPIEntry(APIString, ref APIList);
         }
             
         #endregion
@@ -188,13 +151,7 @@ namespace Telemachus
             String[] argsSplit = args.Split(ARGUMENTS_ASSIGN);
             APIEntry result = null;
 
-            foreach (DataLinkHandler APIHandler in APIHandlers)
-            {
-                if (APIHandler.process(argsSplit[1], out result))
-                {
-                    break;
-                }
-            }
+            kspAPI.process(argsSplit[1], out result);
 
             result.formatter.setVarName(argsSplit[0]);
             return result;
