@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
-using System.Speech.Recognition;
-using System.Speech.Synthesis;
 
 namespace Telemachus
 {
