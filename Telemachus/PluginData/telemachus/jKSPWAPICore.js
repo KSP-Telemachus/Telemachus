@@ -311,7 +311,6 @@ var jKSPWAPI = {
 
 		time: function(v){
 			
-
 			f = [86400, 3600, 60, 60];
 			u = ["d", "h", "m", "s"];
 			vprime = [0, 0, 0, 0]
@@ -337,7 +336,9 @@ var jKSPWAPI = {
 				}
 
 				if(vprime[i] < 10){
-					vprime[i] = "0" + vprime[i];
+					if(pos != u.length-1){
+						vprime[i] = "0" + vprime[i];
+					}
 				}
 			}
 
@@ -363,22 +364,26 @@ var jKSPWAPI = {
 		},
 
 		sigFigs: function(n, sig) {
+			
+			if(n != 0){
+				var m = false;
 
-			var m = false;
+				if (n < 0) {
+					m = true;
+					n = Math.abs(n);
+				}
 
-			if (n < 0) {
-				m = true;
-				n = Math.abs(n);
+				var mult = Math.pow(10,
+					sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+
+				if (m) {
+					n = n * -1;
+				}
+
+				return Math.round(n * mult) / mult;
+			}else{
+				return 0;
 			}
-
-			var mult = Math.pow(10,
-				sig - Math.floor(Math.log(n) / Math.LN10) - 1);
-
-			if (m) {
-				n = n * -1;
-			}
-
-			return Math.round(n * mult) / mult;
 		}
 	}
 }

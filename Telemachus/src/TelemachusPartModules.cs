@@ -111,7 +111,6 @@ namespace Telemachus
         {
             if (activeToggle)
             {
-                
                 statusString = "Disabled";
                 activeToggle = false;
             }

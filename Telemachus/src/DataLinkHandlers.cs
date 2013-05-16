@@ -636,31 +636,28 @@ namespace Telemachus
 
         private double calculateHeading(Vessel v)
         {
-            Vector3d up = (v.CoM - v.mainBody.position).normalized;
-            double heading = 90 - Vector3d.Angle(
-                v.mainBody.getRFrmVel(v.findWorldCenterOfMass()).normalized, v.transform.up -
-                (Vector3.Dot(v.transform.up, up) * up));
+            Vector3d up = (v.CoM - v.mainBody.position).normalized,
+                east = v.mainBody.getRFrmVel(v.findWorldCenterOfMass()).normalized;
 
-            if (heading < 0)
-            {
-                heading = 360 + heading;
-            }
+            Vector3d pro = (v.transform.up -
+                (Vector3.Dot(v.transform.up, up) * up)).normalized;
 
-            return heading;
+
+            double dot = Vector3d.Dot(east, pro);
+            PluginLogger.print(dot.ToString());
+
+            if(dot > 0)
+                return 90 - Vector3d.Angle(east, pro);
+            else
+                return 360 + Vector3d.Angle(east, pro);
+            
         }
 
         private double calculateRoll(Vessel v)
         {
-
-            if (Math.Abs(Math.Abs(calculatePitch(v)) - 90) > EPS)
-            {
-                Vector3d up = (v.CoM - v.mainBody.position).normalized;
-                return 90 - Vector3d.Angle(v.transform.right,
-                    up - (Vector3.Dot(up, v.transform.up) * v.transform.up));
-
-            }
-
-            return 0;
+            Vector3d up = (v.CoM - v.mainBody.position).normalized;
+            return 90 - Vector3d.Angle(v.transform.right,
+                up - (Vector3.Dot(up, v.transform.up) * v.transform.up).normalized);
         }
 
         #endregion
