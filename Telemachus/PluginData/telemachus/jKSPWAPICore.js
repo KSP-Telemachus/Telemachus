@@ -1,6 +1,6 @@
 ﻿var sNotify = {
 	
-	timeOpen: 5,	//change this number to the amount of second you want the message opened
+	timeOpen: 3,	//change this number to the amount of seconds you want the message opened
 	
 	queue: new Array(),
 	closeQueue: new Array(),

@@ -591,12 +591,6 @@ namespace Telemachus
 
     public class NavBallDataLinkHandler : DataLinkHandler
     {
-        #region Constants
-        
-        double EPS = 0.005;
-
-        #endregion
-
         #region Initialisation
 
         public NavBallDataLinkHandler(FormatterProvider formatters)
@@ -604,8 +598,8 @@ namespace Telemachus
         {
             registerAPI(new PlotableAPIEntry(
                 dataSources => {
-
-                    return calculateHeading(dataSources.vessel);
+                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                    return result.eulerAngles.y;
                 },
                 "n.heading", "Heading", formatters.Default, APIEntry.UnitType.DEG));
 
@@ -619,7 +613,9 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   return calculateRoll(dataSources.vessel);
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                   return (result.eulerAngles.z > 180) ?
+                       (result.eulerAngles.z - 360.0) : result.eulerAngles.z;
                },
                "n.roll", "Roll", formatters.Default, APIEntry.UnitType.DEG));
         }
@@ -628,36 +624,26 @@ namespace Telemachus
 
         #region Methods
 
+        //Taken from MechJeb2
+        private Quaternion updateHeadingPitchRollField(Vessel v)
+        {
+            Vector3d CoM, north, up;
+            Quaternion rotationSurface;
+
+            CoM = v.findWorldCenterOfMass();
+            up = (CoM - v.mainBody.position).normalized;
+            north = Vector3d.Exclude(up, (v.mainBody.position + v.mainBody.transform.up * 
+                (float)v.mainBody.Radius) - CoM).normalized;
+
+            rotationSurface = Quaternion.LookRotation(north, up);
+            return Quaternion.Inverse(Quaternion.Euler(90, 0, 0) * 
+                Quaternion.Inverse(v.GetTransform().rotation) * rotationSurface);
+        }
+
         private double calculatePitch(Vessel v)
         {
             return (Vector3d.Angle((v.CoM - v.mainBody.position).normalized,
                 v.transform.up) - 90) * -1;
-        }
-
-        private double calculateHeading(Vessel v)
-        {
-            Vector3d up = (v.CoM - v.mainBody.position).normalized,
-                east = v.mainBody.getRFrmVel(v.findWorldCenterOfMass()).normalized;
-
-            Vector3d pro = (v.transform.up -
-                (Vector3.Dot(v.transform.up, up) * up)).normalized;
-
-
-            double dot = Vector3d.Dot(east, pro);
-            PluginLogger.print(dot.ToString());
-
-            if(dot > 0)
-                return 90 - Vector3d.Angle(east, pro);
-            else
-                return 360 + Vector3d.Angle(east, pro);
-            
-        }
-
-        private double calculateRoll(Vessel v)
-        {
-            Vector3d up = (v.CoM - v.mainBody.position).normalized;
-            return 90 - Vector3d.Angle(v.transform.right,
-                up - (Vector3.Dot(up, v.transform.up) * v.transform.up).normalized);
         }
 
         #endregion
