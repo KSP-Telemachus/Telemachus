@@ -95,7 +95,9 @@
     <Content Include="PluginData\telemachus\flight-control.html">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="PluginData\telemachus\information.html" />
+    <Content Include="PluginData\telemachus\information.html">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="PluginData\telemachus\jKSPWAPICore.css" />
     <Content Include="PluginData\telemachus\smart-ass.html">
       <SubType>Designer</SubType>
