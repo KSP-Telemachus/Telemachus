@@ -2,13 +2,13 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-    <title></title>
-    <link rel="stylesheet" type="text/css" href="http://static.kerbalmaps.com/leaflet.min.css"/>
-    <!--[if lte IE 8]>
-          <link rel="stylesheet" type="text/css" href="http://static.kerbalmaps.com/leaflet.ie.min.css"/>
-      <![endif]-->
-    <script type="text/javascript" src="http://static.kerbalmaps.com/leaflet.min.js"></script>
-    <script type="text/javascript" src="http://static.kerbalmaps.com/leafletembed.js"></script>
+    <title>Kerbal Maps</title>
+    
+    <link rel="stylesheet" type="text/css" href="leafletksp.css"/>
+    <link rel="stylesheet" href="jKSPWAPICore.css" />
+    
+    <script type="text/javascript" src="leafletksp.js"></script>
+    
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script>
@@ -24,6 +24,7 @@
       layerControl: true,
       scaleControl: true
       });
+      map.fitWorld();
       rawData = [[0]];
       var marker = [L.marker([0, 0]), L.marker([0, 0])];
       marker[0].addTo(map);

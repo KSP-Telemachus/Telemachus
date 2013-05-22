@@ -1,9 +1,11 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Telemachus", "Telemachus\Telemachus.csproj", "{AF7DF6B2-7D88-4399-92FC-E21EC15231DE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Servers", "..\..\..\..\..\SkyDrive\Documents\Visual Studio 2010\Projects\Servers\Servers\Servers.csproj", "{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleReceiver", "ExampleReceiver\ExampleReceiver.csproj", "{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,16 @@ Global
 		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Release|Mixed Platforms.Build.0 = Release|x86
 		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Release|x86.ActiveCfg = Release|x86
 		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Release|x86.Build.0 = Release|x86
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FDEB5C60-C1A8-48D5-82BE-5B9592A1F54F}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
