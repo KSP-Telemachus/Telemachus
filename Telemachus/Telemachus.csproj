@@ -62,8 +62,8 @@
     <Compile Include="src\VesselChangeDetector.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LICENSE.LEAFLET.KSP" />
-    <None Include="LICENSE" />
+    <None Include="LICENCE.LEAFLET.KSP" />
+    <None Include="LICENCE" />
     <None Include="Parts\FustekAntenna\model.mu" />
     <None Include="Parts\FustekAntenna\part.cfg" />
     <None Include="Parts\TelemachusAntenna\model.mu" />
