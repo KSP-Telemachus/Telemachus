@@ -130,6 +130,7 @@
     </Content>
     <Content Include="PluginData\temperature.html" />
     <Content Include="PluginData\time-apoapsis-periapsis.html" />
+    <Content Include="PluginData\touchball.html" />
     <Content Include="PluginData\velocity.html">
       <SubType>Designer</SubType>
     </Content>

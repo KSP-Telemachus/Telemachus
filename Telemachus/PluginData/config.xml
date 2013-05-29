@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
-  <int name="PORT">8080</int>
+  <int name="PORT">8085</int>
   <string name="IPADDRESS">-1</string>
 </config>

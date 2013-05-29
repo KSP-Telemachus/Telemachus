@@ -267,7 +267,7 @@ namespace Telemachus
 
         static float yaw = 0, pitch = 0, roll = 0;
         static bool iyaw = false, ipitch = false, iroll = false;
-        static int on = 0;
+        static int on_attitude = 0;
 
         #endregion
 
@@ -289,7 +289,7 @@ namespace Telemachus
                 "v.setRoll", "Roll [float roll]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
-                dataSources => { on = int.Parse(dataSources.args[0]); iroll = true; return 0; },
+                dataSources => { on_attitude = int.Parse(dataSources.args[0]); return 0; },
                 "v.setFbW", "Set Fly by Wire On or Off [bool state]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
@@ -311,11 +311,18 @@ namespace Telemachus
 
         public static void onFlyByWire(FlightCtrlState fcs)
         {
-            if (on > 0)
+            if (on_attitude > 0)
             {
                 fcs.yaw = yaw;
                 fcs.pitch = pitch;
                 fcs.roll = roll;
+            }
+
+            if (0 > 0)
+            {
+                fcs.X = yaw;
+                fcs.Y = pitch;
+                fcs.Z = roll;
             }
         }
 
@@ -324,6 +331,7 @@ namespace Telemachus
             yaw = 0;
             pitch = 0;
             roll = 0;
+            on_attitude = 0;
         }
 
         private float checkFlightStateParameters(float f)

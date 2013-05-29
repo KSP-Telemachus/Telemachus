@@ -67,7 +67,7 @@ namespace Telemachus
 
         static private void writeDefaultConfig()
         {
-            config.SetValue("PORT", 8080);
+            config.SetValue("PORT", 8085);
             config.SetValue("IPADDRESS", "127.0.0.1");
             config.save();
         }
@@ -106,8 +106,10 @@ namespace Telemachus
             }
 
             serverConfig.maxRequestLength = 8000;
+            
             serverConfig.version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             serverConfig.name = "Telemachus";
+            serverConfig.backLog = 1000;
         }
 
         static private void stopDataLink()
