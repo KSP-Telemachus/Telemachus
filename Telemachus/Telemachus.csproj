@@ -81,6 +81,9 @@
     <Content Include="Parts\FustekAntenna\model001.png" />
     <Content Include="PluginData\altitude.html" />
     <Content Include="PluginData\apoapsis-periapsis.html" />
+    <Content Include="PluginData\touchball-xyz.html">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="PluginData\layers.png" />
     <Content Include="PluginData\leafletksp.css" />
     <Content Include="PluginData\leafletksp.js" />
@@ -130,7 +133,9 @@
     </Content>
     <Content Include="PluginData\temperature.html" />
     <Content Include="PluginData\time-apoapsis-periapsis.html" />
-    <Content Include="PluginData\touchball.html" />
+    <Content Include="PluginData\touchball-pyr.html">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="PluginData\velocity.html">
       <SubType>Designer</SubType>
     </Content>

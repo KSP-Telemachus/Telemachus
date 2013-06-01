@@ -265,7 +265,7 @@ namespace Telemachus
     {
         #region Fields
 
-        static float yaw = 0, pitch = 0, roll = 0;
+        static float yaw = 0, pitch = 0, roll = 0, x = 0, y = 0, z = 0;
         static bool iyaw = false, ipitch = false, iroll = false;
         static int on_attitude = 0;
 
@@ -293,16 +293,19 @@ namespace Telemachus
                 "v.setFbW", "Set Fly by Wire On or Off [bool state]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
-                dataSources => { 
-                    yaw = checkFlightStateParameters(float.Parse(dataSources.args[0]));
-                    pitch = checkFlightStateParameters(float.Parse(dataSources.args[1]));
+                dataSources => {
+
+                    pitch = checkFlightStateParameters(float.Parse(dataSources.args[0]));
+                    yaw = checkFlightStateParameters(float.Parse(dataSources.args[1]));
+                    
                     roll = checkFlightStateParameters(float.Parse(dataSources.args[2]));
-                    iyaw = true;
-                    ipitch = true;
-                    iroll = true;
+                    x = checkFlightStateParameters(float.Parse(dataSources.args[3]));
+                    y = checkFlightStateParameters(float.Parse(dataSources.args[4]));
+                    z = checkFlightStateParameters(float.Parse(dataSources.args[5]));
+
                     return 0; 
                 },
-                "v.setYawPitchRoll", "Roll [float yaw, float pitch, float roll]", formatters.Default));
+                "v.setPitchYawRollXYZ", "Set pitch, yaw, roll, X, Y and Z [float pitch, yaw, roll, x, y, z]", formatters.Default));
         }
 
         #endregion
@@ -316,13 +319,9 @@ namespace Telemachus
                 fcs.yaw = yaw;
                 fcs.pitch = pitch;
                 fcs.roll = roll;
-            }
-
-            if (0 > 0)
-            {
-                fcs.X = yaw;
-                fcs.Y = pitch;
-                fcs.Z = roll;
+                fcs.X = x < 0 ? -1 : (x > 0 ? 1 : 0);
+                fcs.Y = y < 0 ? -1 : (y > 0 ? 1 : 0);
+                fcs.Z = z < 0 ? -1 : (z > 0 ? 1 : 0);
             }
         }
 
@@ -331,6 +330,9 @@ namespace Telemachus
             yaw = 0;
             pitch = 0;
             roll = 0;
+            x = 0;
+            y = 0;
+            z = 0;
             on_attitude = 0;
         }
 
@@ -827,7 +829,7 @@ namespace Telemachus
 
         #endregion
 
-        #region Sensors
+        #region Resources
 
         protected List<PartResource> getsResourceValues(DataSources datasources)
         {
@@ -1226,7 +1228,7 @@ namespace Telemachus
     {
         #region Enumeration
 
-        public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME, STRING, TEMP, PRES, GRAV, ACC};
+        public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME, STRING, TEMP, PRES, GRAV, ACC, DENSITY, DYNAMICPRESSURE, G};
 
         #endregion
 

@@ -17,27 +17,27 @@
 
         <script>
           function command(command) {
-            jKSPWAPI.call("ret=" + command, function(d){
-              if(d.ret == 5){
-                sNotify.addToQueue("Mechjeb not found.");
-              }
-              else if(d.ret > 0){
-                jKSPWAPI.generateNotificationWithCode(d.ret);
-              }
-            });
+          jKSPWAPI.call("ret=" + command, function(d){
+          if(d.ret == 5){
+          sNotify.addToQueue("Mechjeb not found.");
+          }
+          else if(d.ret > 0){
+          jKSPWAPI.generateNotificationWithCode(d.ret);
+          }
+          });
           }
 
           function execute(){
           jKSPWAPI.call(
           "ret=mj.surface2[" + $('#heading').val() + "," + $('#pitch').val() + "," + $('#roll').val() + "]" ,
           function(d){
-              if(d.ret == 5){
-                sNotify.addToQueue("Mechjeb not found.");
-              }
-              else if(d.ret > 0){
-                jKSPWAPI.generateNotificationWithCode(d.ret);
-              }
-            });
+          if(d.ret == 5){
+          sNotify.addToQueue("Mechjeb not found.");
+          }
+          else if(d.ret > 0){
+          jKSPWAPI.generateNotificationWithCode(d.ret);
+          }
+          });
           }
         </script>
     </head>

@@ -274,12 +274,12 @@ var jKSPWAPI = {
 
 		velocity: function(v){
 			f = jKSPWAPI.formatters.formatScale(v, 1000, ["Too Large", "m/s", "Km/s", "Mm/s", "Gm/s", "Tm/s"]);
-			return jKSPWAPI.formatters.sigFigs(f.value, jKSPWAPI.SIG_FIG) + " " + f.unit;
+			return f.value.toFixed(2) + " " + f.unit;
 		},
 
 		distance: function(v){
 			f = jKSPWAPI.formatters.formatScale(v, 1000, ["Too Large", "m", "Km", "Mm", "Gm", "Tm"]);
-			return jKSPWAPI.formatters.sigFigs(f.value, jKSPWAPI.SIG_FIG) + " " + f.unit;
+			return f.value.toFixed(2) + " " + f.unit;
 		},
 
 		formatScale: function(v, s, u){
@@ -306,7 +306,7 @@ var jKSPWAPI = {
 
 		unitless: function(v){
 
-			return jKSPWAPI.formatters.sigFigs(v, jKSPWAPI.SIG_FIG);
+			return v.toFixed(2);
 		},
 
 		time: function(v){
@@ -355,7 +355,7 @@ var jKSPWAPI = {
 		},
 
 		deg: function(v){
-			return jKSPWAPI.formatters.sigFigs(v, jKSPWAPI.SIG_FIG) + '\xB0';
+			return v.toFixed(2) + '\xB0';
 		},
 
 		pad: function(v){

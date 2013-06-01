@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Touchball</title>
+		<title>Touchball Translation</title>
 		<meta name="viewport" content="width=device-width, user-scalable=no" />
 		<script src="jquery-1.9.1.min.js"></script>
 		<script type="text/javascript">
@@ -44,7 +44,7 @@
 					setX: apiCall("v.setX"),
 					setY: apiCall("v.setY"),
 					setZ: apiCall("v.setZ"),
-					setYawPitchRoll: apiCall("v.setYawPitchRoll"),
+					setPitchYawRollXYZ: apiCall("v.setPitchYawRollXYZ"),
 					altitude: apiCall("v.altitude"),
 					heightFromTerrain: apiCall("v.heightFromTerrain"),
 					missionTime: apiCall("v.missionTime"),
@@ -126,10 +126,11 @@
 		{
 			var touchball = $("<div>").appendTo("body").addClass("touchball");
 			var target = $("<div>").appendTo(touchball).addClass("target").append("<div>").hide();
-			var debugPitch = $("<div>").appendTo(touchball).addClass("debug").text("Pitch");
-			var debugRoll = $("<div>").appendTo(touchball).addClass("debug").text("Roll");
-			var debugYaw = $("<div>").appendTo(touchball).addClass("debug").text("Yaw");
+			var debugPitch = $("<div>").appendTo(touchball).addClass("debug").text("X");
+			var debugRoll = $("<div>").appendTo(touchball).addClass("debug").text("Y");
+			var debugYaw = $("<div>").appendTo(touchball).addClass("debug").text("Z");
 			var mouseDown = false;
+      var primaryMouseButton = 0;
 			$(document)
         .on("touchstart", function(e) 
         {
@@ -146,10 +147,8 @@
         })
         .on("contextmenu", function(e) 
         {
-        
-
-        // Stop the context menu
-        e.preventDefault();
+          //stop the context menu
+          e.preventDefault();
         })
 				.on("mousemove", function(e)
 				{
@@ -162,6 +161,7 @@
 				{
           telemachus.v.setFbW(1);
 					mouseDown = true;
+          primaryMouseButton = e.which;
 					update([e]);
 					return false;
 				})
@@ -177,7 +177,7 @@
 			};
 			var fmt = function(n)
 			{
-				return n.toString().replace(/(\.\d\d).*/,"$1").replace(/(\.\d)$/,"$10").replace(/^([^\.]*)$/,"$1.00");
+        return (n).toFixed(2).toString();
 			};
 			var update = function(touches)
 			{
@@ -202,40 +202,31 @@
           return;
 				}
 				target.css({left:cx-target.outerWidth()*0.5,top:cy-target.outerHeight()*0.5});
-				//var pitch = -(2*cy/touchball.outerHeight()-1);
-				//var yaw = (2*cx/touchball.outerWidth()-1);
-				var a = 0;
-				if (touches.length>1 || touches[0].which == 3)
+
+        var dh = -(2*cy/touchball.outerHeight()-1);
+				var dw = (2*cx/touchball.outerWidth()-1);
+        var dhScale = 3;
+        var dwScale = -3;
+        var easing = 3;
+
+        //more than 2 touches or a right clicking, then adjust pitch and roll.
+				if (touches.length >1 || primaryMouseButton == 3)
 				{
-          var pitch = -(2*cy/touchball.outerHeight()-1);
-				  var yaw = (2*cx/touchball.outerWidth()-1);
-					//var ax = touches[1].clientX - touches[0].clientX;
-					//var ay = touches[1].clientY - touches[0].clientY;
-					//a = Math.atan2(ay,ax);
-          pitch = clamp(-2*pitch,-1,1);
-				  
-				  roll = clamp(2*yaw,-1,1);
-          yaw = 0;
+          z = clamp(dhScale*Math.pow(dh,easing).toFixed(2), -1, 1);
+				  x = clamp(5*Math.pow(dw,5).toFixed(2),-1,1);
+          y = 0;
 				}
         else
         {
-          var pitch = -(2*cy/touchball.outerHeight()-1);
-				  var yaw = (2*cx/touchball.outerWidth()-1);
-          pitch = clamp(-2*pitch,-1,1);
-				  yaw = clamp(2*yaw,-1,1);
-				  roll = 0;
-				
+          z = clamp(dhScale*Math.pow(dh,easing).toFixed(2),-1,1);
+				  y = clamp(dwScale*Math.pow(dw,easing).toFixed(2),-1,1);
+				  x = 0;
         }
-				//target.css({"-webkit-transform":"rotate("+(a*180/Math.PI)+"deg)"});
-				//var roll = a/Math.PI;
-				//pitch = clamp(-2*pitch,-1,1);
-				//yaw = clamp(2*yaw,-1,1);
-				//roll = clamp(4*roll,-1,1);
 				
-        debugPitch.text("Pitch = "+fmt(pitch));
-				debugYaw.text("Yaw = "+fmt(yaw));
-				debugRoll.text("Roll = "+fmt(roll));
-				telemachus.v.setYawPitchRoll(yaw,pitch,roll);
+        debugPitch.text("X = "+fmt(x));
+				debugYaw.text("Y = "+fmt(y));
+				debugRoll.text("Z = "+fmt(z));
+				telemachus.v.setPitchYawRollXYZ(0, 0, 0, x, y, z);
 			};
 			setTimeout(function(){update([]);},100);
 			console.log("telemachus",telemachus)
