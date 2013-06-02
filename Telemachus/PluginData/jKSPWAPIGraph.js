@@ -7,7 +7,7 @@ function initKSPWAPIGraph(APIString, postUpdate, rawData, options, divName){
 
 	function drawChart(rawData) {
 		try{
-			chart.draw(google.visualization.arrayToDataTable(rawData), options);
+			chart.draw(google.visualization.arrayToDataTable(rawData), $.extend(options,{ backgroundColor: { fill: "#FFFFFF" } }));
 		}
 		catch(e){
 			//Sensor graph reset when the number of sensors changes.

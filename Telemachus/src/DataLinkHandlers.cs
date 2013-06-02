@@ -825,6 +825,11 @@ namespace Telemachus
                 dataSources => { return getsResourceValues(dataSources); },
                 "r.resource", "Resource Information [string resource type]", 
                 formatters.ResourceList, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new APIEntry(
+                dataSources => { return getsResourceValues(dataSources); },
+                "r.resourceMax", "Resource Information [string resource type]",
+                formatters.MaxResourceList, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
