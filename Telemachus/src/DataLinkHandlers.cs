@@ -670,10 +670,10 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.altitude; }, 
                 "v.altitude", "Altitude", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return dataSources.vessel.altitude - dataSources.vessel.heightFromTerrain; },
+                dataSources => { return dataSources.vessel.heightFromTerrain; },
                 "v.heightFromTerrain", "Height from Terrain", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return dataSources.vessel.heightFromTerrain; },
+                dataSources => { return dataSources.vessel.altitude - dataSources.vessel.heightFromTerrain; },
                 "v.terrainHeight", "Terrain Height", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.missionTime; },
@@ -828,7 +828,7 @@ namespace Telemachus
 
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
-                "r.resourceMax", "Resource Information [string resource type]",
+                "r.resourceMax", "Max Resource Information [string resource type]",
                 formatters.MaxResourceList, APIEntry.UnitType.UNITLESS));
         }
 
