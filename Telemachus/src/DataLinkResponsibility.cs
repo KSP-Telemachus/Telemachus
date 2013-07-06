@@ -38,9 +38,9 @@ namespace Telemachus
 
         #region Initialisation
 
-        public DataLinkResponsibility(FormatterProvider formatters)
+        public DataLinkResponsibility(FormatterProvider formatters, ServerConfiguration serverConfiguration)
         {
-            kspAPI = new KSPAPI(formatters, vesselChangeDetector);
+            kspAPI = new KSPAPI(formatters, vesselChangeDetector, serverConfiguration);
         }
 
         #endregion

@@ -49,7 +49,7 @@ namespace Telemachus
                     server.addHTTPResponsibility(new ElseResponsibility());
                     ioPageResponsibility = new IOPageResponsibility();
                     server.addHTTPResponsibility(ioPageResponsibility);
-                    dataLinkResponsibility = new DataLinkResponsibility(JSONFormatterProvider.Instance);
+                    dataLinkResponsibility = new DataLinkResponsibility(JSONFormatterProvider.Instance, serverConfig);
                     server.addHTTPResponsibility(dataLinkResponsibility);
                     server.startServing();
                  
@@ -208,7 +208,7 @@ namespace Telemachus
         List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
 
 
-        public KSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector)
+        public KSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector, ServerConfiguration serverConfiguration)
         {
             APIHandlers.Add(new PausedDataLinkHandler(formatters));
             APIHandlers.Add(new FlyByWireDataLinkHandler(formatters));
@@ -223,7 +223,7 @@ namespace Telemachus
                     new VesselDataLinkHandler(formatters),
                     new BodyDataLinkHandler(formatters),
                     new ResourceDataLinkHandler(vesselChangeDetector, formatters),
-                    new APIDataLinkHandler(this, formatters),
+                    new APIDataLinkHandler(this, formatters, serverConfiguration),
                     new NavBallDataLinkHandler(formatters)
                     }, formatters
                 ));

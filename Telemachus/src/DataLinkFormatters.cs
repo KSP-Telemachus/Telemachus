@@ -22,6 +22,7 @@ namespace Telemachus
         public DataSourceResultFormatter String { get; set; }
         public DataSourceResultFormatter Vector3d { get; set; }
         public DataSourceResultFormatter Default { get; set; }
+        public DataSourceResultFormatter StringArray { get; set; }
     }
 
     public class JSONFormatterProvider : FormatterProvider
@@ -47,6 +48,7 @@ namespace Telemachus
             APIEntry = new APIEntryJSONFormatter();
             String = new StringJSONFormatter();
             Vector3d = new Vector3dJSONFormatter();
+            StringArray = new APIEntryStringArrayFormatter();
             Default = new DefaultJSONFormatter();
         }
 
@@ -137,6 +139,32 @@ namespace Telemachus
                     sb.Append(",");
                     sb.Append("\"plotable\": " + APIList[i].plotable.ToString().ToLower());
                     sb.Append("}");
+
+                    if (i < APIList.Count - 1)
+                    {
+                        sb.Append(",");
+                    }
+                }
+
+                sb.Append("]");
+
+                return varName + JSON_ASSIGN + sb.ToString();
+            }
+        }
+
+        public class APIEntryStringArrayFormatter : JSONFormatter
+        {
+            public override string format(object input)
+            {
+                StringBuilder sb = new StringBuilder();
+                List<String> APIList = (List<String>)input;
+
+                sb.Append("[");
+
+                for (int i = 0; i < APIList.Count; i++)
+                {
+                    sb.Append("\"" + APIList[i] + "\"");
+
 
                     if (i < APIList.Count - 1)
                     {

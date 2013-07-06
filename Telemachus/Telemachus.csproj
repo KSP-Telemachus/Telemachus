@@ -38,14 +38,14 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\KSP\ksp-win-0-20-0-telemachus-dev\KSP_win\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\KSP\ksp-win-telemachus-dev\KSP_win\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\KSP\ksp-win-0-20-0-telemachus-dev\KSP_win\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\KSP\ksp-win-telemachus-dev\KSP_win\KSP_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -151,7 +151,7 @@ xcopy "$(ProjectDir)PluginData\*" "$(ProjectDir)publish\GameData\Telemachus\Plug
 xcopy "$(ProjectDir)LICENSE" "$(ProjectDir)publish\GameData\Telemachus\" /y
 xcopy "$(ProjectDir)LICENSE.LEAFLET.KSP" "$(ProjectDir)publish\GameData\Telemachus\" /y
 
-xcopy "$(ProjectDir)publish\GameData\*"  "C:\Users\Richard Bunt\KSP\ksp-win-0-20-0-telemachus-dev\KSP_win\GameData\" /e /y /i /r</PostBuildEvent>
+xcopy "$(ProjectDir)publish\GameData\*"  "C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData\" /e /y /i /r</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

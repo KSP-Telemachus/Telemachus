@@ -703,7 +703,7 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.latitude; },
                 "v.lat", "Latitude", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return (dataSources.vessel.atmDensity * 0.5) + Math.Pow(dataSources.vessel.srf_velocity.magnitude, 2); },
+                dataSources => { return (dataSources.vessel.atmDensity * 0.5) * Math.Pow(dataSources.vessel.srf_velocity.magnitude, 2); },
                 "v.dynamicPressure", "Dynamic Pressure", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.name; },
@@ -1068,15 +1068,30 @@ namespace Telemachus
     {
         #region Initialisation
 
-        public APIDataLinkHandler(IKSPAPI kspAPI, FormatterProvider formatters)
+        public APIDataLinkHandler(IKSPAPI kspAPI, FormatterProvider formatters,
+            ServerConfiguration serverConfiguration)
             : base(formatters)
         {
-            registerAPI(new PlotableAPIEntry(
+            List<String> IPList = new List<String>();
+
+            foreach(System.Net.IPAddress a in serverConfiguration.ipAddresses)
+            {
+                IPList.Add(a.ToString());
+            }
+
+            registerAPI(new APIEntry(
                 dataSources =>
                 {
                     List<APIEntry> APIList = new List<APIEntry>(); 
                     kspAPI.getAPIList(ref APIList); return APIList;},
-                "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.STRING));
+                "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    return IPList;
+                },
+                "a.ip", "IP Addresses", formatters.StringArray, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new APIEntry(
                 dataSources =>
@@ -1095,7 +1110,7 @@ namespace Telemachus
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(); },
-                "a.version", "Telemachus Version", formatters.String, APIEntry.UnitType.STRING));
+                "a.version", "Telemachus Version", formatters.String, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion

@@ -35,6 +35,7 @@
       $(document).ready(function() {
       displayVersionNumber();
       displayAPIList();
+      displayIPs();
       });
       }
 
@@ -44,6 +45,18 @@
       $( "#version" ).html(d.version);});
       }
 
+
+      function displayIPs()
+      {
+      jKSPWAPI.call("ip=a.ip", function(d){
+      var iplist = "<ul>";
+      for (var i = 0; i < d.ip.length; i++) {
+      iplist = iplist + "<li>" + d.ip[i] + "</li>";
+      }
+      iplist = iplist + "</ul>";
+      $( "#ips" ).html(iplist);});
+      }
+      
       function displayAPIList()
       {
 
@@ -275,6 +288,12 @@
           <h3>Version</h3>
           <div>
             <p id="version">
+              Unknown
+            </p>
+          </div>
+          <h3>IP Addresses</h3>
+          <div>
+            <p id="ips">
               Unknown
             </p>
           </div>

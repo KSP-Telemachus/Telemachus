@@ -23,7 +23,6 @@ namespace ExampleReceiver
         {
             try
             {
-
                 string address = string.Format(
                 "http://127.0.0.1:8080/telemachus/datalink?alt={0}",
                 Uri.EscapeDataString("v.altitude"));
