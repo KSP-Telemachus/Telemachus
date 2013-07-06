@@ -1072,13 +1072,6 @@ namespace Telemachus
             ServerConfiguration serverConfiguration)
             : base(formatters)
         {
-            List<String> IPList = new List<String>();
-
-            foreach(System.Net.IPAddress a in serverConfiguration.ipAddresses)
-            {
-                IPList.Add(a.ToString());
-            }
-
             registerAPI(new APIEntry(
                 dataSources =>
                 {
@@ -1089,6 +1082,13 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources =>
                 {
+                    List<String> IPList = new List<String>();
+
+                    foreach (System.Net.IPAddress a in serverConfiguration.ipAddresses)
+                    {
+                        IPList.Add(a.ToString());
+                    }
+
                     return IPList;
                 },
                 "a.ip", "IP Addresses", formatters.StringArray, APIEntry.UnitType.UNITLESS));
