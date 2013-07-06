@@ -241,17 +241,17 @@ var jKSPWAPI = {
     },
 
     call: function (APIString, postUpdate) {
-
+        d = new Object();
         var callback = function (response, status) {
-            d = new Object();
             d = $.parseJSON(response);
             postUpdate(d);
         };
 
         $.get("datalink?" + APIString, callback).error(function () {
             jKSPWAPI.log("Command failed: " + APIString);
-
-            jKSPWAPI.generateNotificationWithCode(4);
+            d.ret = 4;
+            //jKSPWAPI.generateNotificationWithCode(4);
+            postUpdate(d);
         }
 		);
     },

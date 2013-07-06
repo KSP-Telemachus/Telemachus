@@ -7,6 +7,8 @@ function initKSPWAPIGraph(APIString, postUpdate, rawData, options, divName) {
 
     function drawChart(rawData) {
         try {
+            //var myView = new google.visualization.DataView(google.visualization.arrayToDataTable(rawData));
+            //myView.hideRows(1);
             chart.draw(google.visualization.arrayToDataTable(rawData), $.extend(options, { backgroundColor: { fill: "#FFFFFF" } }));
         }
         catch (e) {

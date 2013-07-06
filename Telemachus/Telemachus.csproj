@@ -62,8 +62,6 @@
     <Compile Include="src\VesselChangeDetector.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LICENCE.LEAFLET.KSP" />
-    <None Include="LICENCE" />
     <None Include="Parts\FustekAntenna\model.mu" />
     <None Include="Parts\FustekAntenna\part.cfg" />
     <None Include="Parts\TelemachusAntenna\model.mu" />
@@ -71,14 +69,14 @@
     <None Include="Parts\TelemachusAntenna\part.cfg" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\SkyDrive\Documents\Visual Studio 2010\Projects\Servers\Servers\Servers.csproj">
-      <Project>{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}</Project>
-      <Name>Servers</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Parts\FustekAntenna\model000.png" />
     <Content Include="Parts\FustekAntenna\model001.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Servers\Servers\Servers.csproj">
+      <Project>{57e9f7c0-db25-4b6d-aa53-c44d95b47468}</Project>
+      <Name>Servers</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
@@ -86,8 +84,9 @@
 xcopy "$(TargetDir)Telemachus.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
 xcopy "$(ProjectDir)..\Parts\*" "$(ProjectDir)..\publish\GameData\Telemachus\Parts\"  /e /y /i /r
 xcopy "$(ProjectDir)..\WebPages\WebPages\src\*" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\PluginData\Telemachus\" /e /y /i /r
-xcopy "$(ProjectDir)..\licences\LICENSE" "$(ProjectDir)..\publish\GameData\Telemachus\" /y
-xcopy "$(ProjectDir)..\licences\LICENSE.LEAFLET.KSP" "$(ProjectDir)..\publish\GameData\Telemachus\" /y
+
+xcopy "$(ProjectDir)..\licences\*" "$(ProjectDir)..\publish\GameData\Telemachus\" /e /y /i /r
+
 
 xcopy "$(ProjectDir)..\publish\GameData\*"  "C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData\" /e /y /i /r</PostBuildEvent>
   </PropertyGroup>

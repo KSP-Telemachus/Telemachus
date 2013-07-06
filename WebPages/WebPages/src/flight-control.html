@@ -16,19 +16,25 @@
     <script src="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
 
     <script>
-        function command(command) {
+        function command(command, id) {
+            $(id).buttonMarkup({ icon: "refresh" });
             jKSPWAPI.call("ret=" + command, function (d) {
                 if (d.ret > 0) {
                     jKSPWAPI.generateNotificationWithCode(d.ret);
                 }
+                setTimeout($(id).buttonMarkup({ icon: "grid" }), 500);
             });
         }
 
         function toggle(command, id) {
+            $(id).buttonMarkup({ icon: "refresh" });
+
             jKSPWAPI.call("ret=" + command, function (d) {
                 if (d.ret > 0) {
                     jKSPWAPI.generateNotificationWithCode(d.ret);
+                    
                 }
+                setTimeout(function () { $(id).buttonMarkup({ icon: "grid" }) }, 500);
             });
         }
     </script>
@@ -37,15 +43,15 @@
     <div data-role="page" id="page1">
         <div data-role="content">
 
-            <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.stage')">Stage+</button>
+            <button data-inline="true" id="stage" data-icon="grid" data-iconpos="bottom" onclick="command('f.stage', '#stage')">Stage+</button>
 
-            <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleUp')">Throttle+</button>
+            <button data-inline="true" id="throttlep" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleUp','#throttlep')">Throttle+</button>
 
-            <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleDown')">Throttle-</button>
+            <button data-inline="true" id="throttled" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleDown','#throttled')">Throttle-</button>
 
-            <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleZero')">0%</button>
+            <button data-inline="true" id="throttle0" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleZero','#throttle0')">0%</button>
 
-            <button data-inline="true" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleFull')">100%</button>
+            <button data-inline="true" id="throttle100" data-icon="grid" data-iconpos="bottom" onclick="command('f.throttleFull','#throttle100')">100%</button>
 
             <button data-inline="true" id="rcs" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.rcs', '#rcs')">RCS</button>
 
@@ -64,7 +70,6 @@
             <button data-inline="true" id="ag2" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag2', '#ag2')">Group 2</button>
 
             <button data-inline="true" id="ag3" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag3', '#ag3')">Group 3</button>
-
 
             <button data-inline="true" id="ag4" data-icon="grid" data-iconpos="bottom" onclick="toggle('f.ag4', '#ag4')">Group 4</button>
 
