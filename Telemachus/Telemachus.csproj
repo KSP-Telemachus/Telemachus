@@ -79,79 +79,17 @@
   <ItemGroup>
     <Content Include="Parts\FustekAntenna\model000.png" />
     <Content Include="Parts\FustekAntenna\model001.png" />
-    <Content Include="PluginData\altitude.html" />
-    <Content Include="PluginData\apoapsis-periapsis.html" />
-    <Content Include="PluginData\touchball-xyz.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\layers.png" />
-    <Content Include="PluginData\leafletksp.css" />
-    <Content Include="PluginData\leafletksp.js" />
-    <Content Include="PluginData\map.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\marker-icon.png" />
-    <Content Include="PluginData\marker-shadow.png" />
-    <Content Include="PluginData\markers-anomaly.png" />
-    <Content Include="PluginData\markers-shadow.png" />
-    <Content Include="PluginData\markers-spacecenter.png" />
-    <Content Include="PluginData\surface.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\jKSPWAPITable.css" />
-    <Content Include="PluginData\jKSPWAPITable.js" />
-    <Content Include="PluginData\orbital.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\electricity.html" />
-    <Content Include="PluginData\fuel-oxidiser.html" />
-    <Content Include="PluginData\information.css" />
-    <Content Include="PluginData\flight-control.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\information.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\jKSPWAPICore.css" />
-    <Content Include="PluginData\smart-ass.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\inclination-aop.html" />
-    <Content Include="PluginData\jKSPWAPICore.js" />
-    <Content Include="PluginData\jKSPWAPIGraph.js" />
-    <Content Include="PluginData\config.xml" />
-    <Content Include="PluginData\density.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\dynamic-pressure.html" />
-    <Content Include="PluginData\jKSPWAPIGraph.css" />
-    <Content Include="PluginData\g-force.html" />
-    <Content Include="PluginData\gravity.html" />
-    <Content Include="PluginData\jquery-1.9.1.min.js" />
-    <Content Include="PluginData\pressure.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\temperature.html" />
-    <Content Include="PluginData\time-apoapsis-periapsis.html" />
-    <Content Include="PluginData\touchball-pyr.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\velocity.html">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="PluginData\zoom-in.png" />
-    <Content Include="PluginData\zoom-out.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)Servers.dll" "$(ProjectDir)publish\GameData\Telemachus\Plugins\" /e /y /i /r
-xcopy "$(TargetDir)Telemachus.dll" "$(ProjectDir)publish\GameData\Telemachus\Plugins\" /e /y /i /r
-xcopy "$(ProjectDir)Parts\*" "$(ProjectDir)publish\GameData\Telemachus\Parts\"  /e /y /i /r
-xcopy "$(ProjectDir)PluginData\*" "$(ProjectDir)publish\GameData\Telemachus\Plugins\PluginData\Telemachus\" /e /y /i /r
-xcopy "$(ProjectDir)LICENSE" "$(ProjectDir)publish\GameData\Telemachus\" /y
-xcopy "$(ProjectDir)LICENSE.LEAFLET.KSP" "$(ProjectDir)publish\GameData\Telemachus\" /y
+    <PostBuildEvent>xcopy "$(TargetDir)Servers.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
+xcopy "$(TargetDir)Telemachus.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
+xcopy "$(ProjectDir)..\Parts\*" "$(ProjectDir)..\publish\GameData\Telemachus\Parts\"  /e /y /i /r
+xcopy "$(ProjectDir)..\WebPages\WebPages\src\*" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\PluginData\Telemachus\" /e /y /i /r
+xcopy "$(ProjectDir)..\licences\LICENSE" "$(ProjectDir)..\publish\GameData\Telemachus\" /y
+xcopy "$(ProjectDir)..\licences\LICENSE.LEAFLET.KSP" "$(ProjectDir)..\publish\GameData\Telemachus\" /y
 
-xcopy "$(ProjectDir)publish\GameData\*"  "C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData\" /e /y /i /r</PostBuildEvent>
+xcopy "$(ProjectDir)..\publish\GameData\*"  "C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData\" /e /y /i /r</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
