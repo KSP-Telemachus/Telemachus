@@ -1,60 +1,60 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Kerbal Maps</title>
-    
-    <link rel="stylesheet" type="text/css" href="leafletksp.css"/>
+
+    <link rel="stylesheet" type="text/css" href="leafletksp.css" />
     <link rel="stylesheet" href="jKSPWAPICore.css" />
-    
+
     <script type="text/javascript" src="leafletksp.js"></script>
-    
+
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script>
-      function startMap(){
-      var previousBody = "";
-      var newBody;
-      jQuery(document).ready(function($) {
-      map = new L.KSP.Map('map',  {
-      layers: [ L.KSP.CelestialBody.KERBIN ],
-      zoom: L.KSP.CelestialBody.KERBIN.defaultLayer.options.maxZoom,
-      center: [ -0.1027, -74.5754 ],
-      bodyControl: false,
-      layerControl: true,
-      scaleControl: true
-      });
-      map.fitWorld();
-      rawData = [[0]];
-      var marker = [L.marker([0, 0]), L.marker([0, 0])];
-      marker[0].addTo(map);
-      jKSPWAPI.initPoll("longs=v.long&lat=v.lat&name=v.name&alt=v.altitude&m=v.surfaceVelocity&body=b.name", function(rawData){}, function(rawData, d){
-          
-          if(previousBody != d.body){
-              
-              try{
-                newBody = L.KSP.CelestialBody[d.body.toUpperCase()];
-                newBody.addTo(map);
-                previousBody = d.body;
-              }catch(e){
-                alert("Body not supported yet.")
-                previousBody = d.body;
-              }
-          }
-          
-          if(!isNaN(d.lat) && !isNaN(d.longs)){
-            marker[0].setLatLng([d.lat,d.longs]);
-            marker[0].bindPopup(d.name + " </br>Altitude: " + d.alt + "</br>Surface Velocity: " + d.m);
-            marker[0].update();
-            
-          }
-          
-          }, rawData)
-        });
-      }
+        function startMap() {
+            var previousBody = "";
+            var newBody;
+            jQuery(document).ready(function ($) {
+                map = new L.KSP.Map('map', {
+                    layers: [L.KSP.CelestialBody.KERBIN],
+                    zoom: L.KSP.CelestialBody.KERBIN.defaultLayer.options.maxZoom,
+                    center: [-0.1027, -74.5754],
+                    bodyControl: false,
+                    layerControl: true,
+                    scaleControl: true
+                });
+                map.fitWorld();
+                rawData = [[0]];
+                var marker = [L.marker([0, 0]), L.marker([0, 0])];
+                marker[0].addTo(map);
+                jKSPWAPI.initPoll("longs=v.long&lat=v.lat&name=v.name&alt=v.altitude&m=v.surfaceVelocity&body=b.name", function (rawData) { }, function (rawData, d) {
+
+                    if (previousBody != d.body) {
+
+                        try {
+                            newBody = L.KSP.CelestialBody[d.body.toUpperCase()];
+                            newBody.addTo(map);
+                            previousBody = d.body;
+                        } catch (e) {
+                            alert("Body not supported yet.")
+                            previousBody = d.body;
+                        }
+                    }
+
+                    if (!isNaN(d.lat) && !isNaN(d.longs)) {
+                        marker[0].setLatLng([d.lat, d.longs]);
+                        marker[0].bindPopup(d.name + " </br>Altitude: " + d.alt + "</br>Surface Velocity: " + d.m);
+                        marker[0].update();
+
+                    }
+
+                }, rawData)
+            });
+        }
     </script>
-  </head>
-  <body onload="startMap();" style="padding:0; margin:0;">
-    <div id="map" class="map" style="padding:0; margin:0; height:100%;"></div>
-  </body>
+</head>
+<body onload="startMap();" style="padding: 0; margin: 0;">
+    <div id="map" class="map" style="padding: 0; margin: 0; height: 100%;"></div>
+</body>
 </html>

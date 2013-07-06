@@ -1,40 +1,40 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Telemachus - Orbital</title>
     <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
     <link rel="stylesheet" type="text/css" href="jKSPWAPITable.css" />
-    
+
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script type="text/javascript" src="jKSPWAPITable.js"></script>
 
     <script type="text/javascript">
-      
-      google.setOnLoadCallback(onLoad);
 
-      function onLoad() {
-      jQuery(document).ready(function($) {
-        initKSPWAPITable(
-        [
-        "o.period",
-        "o.eccentricity",
-        "o.PeA",
-        "o.ApA",
-        "o.inclination",
-        "v.orbitalVelocity",
-        "o.argumentOfPeriapsis",
-        "o.timeToPe",
-        "o.timeToAp"
-        ], "table_div"); 
-      }
-      );
-      }
-      
+        google.setOnLoadCallback(onLoad);
+
+        function onLoad() {
+            jQuery(document).ready(function ($) {
+                initKSPWAPITable(
+                [
+                "o.period",
+                "o.eccentricity",
+                "o.PeA",
+                "o.ApA",
+                "o.inclination",
+                "v.orbitalVelocity",
+                "o.argumentOfPeriapsis",
+                "o.timeToPe",
+                "o.timeToAp"
+                ], "table_div");
+            }
+            );
+        }
+
     </script>
-  </head>
-  <body>
+</head>
+<body>
     <div id="table_div" class="full"></div>
-  </body>
+</body>
 </html>

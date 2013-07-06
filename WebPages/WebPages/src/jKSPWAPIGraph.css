@@ -1,21 +1,18 @@
-﻿body
-{
+﻿body {
     position: fixed;
     top: 5px;
-    left:5px;
-    right:5px;
-    bottom:20px;
+    left: 5px;
+    right: 5px;
+    bottom: 20px;
 }
-    
-.full
-{
+
+.full {
     height: 100%;
     width: 100%;
 }
 
-#chart_div
-{
-	position: fixed;
-	top:0px;
-    left:0px;
+#chart_div {
+    position: fixed;
+    top: 0px;
+    left: 0px;
 }

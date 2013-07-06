@@ -1,41 +1,43 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Telemachus - Pressure</title>
     <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
     <link rel="stylesheet" type="text/css" href="jKSPWAPIGraph.css" />
-    
+
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script type="text/javascript" src="jKSPWAPIGraph.js"></script>
 
     <script type="text/javascript">
-      google.setOnLoadCallback(onLoad);
+        google.setOnLoadCallback(onLoad);
 
-      function onLoad() {
-      jQuery(document).ready(function($) {
-      initKSPWAPIGraph("t=s.sensor[PRES]&met=v.missionTime", function(rawData, d){
+        function onLoad() {
+            jQuery(document).ready(function ($) {
+                initKSPWAPIGraph("t=s.sensor[PRES]&met=v.missionTime", function (rawData, d) {
 
-      temp = d.t[0];
-      temp.splice(0, 0, "Mission Time");
-      rawData[0] = temp;
-      add = d.t[1];
-      add.splice(0, 0, d.met);
-      rawData.push(add);},
-      [['Mission Time', 'Pressure']],
-      {
-      title: 'Pressure Plot',
-      vAxis: { title: 'Pressure' },
-      hAxis: { title: 'Mission Time (s)' },
-      legend: { position: 'bottom' }
-      }, "chart_div");});
-      }
+                    temp = d.t[0];
+                    temp.splice(0, 0, "Mission Time");
+                    rawData[0] = temp;
+                    add = d.t[1];
+                    add.splice(0, 0, d.met);
+                    rawData.push(add);
+                },
+                [['Mission Time', 'Pressure']],
+                {
+                    title: 'Pressure Plot',
+                    vAxis: { title: 'Pressure' },
+                    hAxis: { title: 'Mission Time (s)' },
+                    legend: { position: 'bottom' }
+                }, "chart_div");
+            });
+        }
     </script>
-  </head>
-  <body>
+</head>
+<body>
     <div id="m">
-      <div id="chart_div" class="full"></div>
+        <div id="chart_div" class="full"></div>
     </div>
-  </body>
+</body>
 </html>

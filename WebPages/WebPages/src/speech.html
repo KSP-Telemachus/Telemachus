@@ -5,73 +5,73 @@
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <link rel="stylesheet" href="jKSPWAPICore.css" />
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
-     <script>
-         function command(command) {
-             jKSPWAPI.call("ret=" + command, function (d) {
-                 if (d.ret > 0) {
-                     jKSPWAPI.generateNotificationWithCode(d.ret);
-                 }
-             });
-         }
+    <script>
+        function command(command) {
+            jKSPWAPI.call("ret=" + command, function (d) {
+                if (d.ret > 0) {
+                    jKSPWAPI.generateNotificationWithCode(d.ret);
+                }
+            });
+        }
 
-         function toggle(command, id) {
-             jKSPWAPI.call("ret=" + command, function (d) {
-                 if (d.ret > 0) {
-                     jKSPWAPI.generateNotificationWithCode(d.ret);
-                 }
-             });
-         }
+        function toggle(command, id) {
+            jKSPWAPI.call("ret=" + command, function (d) {
+                if (d.ret > 0) {
+                    jKSPWAPI.generateNotificationWithCode(d.ret);
+                }
+            });
+        }
 
-         function onchange_txt(event) {
-             switch (event.target.value) {
-                 case "stage":
-                     command('f.stage');
-                     break;
-                 case "engage":
-                     command('f.throttleFull');
-                     break;
-                 case "1":
-                     toggle('f.ag1', '#1');
-                     break;
-                 case "2":
-                     toggle('f.ag2', '#1');
-                     break;
-                 case "3":
-                     toggle('f.ag3', '#1');
-                     break;
-                 case "4":
-                     toggle('f.ag4', '#1');
-                     break;
-                 case "5":
-                     toggle('f.ag5', '#1');
-                     break;
-                 case "6":
-                     toggle('f.ag6', '#1');
-                     break;
-                 case "7":
-                     toggle('f.ag7', '#1');
-                     break;
-                 case "8":
-                     toggle('f.ag8', '#1');
-                     break;
-                 case "9":
-                     toggle('f.ag9', '#1');
-                     break;
-                 case "10":
-                     toggle('f.ag10', '#1');
-                     break;
-             }
-         }
+        function onchange_txt(event) {
+            switch (event.target.value) {
+                case "stage":
+                    command('f.stage');
+                    break;
+                case "engage":
+                    command('f.throttleFull');
+                    break;
+                case "1":
+                    toggle('f.ag1', '#1');
+                    break;
+                case "2":
+                    toggle('f.ag2', '#1');
+                    break;
+                case "3":
+                    toggle('f.ag3', '#1');
+                    break;
+                case "4":
+                    toggle('f.ag4', '#1');
+                    break;
+                case "5":
+                    toggle('f.ag5', '#1');
+                    break;
+                case "6":
+                    toggle('f.ag6', '#1');
+                    break;
+                case "7":
+                    toggle('f.ag7', '#1');
+                    break;
+                case "8":
+                    toggle('f.ag8', '#1');
+                    break;
+                case "9":
+                    toggle('f.ag9', '#1');
+                    break;
+                case "10":
+                    toggle('f.ag10', '#1');
+                    break;
+            }
+        }
     </script>
 </head>
 <body style="text-align: center; font-family: 'Open Sans', arial, sans-serif; font-size: 13px;">
     <div style="display: table; height: 100%; width: 100%">
         <div style="display: table-cell; vertical-align: middle; height: 100%; width: 100%">
-            <h1 style="padding-bottom: 20px;  font-weight: normal">Telemachus Speech</h1>
+            <h1 style="padding-bottom: 20px; font-weight: normal">Telemachus Speech</h1>
             <div style="color: gray; font-size: 14px">Click the microphone and speak one of the commands in bold</div>
             <div style="color: gray; font-size: 14px"><b>stage</b> the craft, action groups <b>1-10</b> and <b>engage</b> full throttle</div>
             <input x-webkit-speech style="position: relative; top: 50%; max-width: 600px; width: 60%;" oninput="onchange_txt(event)">
-            <div style=" padding-top: 10px">
+            <div style="padding-top: 10px">
             </div>
         </div>
     </div>

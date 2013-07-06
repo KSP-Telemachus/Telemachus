@@ -1,56 +1,53 @@
-﻿google.load('visualization', '1', {packages:['table']});
+﻿google.load('visualization', '1', { packages: ['table'] });
 
-function initKSPWAPITable(APIArray, divName){
-	
-	jKSPWAPI.getAPISubset(APIArray,function(APIInformation){
-		var data = new google.visualization.DataTable();
-		data.addColumn('string', '');
-		data.addColumn('number', '');
+function initKSPWAPITable(APIArray, divName) {
 
-		buildRows(APIInformation.api);
+    jKSPWAPI.getAPISubset(APIArray, function (APIInformation) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', '');
+        data.addColumn('number', '');
 
-		var table = new google.visualization.Table(document.getElementById('table_div'));
+        buildRows(APIInformation.api);
 
-		jKSPWAPI.initPoll(buildAPIString(), function(rawData){}, function(rawData, d){drawTable(d);}, [[0]]);
+        var table = new google.visualization.Table(document.getElementById('table_div'));
 
-		function buildAPIString(){
-			APIString = "";
-			for (var i=0;i<APIArray.length;i++)
-			{ 
-				APIString = APIString + "a" + i + "="  + APIArray[i];
+        jKSPWAPI.initPoll(buildAPIString(), function (rawData) { }, function (rawData, d) { drawTable(d); }, [[0]]);
 
-				if(i<APIArray.length-1){
-					APIString =  APIString + "&";
-				}
-			}
+        function buildAPIString() {
+            APIString = "";
+            for (var i = 0; i < APIArray.length; i++) {
+                APIString = APIString + "a" + i + "=" + APIArray[i];
 
-			return APIString;
-		}
+                if (i < APIArray.length - 1) {
+                    APIString = APIString + "&";
+                }
+            }
 
-		function buildRows(api){
-			for (var i=0;i<APIArray.length;i++)
-			{ 
-				data.addRow([api[i].name, {v: 0, f: ''}]);
-			}
-		}
+            return APIString;
+        }
 
-		function drawTable(d) {
-      
-			for (var i=0;i<APIArray.length;i++)
-			{ 
-				if(APIInformation.api[i].units.toLowerCase() == "string"){
-					data.setCell(i, 1, 0, d["a" + i]); 
-				}
-				else{
-				data.setCell(i, 1, d["a" + i], 
-					jKSPWAPI.formatters.pad(
-					jKSPWAPI.formatters[APIInformation.api[i].units.toLowerCase()](d["a" + i])));
-				}
-			}
+        function buildRows(api) {
+            for (var i = 0; i < APIArray.length; i++) {
+                data.addRow([api[i].name, { v: 0, f: '' }]);
+            }
+        }
 
-			table.draw(data,  {
-			  allowHtml: true
-			  });
-		} 
-	});
+        function drawTable(d) {
+
+            for (var i = 0; i < APIArray.length; i++) {
+                if (APIInformation.api[i].units.toLowerCase() == "string") {
+                    data.setCell(i, 1, 0, d["a" + i]);
+                }
+                else {
+                    data.setCell(i, 1, d["a" + i],
+                        jKSPWAPI.formatters.pad(
+                        jKSPWAPI.formatters[APIInformation.api[i].units.toLowerCase()](d["a" + i])));
+                }
+            }
+
+            table.draw(data, {
+                allowHtml: true
+            });
+        }
+    });
 }

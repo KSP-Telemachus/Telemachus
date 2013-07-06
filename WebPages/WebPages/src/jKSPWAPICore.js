@@ -1,397 +1,398 @@
 ﻿var sNotify = {
-	
-	timeOpen: 3,	//change this number to the amount of seconds you want the message opened
-	
-	queue: new Array(),
-	closeQueue: new Array(),
-	
-	addToQueue: function(msg) {
-		sNotify.queue.push(msg);
-	},
-	
-	createMessage: function(msg) {
-		
-		//create HTML + set CSS
-		var messageBox = $("<div><span class=\"sNotify_close\">x</span>" + msg + "</div>").insertAfter($("body").first());
-		$(messageBox).addClass("sNotify_message");
-		
-		sNotify.enableActions(messageBox);
-		sNotify.closeQueue.push(0);
-		
-		return $(messageBox);
-	},
-	
-	loopQueue: function() {
-		//pop queue
-		if (sNotify.queue.length > 0) {
-			
-			var messageBox = sNotify.createMessage(sNotify.queue[0]);
-			sNotify.popMessage(messageBox);
-			
-			sNotify.queue.splice(0,1);
-			
-		}
-		
-		//close queue
-		if (sNotify.closeQueue.length > 0) {
-			var indexes = new Array();
-			
-			for (var i = 0; i < sNotify.closeQueue.length; i++) {
-				sNotify.closeQueue[i]++;
-				
-				if (sNotify.closeQueue[i] > sNotify.timeOpen) {
-					indexes.push(i);
-				}
-			}
-			
-			//now close them
-			for (var i = 0; i < indexes.length; i++) {
-				var buttons = $(".sNotify_close");
-				sNotify.closeMessage($(buttons[($(buttons).length - indexes[i]) - 1]));
-				sNotify.closeQueue.splice(indexes[i],1);	
-			}
-			
-		}
-		
-	},
-	
-	enableActions: function(messageBox) {
-		//reset timer when hovering
-		$(messageBox).hover(
-			function() {
-				var index = ($(this).nextAll().length - 1);
-				sNotify.closeQueue[index] = -1000;
+
+    timeOpen: 3,	//change this number to the amount of seconds you want the message opened
+
+    queue: new Array(),
+    closeQueue: new Array(),
+
+    addToQueue: function (msg) {
+        sNotify.queue.push(msg);
+    },
+
+    createMessage: function (msg) {
+
+        //create HTML + set CSS
+        var messageBox = $("<div><span class=\"sNotify_close\">x</span>" + msg + "</div>").insertAfter($("body").first());
+        $(messageBox).addClass("sNotify_message");
+
+        sNotify.enableActions(messageBox);
+        sNotify.closeQueue.push(0);
+
+        return $(messageBox);
+    },
+
+    loopQueue: function () {
+        //pop queue
+        if (sNotify.queue.length > 0) {
+
+            var messageBox = sNotify.createMessage(sNotify.queue[0]);
+            sNotify.popMessage(messageBox);
+
+            sNotify.queue.splice(0, 1);
+
+        }
+
+        //close queue
+        if (sNotify.closeQueue.length > 0) {
+            var indexes = new Array();
+
+            for (var i = 0; i < sNotify.closeQueue.length; i++) {
+                sNotify.closeQueue[i]++;
+
+                if (sNotify.closeQueue[i] > sNotify.timeOpen) {
+                    indexes.push(i);
+                }
+            }
+
+            //now close them
+            for (var i = 0; i < indexes.length; i++) {
+                var buttons = $(".sNotify_close");
+                sNotify.closeMessage($(buttons[($(buttons).length - indexes[i]) - 1]));
+                sNotify.closeQueue.splice(indexes[i], 1);
+            }
+
+        }
+
+    },
+
+    enableActions: function (messageBox) {
+        //reset timer when hovering
+        $(messageBox).hover(
+			function () {
+			    var index = ($(this).nextAll().length - 1);
+			    sNotify.closeQueue[index] = -1000;
 			},
-			function() {
-				var index = ($(this).nextAll().length - 1);
-				sNotify.closeQueue[index] = 0;
+			function () {
+			    var index = ($(this).nextAll().length - 1);
+			    sNotify.closeQueue[index] = 0;
 			}
 		);
-		
-		//enable click close button
-		$(messageBox).find(".sNotify_close").click(function() {
-			sNotify.closeMessage(this);
-		});
-	},
-	
-	popMessage: function(messageBox) {
-		$(messageBox).css({
-			marginRight: "-290px",
-			opacity: 0.2,
-			display: "block"
-		});
-		
-		var height = parseInt($(messageBox).outerHeight()) + parseInt($(messageBox).css("margin-bottom"));
-		
-		$(".sNotify_message").next().each(function() {
-			var topThis = $(this).css("top");
-			
-			if (topThis == "auto") {
-				topThis = 0;
-			}
-			
-			var newTop = parseInt(topThis) + parseInt(height);
-			
-			$(this).animate({
-				top: newTop + "px"
-			}, {
-				queue: false,
-				duration: 600
-			});
-		});
-		
-		$(messageBox).animate({
-			marginRight: "20px",
-			opacity: 1.0
-		}, 800);
-	},
-	
-	closeMessage: function(button) {
-		var height = parseInt($(button).parent().outerHeight()) + parseInt($(button).parent().css("margin-bottom"));
-		
-		$(button).parent().nextAll(".sNotify_message").each(function() {
-			var topThis = $(this).css("top");
-			
-			if (topThis == "auto") {
-				topThis = 0;
-			}
-			
-			var newTop = parseInt(topThis) - parseInt(height);
-			
-			$(this).animate({
-				top: newTop + "px"
-			}, {
-				queue: false,
-				duration: 300
-			});
-		});
-		
-		$(button).parent().hide(200, function() {
-			$(this).remove();
-		});
-	}
-		
+
+        //enable click close button
+        $(messageBox).find(".sNotify_close").click(function () {
+            sNotify.closeMessage(this);
+        });
+    },
+
+    popMessage: function (messageBox) {
+        $(messageBox).css({
+            marginRight: "-290px",
+            opacity: 0.2,
+            display: "block"
+        });
+
+        var height = parseInt($(messageBox).outerHeight()) + parseInt($(messageBox).css("margin-bottom"));
+
+        $(".sNotify_message").next().each(function () {
+            var topThis = $(this).css("top");
+
+            if (topThis == "auto") {
+                topThis = 0;
+            }
+
+            var newTop = parseInt(topThis) + parseInt(height);
+
+            $(this).animate({
+                top: newTop + "px"
+            }, {
+                queue: false,
+                duration: 600
+            });
+        });
+
+        $(messageBox).animate({
+            marginRight: "20px",
+            opacity: 1.0
+        }, 800);
+    },
+
+    closeMessage: function (button) {
+        var height = parseInt($(button).parent().outerHeight()) + parseInt($(button).parent().css("margin-bottom"));
+
+        $(button).parent().nextAll(".sNotify_message").each(function () {
+            var topThis = $(this).css("top");
+
+            if (topThis == "auto") {
+                topThis = 0;
+            }
+
+            var newTop = parseInt(topThis) - parseInt(height);
+
+            $(this).animate({
+                top: newTop + "px"
+            }, {
+                queue: false,
+                duration: 300
+            });
+        });
+
+        $(button).parent().hide(200, function () {
+            $(this).remove();
+        });
+    }
+
 }
 
 setInterval("sNotify.loopQueue()", 900);
 
 var jKSPWAPI = {
 
-	DATA_SIZE: 1000,
-	UPDATE_INTERVAL: 300,
-	IDLE_UPDATE_INTERVAL: 4000,
-	SPLICE_SIZE: 10,
-	SIG_FIG: 5,
-	NOTIFICATIONS: true,
-	rawData: [],
-	
-	initPoll: function(APIString, preUpdate, postUpdate, rawData){
+    DATA_SIZE: 1000,
+    UPDATE_INTERVAL: 300,
+    IDLE_UPDATE_INTERVAL: 4000,
+    SPLICE_SIZE: 10,
+    SIG_FIG: 5,
+    NOTIFICATIONS: true,
+    rawData: [],
 
-		APIString = "datalink?" + APIString + "&p=p.paused"
-		update();
-		var nolink = false;
-		var previous = -1;
-		this.rawData = rawData;
+    initPoll: function (APIString, preUpdate, postUpdate, rawData) {
 
-		function update() {
+        APIString = "datalink?" + APIString + "&p=p.paused"
+        update();
+        var nolink = false;
+        var previous = -1;
+        this.rawData = rawData;
 
-			if (rawData.length > 1) {
-				preUpdate(rawData);
-			}
+        function update() {
 
-			readStream()
-		}
+            if (rawData.length > 1) {
+                preUpdate(rawData);
+            }
 
-		function sanitise(str){
+            readStream()
+        }
 
-			return str.replace("nan", "0");
-		}
+        function sanitise(str) {
 
-		function readStream() {
+            return str.replace("nan", "0");
+        }
 
-			var callback = function(response, status){
-				if (status == "success") {
-				
-					d = $.parseJSON(sanitise(response));
+        function readStream() {
 
-					if (!d.p) {
-						postUpdate(rawData, d);
-					}
+            var callback = function (response, status) {
+                if (status == "success") {
 
-					if(d.p != previous){
-						previous = d.p;
+                    d = $.parseJSON(sanitise(response));
 
-						jKSPWAPI.generateNotificationWithCode(d.p);
-					}
+                    if (!d.p) {
+                        postUpdate(rawData, d);
+                    }
 
-					if (rawData.length > jKSPWAPI.DATA_SIZE) {
-						rawData.splice(1, jKSPWAPI.SPLICE_SIZE);
-					}
+                    if (d.p != previous) {
+                        previous = d.p;
 
-					nolink = false;
-					t = setTimeout(function(){
-						update();}, jKSPWAPI.UPDATE_INTERVAL);	
-				}
-				else {
-					document.writeln(response);
-				}
-			};
+                        jKSPWAPI.generateNotificationWithCode(d.p);
+                    }
 
-			$.get(APIString, callback).error(function() {
-				rawData.length = 1;
-				rawData.push(new Array(rawData[0].length+1).join('0').split('').map(parseFloat));
-				
-				t = setTimeout(
-					function(){update();}, jKSPWAPI.IDLE_UPDATE_INTERVAL);
+                    if (rawData.length > jKSPWAPI.DATA_SIZE) {
+                        rawData.splice(1, jKSPWAPI.SPLICE_SIZE);
+                    }
 
-				if(!nolink){
-					jKSPWAPI.generateNotification("No antenna found, entering broadcast mode.");
-					nolink=true;
-				}
-			});
-		}
-	},
+                    nolink = false;
+                    t = setTimeout(function () {
+                        update();
+                    }, jKSPWAPI.UPDATE_INTERVAL);
+                }
+                else {
+                    document.writeln(response);
+                }
+            };
 
-	generateNotificationWithCode: function(code){
+            $.get(APIString, callback).error(function () {
+                rawData.length = 1;
+                rawData.push(new Array(rawData[0].length + 1).join('0').split('').map(parseFloat));
 
-		if(jKSPWAPI.NOTIFICATIONS){
-			if(code == 0){
-				sNotify.addToQueue("Signal found.");
-			}
-			else if(code == 1){
-				sNotify.addToQueue("Game paused.");
-			}
-			else if(code == 2){
-				sNotify.addToQueue("Potential power loss on antenna.");
-			}
-			else if(code == 3){
-				sNotify.addToQueue("Antenna is deactivated.");
-			}
-			else if(code == 4){
-				sNotify.addToQueue("Unable to reach antenna.");
-			}
-		}
-	},
+                t = setTimeout(
+					function () { update(); }, jKSPWAPI.IDLE_UPDATE_INTERVAL);
 
-	generateNotification: function(message){
-		if(jKSPWAPI.NOTIFICATIONS){
-			sNotify.addToQueue(message);
-		}
-	},
+                if (!nolink) {
+                    jKSPWAPI.generateNotification("No antenna found, entering broadcast mode.");
+                    nolink = true;
+                }
+            });
+        }
+    },
 
-	call: function(APIString, postUpdate){
+    generateNotificationWithCode: function (code) {
 
-		var callback = function(response, status){
-				d = new Object();
-				d = $.parseJSON(response);
-				postUpdate(d);
-			};
+        if (jKSPWAPI.NOTIFICATIONS) {
+            if (code == 0) {
+                sNotify.addToQueue("Signal found.");
+            }
+            else if (code == 1) {
+                sNotify.addToQueue("Game paused.");
+            }
+            else if (code == 2) {
+                sNotify.addToQueue("Potential power loss on antenna.");
+            }
+            else if (code == 3) {
+                sNotify.addToQueue("Antenna is deactivated.");
+            }
+            else if (code == 4) {
+                sNotify.addToQueue("Unable to reach antenna.");
+            }
+        }
+    },
 
-		$.get("datalink?" + APIString, callback).error(function() {
-				jKSPWAPI.log("Command failed: " + APIString);
+    generateNotification: function (message) {
+        if (jKSPWAPI.NOTIFICATIONS) {
+            sNotify.addToQueue(message);
+        }
+    },
 
-				jKSPWAPI.generateNotificationWithCode(4);
-			}
+    call: function (APIString, postUpdate) {
+
+        var callback = function (response, status) {
+            d = new Object();
+            d = $.parseJSON(response);
+            postUpdate(d);
+        };
+
+        $.get("datalink?" + APIString, callback).error(function () {
+            jKSPWAPI.log("Command failed: " + APIString);
+
+            jKSPWAPI.generateNotificationWithCode(4);
+        }
 		);
-	},
+    },
 
-	getAPI: function(postUpdate){
-		jKSPWAPI.call("api=a.api", postUpdate);
-	},
+    getAPI: function (postUpdate) {
+        jKSPWAPI.call("api=a.api", postUpdate);
+    },
 
-	getAPISubset: function(API,postUpdate){
-		jKSPWAPI.call("api=a.apiSubSet[" + API.toString() + "]", postUpdate);
-	},
+    getAPISubset: function (API, postUpdate) {
+        jKSPWAPI.call("api=a.apiSubSet[" + API.toString() + "]", postUpdate);
+    },
 
 
-	log: function (msg) {
-		setTimeout(function() {
-			throw new Error("[jKSPWAPI]" + msg);
-		}, 0);
-	},
+    log: function (msg) {
+        setTimeout(function () {
+            throw new Error("[jKSPWAPI]" + msg);
+        }, 0);
+    },
 
-	formatters: {
+    formatters: {
 
-		velocity: function(v){
-			f = jKSPWAPI.formatters.formatScale(v, 1000, ["Too Large", "m/s", "Km/s", "Mm/s", "Gm/s", "Tm/s"]);
-			return jKSPWAPI.formatters.fix(f.value) + " " + f.unit;
-		},
+        velocity: function (v) {
+            f = jKSPWAPI.formatters.formatScale(v, 1000, ["Too Large", "m/s", "Km/s", "Mm/s", "Gm/s", "Tm/s"]);
+            return jKSPWAPI.formatters.fix(f.value) + " " + f.unit;
+        },
 
-		distance: function(v){
-			f = jKSPWAPI.formatters.formatScale(v, 1000, ["Too Large", "m", "Km", "Mm", "Gm", "Tm"]);
-			return jKSPWAPI.formatters.fix(f.value) + " " + f.unit;
-		},
+        distance: function (v) {
+            f = jKSPWAPI.formatters.formatScale(v, 1000, ["Too Large", "m", "Km", "Mm", "Gm", "Tm"]);
+            return jKSPWAPI.formatters.fix(f.value) + " " + f.unit;
+        },
 
-		formatScale: function(v, s, u){
-			var i = 1;
-			var isNeg = v < 0;
-		
-			v = Math.abs(v);
+        formatScale: function (v, s, u) {
+            var i = 1;
+            var isNeg = v < 0;
 
-			while(v > s){
-				v = v / s;
-				i = i + 1;
-			}
+            v = Math.abs(v);
 
-			if(i >= u.length){
-				i = 0;
-			}
+            while (v > s) {
+                v = v / s;
+                i = i + 1;
+            }
 
-			if(isNeg){
-				v=v*-1;
-			}
+            if (i >= u.length) {
+                i = 0;
+            }
 
-			return { "value":v, "unit":u[i]};
-		},
+            if (isNeg) {
+                v = v * -1;
+            }
 
-		unitless: function(v){
+            return { "value": v, "unit": u[i] };
+        },
 
-			return jKSPWAPI.formatters.fix(v);
-		},
+        unitless: function (v) {
 
-		time: function(v){
-			
-			f = [86400, 3600, 60, 60];
-			u = ["d", "h", "m", "s"];
-			vprime = [0, 0, 0, 0]
+            return jKSPWAPI.formatters.fix(v);
+        },
 
-			v = Math.floor(v);
+        time: function (v) {
 
-			for(var i = 0; i < f.length;i++){
-				vprime[i] = Math.floor(v / f[i]);
-				v %= f[i];
-			}
-			vprime[f.length-1] = v;
+            f = [86400, 3600, 60, 60];
+            u = ["d", "h", "m", "s"];
+            vprime = [0, 0, 0, 0]
 
-			var val = false;
-			var pos = 1;
-			for(var i = 1; i < f.length;i++){
-				
-				if(vprime[i] > 0){
-					val = true;
-				}
+            v = Math.floor(v);
 
-				if(!val){
-					pos=pos+1;
-				}
+            for (var i = 0; i < f.length; i++) {
+                vprime[i] = Math.floor(v / f[i]);
+                v %= f[i];
+            }
+            vprime[f.length - 1] = v;
 
-				if(vprime[i] < 10){
-					if(pos != u.length-1){
-						vprime[i] = "0" + vprime[i];
-					}
-				}
-			}
+            var val = false;
+            var pos = 1;
+            for (var i = 1; i < f.length; i++) {
 
-			var formatted = "";
-			for(var i = pos; i < f.length;i++){
-				formatted = formatted + vprime[i] + u[i] + " ";
-			}
+                if (vprime[i] > 0) {
+                    val = true;
+                }
 
-			if(formatted == ""){
-				formatted = 0 + u[u.length-1];
-			}
-			
-			return formatted;
-		},
+                if (!val) {
+                    pos = pos + 1;
+                }
 
-		deg: function(v){
-			return jKSPWAPI.formatters.fix(v) + '\xB0';
-		},
+                if (vprime[i] < 10) {
+                    if (pos != u.length - 1) {
+                        vprime[i] = "0" + vprime[i];
+                    }
+                }
+            }
 
-		fix: function(v){
-			if(v===undefined){
-				return 0;
-			}else{
-				return v.toFixed(2);
-			}
-		},
+            var formatted = "";
+            for (var i = pos; i < f.length; i++) {
+                formatted = formatted + vprime[i] + u[i] + " ";
+            }
 
-		pad: function(v){
-			return ("\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0" + 
+            if (formatted == "") {
+                formatted = 0 + u[u.length - 1];
+            }
+
+            return formatted;
+        },
+
+        deg: function (v) {
+            return jKSPWAPI.formatters.fix(v) + '\xB0';
+        },
+
+        fix: function (v) {
+            if (v === undefined) {
+                return 0;
+            } else {
+                return v.toFixed(2);
+            }
+        },
+
+        pad: function (v) {
+            return ("\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0" +
 				v).slice(-20)
-		},
+        },
 
-		sigFigs: function(n, sig) {
-			
-			if(n != 0){
-				var m = false;
+        sigFigs: function (n, sig) {
 
-				if (n < 0) {
-					m = true;
-					n = Math.abs(n);
-				}
+            if (n != 0) {
+                var m = false;
 
-				var mult = Math.pow(10,
+                if (n < 0) {
+                    m = true;
+                    n = Math.abs(n);
+                }
+
+                var mult = Math.pow(10,
 					sig - Math.floor(Math.log(n) / Math.LN10) - 1);
 
-				if (m) {
-					n = n * -1;
-				}
+                if (m) {
+                    n = n * -1;
+                }
 
-				return Math.round(n * mult) / mult;
-			}else{
-				return 0;
-			}
-		}
-	}
+                return Math.round(n * mult) / mult;
+            } else {
+                return 0;
+            }
+        }
+    }
 }

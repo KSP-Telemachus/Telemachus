@@ -1,41 +1,40 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Telemachus - Liquid Fuel and Oxidiser</title>
     <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
     <link rel="stylesheet" type="text/css" href="jKSPWAPIGraph.css" />
-    
+
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script type="text/javascript" src="jKSPWAPIGraph.js"></script>
     <script type="text/javascript">
-      google.setOnLoadCallback(onLoad);
+        google.setOnLoadCallback(onLoad);
 
-      function onLoad() {
-      jQuery(document).ready(function($) {
-                  initKSPWAPIGraph("fuel=r.resource[LiquidFuel]&oxidiser=r.resource[Oxidizer]&met=v.missionTime", function(rawData, d){
-                    if(isNaN(d.fuel) || isNaN(d.oxidiser)){
-                       rawData.length = 1;
-                       rawData.push([0, 0, 0]);
+        function onLoad() {
+            jQuery(document).ready(function ($) {
+                initKSPWAPIGraph("fuel=r.resource[LiquidFuel]&oxidiser=r.resource[Oxidizer]&met=v.missionTime", function (rawData, d) {
+                    if (isNaN(d.fuel) || isNaN(d.oxidiser)) {
+                        rawData.length = 1;
+                        rawData.push([0, 0, 0]);
                     }
-                    else
-                    {
+                    else {
                         rawData.push([d.met, d.fuel, d.oxidiser]);
                     }
-                  },
-                  [['Mission Time', 'Liquid Fuel', 'Oxidiser']], 
-                  {
+                },
+                [['Mission Time', 'Liquid Fuel', 'Oxidiser']],
+                {
                     title: 'Fuel and Oxidiser Plot',
                     vAxis: { title: 'Amount' },
                     hAxis: { title: 'Mission Time (s)' },
-                    legend: {position: 'bottom'}
-                  }, "chart_div");
-                  });
+                    legend: { position: 'bottom' }
+                }, "chart_div");
+            });
         }
     </script>
-  </head>
-  <body>
+</head>
+<body>
     <div id="chart_div" class="full"></div>
-  </body>
+</body>
 </html>

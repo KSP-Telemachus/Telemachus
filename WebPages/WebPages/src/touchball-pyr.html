@@ -1,416 +1,388 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Touchball Pitch, Yaw, Roll</title>
-		<meta name="viewport" content="width=device-width, user-scalable=no" />
-		<script src="jquery-1.9.1.min.js"></script>
-		<script type="text/javascript">
-		// custom lib for telemachus to make it more modern like
-		var telemachus = (function()
-		{
-			var apiCall = function(cmd)
-			{
-				return function()
-				{
-					var args = Array.prototype.slice.call(arguments,0);
-					var url = "datalink?d.ret="+cmd+(args.length?JSON.stringify(args):"");
-					var promise = $.Deferred();
-					$.get(url)
-						.done(function(data)
-						{
-							var d = {};
-							promise.resolve(d.ret);
-							//console.log("cmd",cmd,"returned",d.ret);
+<head>
+    <title>Touchball Pitch, Yaw, Roll</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <script src="jquery-1.9.1.min.js"></script>
+    <script type="text/javascript">
+        // custom lib for telemachus to make it more modern like
+        var telemachus = (function () {
+            var apiCall = function (cmd) {
+                return function () {
+                    var args = Array.prototype.slice.call(arguments, 0);
+                    var url = "datalink?d.ret=" + cmd + (args.length ? JSON.stringify(args) : "");
+                    var promise = $.Deferred();
+                    $.get(url)
+						.done(function (data) {
+						    var d = {};
+						    promise.resolve(d.ret);
+						    //console.log("cmd",cmd,"returned",d.ret);
 						})
-						.fail(function(err)
-						{
-							promise.reject(err);
+						.fail(function (err) {
+						    promise.reject(err);
 						});
-					return promise;
-				};
-			};
-			var api =
+                    return promise;
+                };
+            };
+            var api =
 			{
-				p:
+			    p:
 				{
-					paused: apiCall("p.paused")
+				    paused: apiCall("p.paused")
 				},
-				v:
+			    v:
 				{
-          setFbW: apiCall("v.setFbW"),
-					setYaw: apiCall("v.setYaw"),
-					setPitch: apiCall("v.setPitch"),
-					setRoll: apiCall("v.setRoll"),
-					setX: apiCall("v.setX"),
-					setY: apiCall("v.setY"),
-					setZ: apiCall("v.setZ"),
-					setPitchYawRollXYZ: apiCall("v.setPitchYawRollXYZ"),
-					altitude: apiCall("v.altitude"),
-					heightFromTerrain: apiCall("v.heightFromTerrain"),
-					missionTime: apiCall("v.missionTime"),
-					surfaceVelocity: apiCall("v.surfaceVelocity"),
-					angularVelocity: apiCall("v.angularVelocity"),
-					orbitalVelocity: apiCall("v.orbitalVelocity"),
-					surfaceSpeed: apiCall("v.surfaceSpeed"),
-					verticalSpeed: apiCall("v.verticalSpeed"),
-					atmosphericDensity: apiCall("v.atmosphericDensity")
+				    setFbW: apiCall("v.setFbW"),
+				    setYaw: apiCall("v.setYaw"),
+				    setPitch: apiCall("v.setPitch"),
+				    setRoll: apiCall("v.setRoll"),
+				    setX: apiCall("v.setX"),
+				    setY: apiCall("v.setY"),
+				    setZ: apiCall("v.setZ"),
+				    setPitchYawRollXYZ: apiCall("v.setPitchYawRollXYZ"),
+				    altitude: apiCall("v.altitude"),
+				    heightFromTerrain: apiCall("v.heightFromTerrain"),
+				    missionTime: apiCall("v.missionTime"),
+				    surfaceVelocity: apiCall("v.surfaceVelocity"),
+				    angularVelocity: apiCall("v.angularVelocity"),
+				    orbitalVelocity: apiCall("v.orbitalVelocity"),
+				    surfaceSpeed: apiCall("v.surfaceSpeed"),
+				    verticalSpeed: apiCall("v.verticalSpeed"),
+				    atmosphericDensity: apiCall("v.atmosphericDensity")
 				},
-				o:
+			    o:
 				{
-					PeA: apiCall("o.PeA"),
-					ApA: apiCall("o.ApA"),
-					timeToAp: apiCall("o.timeToAp"),
-					timeToPe: apiCall("o.timeToPe"),
-					inclination: apiCall("o.inclination"),
-					argumentOfPeriapsis: apiCall("o.argumentOfPeriapsis")
+				    PeA: apiCall("o.PeA"),
+				    ApA: apiCall("o.ApA"),
+				    timeToAp: apiCall("o.timeToAp"),
+				    timeToPe: apiCall("o.timeToPe"),
+				    inclination: apiCall("o.inclination"),
+				    argumentOfPeriapsis: apiCall("o.argumentOfPeriapsis")
 				},
-				s:
+			    s:
 				{
-					temperature: apiCall("s.temperature"),
-					acceleration: apiCall("s.acceleration"),
-					gravity: apiCall("s.gravity"),
-					pressure: apiCall("s.pressure")
+				    temperature: apiCall("s.temperature"),
+				    acceleration: apiCall("s.acceleration"),
+				    gravity: apiCall("s.gravity"),
+				    pressure: apiCall("s.pressure")
 				},
-				f:
+			    f:
 				{
-					stage: apiCall("f.stage"),
-					setThrottle: apiCall("f.setThrottle"),
-					throttle: apiCall("f.throttle"),
-					throttleUp: apiCall("f.throttleUp"),
-					throttleZero: apiCall("f.throttleZero"),
-					throttleFull: apiCall("f.throttleFull"),
-					throttleDown: apiCall("f.throttleDown"),
-					rcs: apiCall("f.rcs"),
-					sas: apiCall("f.sas"),
-					light: apiCall("f.light"),
-					gear: apiCall("f.gear"),
-					brake: apiCall("f.brake"),
-					abort: apiCall("f.abort"),
-					ag1: apiCall("f.ag1"),
-					ag2: apiCall("f.ag2"),
-					ag3: apiCall("f.ag3"),
-					ag4: apiCall("f.ag4"),
-					ag5: apiCall("f.ag5"),
-					ag6: apiCall("f.ag6"),
-					ag7: apiCall("f.ag7"),
-					ag8: apiCall("f.ag8"),
-					ag9: apiCall("f.ag9"),
-					ag10: apiCall("f.ag10")
+				    stage: apiCall("f.stage"),
+				    setThrottle: apiCall("f.setThrottle"),
+				    throttle: apiCall("f.throttle"),
+				    throttleUp: apiCall("f.throttleUp"),
+				    throttleZero: apiCall("f.throttleZero"),
+				    throttleFull: apiCall("f.throttleFull"),
+				    throttleDown: apiCall("f.throttleDown"),
+				    rcs: apiCall("f.rcs"),
+				    sas: apiCall("f.sas"),
+				    light: apiCall("f.light"),
+				    gear: apiCall("f.gear"),
+				    brake: apiCall("f.brake"),
+				    abort: apiCall("f.abort"),
+				    ag1: apiCall("f.ag1"),
+				    ag2: apiCall("f.ag2"),
+				    ag3: apiCall("f.ag3"),
+				    ag4: apiCall("f.ag4"),
+				    ag5: apiCall("f.ag5"),
+				    ag6: apiCall("f.ag6"),
+				    ag7: apiCall("f.ag7"),
+				    ag8: apiCall("f.ag8"),
+				    ag9: apiCall("f.ag9"),
+				    ag10: apiCall("f.ag10")
 				},
-				b:
+			    b:
 				{
-					name: apiCall("b.name"),
-					position: apiCall("b.position")
+				    name: apiCall("b.name"),
+				    position: apiCall("b.position")
 				},
-				t:
+			    t:
 				{
-					timeWarp: apiCall("t.timeWarp")
+				    timeWarp: apiCall("t.timeWarp")
 				},
-				mj:
+			    mj:
 				{
-					smartassoff: apiCall("mj.smartassoff"),
-					node: apiCall("mj.node"),
-					prograde: apiCall("mj.prograde"),
-					retrograde: apiCall("mj.retrograde"),
-					normalplus: apiCall("mj.normalplus"),
-					normalminus: apiCall("mj.normalminus"),
-					radialplus: apiCall("mj.radialplus"),
-					radialminus: apiCall("mj.radialminus"),
-					surface: apiCall("mj.surface"),
-					surface2: apiCall("mj.surface2")
+				    smartassoff: apiCall("mj.smartassoff"),
+				    node: apiCall("mj.node"),
+				    prograde: apiCall("mj.prograde"),
+				    retrograde: apiCall("mj.retrograde"),
+				    normalplus: apiCall("mj.normalplus"),
+				    normalminus: apiCall("mj.normalminus"),
+				    radialplus: apiCall("mj.radialplus"),
+				    radialminus: apiCall("mj.radialminus"),
+				    surface: apiCall("mj.surface"),
+				    surface2: apiCall("mj.surface2")
 				}
 			};
-			return api;
-		})();
-		$(function()
-		{
-			var touchball = $("<div>").appendTo("body").addClass("touchball");
-			var target = $("<div>").appendTo(touchball).addClass("target").append("<div>").hide();
-			var debugPitch = $("<div>").appendTo(touchball).addClass("debug").text("Pitch");
-			var debugRoll = $("<div>").appendTo(touchball).addClass("debug").text("Roll");
-			var debugYaw = $("<div>").appendTo(touchball).addClass("debug").text("Yaw");
-			var mouseDown = false;
-      var primaryMouseButton = 0;
-			$(document)
-        .on("touchstart", function(e) 
-        {
-          telemachus.v.setFbW(1);
-					mouseDown = true;
-					update([e]);
-					return false;
+            return api;
+        })();
+        $(function () {
+            var touchball = $("<div>").appendTo("body").addClass("touchball");
+            var target = $("<div>").appendTo(touchball).addClass("target").append("<div>").hide();
+            var debugPitch = $("<div>").appendTo(touchball).addClass("debug").text("Pitch");
+            var debugRoll = $("<div>").appendTo(touchball).addClass("debug").text("Roll");
+            var debugYaw = $("<div>").appendTo(touchball).addClass("debug").text("Yaw");
+            var mouseDown = false;
+            var primaryMouseButton = 0;
+            $(document)
+        .on("touchstart", function (e) {
+            telemachus.v.setFbW(1);
+            mouseDown = true;
+            update([e]);
+            return false;
         })
-         .on("touchend", function(e) 
-        {
-          telemachus.v.setFbW(0);
-					mouseDown = false;
-					update([]);
+         .on("touchend", function (e) {
+             telemachus.v.setFbW(0);
+             mouseDown = false;
+             update([]);
+         })
+        .on("contextmenu", function (e) {
+            //stop the context menu
+            e.preventDefault();
         })
-        .on("contextmenu", function(e) 
-        {
-          //stop the context menu
-          e.preventDefault();
-        })
-				.on("mousemove", function(e)
-				{
-					if (!mouseDown) return;
-          
-					update([e]);
-					return false;
+				.on("mousemove", function (e) {
+				    if (!mouseDown) return;
+
+				    update([e]);
+				    return false;
 				})
-				.on("mousedown", function(e)
-				{
-          telemachus.v.setFbW(1);
-					mouseDown = true;
-          primaryMouseButton = e.which;
-					update([e]);
-					return false;
+				.on("mousedown", function (e) {
+				    telemachus.v.setFbW(1);
+				    mouseDown = true;
+				    primaryMouseButton = e.which;
+				    update([e]);
+				    return false;
 				})
-				.on("mouseup", function(e)
-				{
-          telemachus.v.setFbW(0);
-					mouseDown = false;
-					update([]);
+				.on("mouseup", function (e) {
+				    telemachus.v.setFbW(0);
+				    mouseDown = false;
+				    update([]);
 				});
-			var clamp = function(n,min,max)
-			{
-				return n<min ? min : n>max ? max : n;
-			};
-			var fmt = function(n)
-			{
-        return (n).toFixed(2).toString();
-			};
-			var update = function(touches)
-			{
-				target.show();
-				var dx = touchball.offset().left;
-				var dy = touchball.offset().top;
-				var cx=0,cy=0;
-				for (var i=0; i<touches.length; i++)
-				{
-					cx += touches[i].clientX-dx;
-					cy += touches[i].clientY-dy;
-				}
-				if (touches.length)
-				{
-					cx /= touches.length;
-					cy /= touches.length;
-				}
-				else
-				{
-					cx = touchball.outerWidth()*0.5;
-					cy = touchball.outerHeight()*0.5;
-          return;
-				}
-				target.css({left:cx-target.outerWidth()*0.5,top:cy-target.outerHeight()*0.5});
+            var clamp = function (n, min, max) {
+                return n < min ? min : n > max ? max : n;
+            };
+            var fmt = function (n) {
+                return (n).toFixed(2).toString();
+            };
+            var update = function (touches) {
+                target.show();
+                var dx = touchball.offset().left;
+                var dy = touchball.offset().top;
+                var cx = 0, cy = 0;
+                for (var i = 0; i < touches.length; i++) {
+                    cx += touches[i].clientX - dx;
+                    cy += touches[i].clientY - dy;
+                }
+                if (touches.length) {
+                    cx /= touches.length;
+                    cy /= touches.length;
+                }
+                else {
+                    cx = touchball.outerWidth() * 0.5;
+                    cy = touchball.outerHeight() * 0.5;
+                    return;
+                }
+                target.css({ left: cx - target.outerWidth() * 0.5, top: cy - target.outerHeight() * 0.5 });
 
-        var dh = -(2*cy/touchball.outerHeight()-1);
-				var dw = (2*cx/touchball.outerWidth()-1);
-        var dhScale = -3;
-        var dwScale = 3;
-        var easing = 3;
+                var dh = -(2 * cy / touchball.outerHeight() - 1);
+                var dw = (2 * cx / touchball.outerWidth() - 1);
+                var dhScale = -3;
+                var dwScale = 3;
+                var easing = 3;
 
-        //more than 2 touches or a right clicking, then adjust pitch and roll.
-				if (touches.length >1 || primaryMouseButton == 3)
-				{
-          pitch = clamp(dhScale*Math.pow(dh,easing).toFixed(2), -1, 1);
-				  roll = clamp(5*Math.pow(dw,5).toFixed(2),-1,1);
-          yaw = 0;
-				}
-        else
-        {
-          pitch = clamp(dhScale*Math.pow(dh,easing).toFixed(2),-1,1);
-				  yaw = clamp(dwScale*Math.pow(dw,easing).toFixed(2),-1,1);
-				  roll = 0;
+                //more than 2 touches or a right clicking, then adjust pitch and roll.
+                if (touches.length > 1 || primaryMouseButton == 3) {
+                    pitch = clamp(dhScale * Math.pow(dh, easing).toFixed(2), -1, 1);
+                    roll = clamp(5 * Math.pow(dw, 5).toFixed(2), -1, 1);
+                    yaw = 0;
+                }
+                else {
+                    pitch = clamp(dhScale * Math.pow(dh, easing).toFixed(2), -1, 1);
+                    yaw = clamp(dwScale * Math.pow(dw, easing).toFixed(2), -1, 1);
+                    roll = 0;
+                }
+
+                debugPitch.text("Pitch = " + fmt(pitch));
+                debugYaw.text("Yaw = " + fmt(yaw));
+                debugRoll.text("Roll = " + fmt(roll));
+                telemachus.v.setPitchYawRollXYZ(pitch, yaw, roll, 0, 0, 0);
+            };
+            setTimeout(function () { update([]); }, 100);
+            console.log("telemachus", telemachus)
+            var touches = {};
+            $(document)
+				.on("touchstart touchmove", function (e) {
+				    var dx = touchball.offset().left;
+				    var dy = touchball.offset().top;
+				    $.each(e.originalEvent.touches, function (i, touch) {
+				        var down = touches[touch.identifier] || (touches[touch.identifier] = $("<div>").appendTo(touchball).addClass("touch").text(touch.identifier));
+				        down.css({ left: touch.clientX - dx - down.outerWidth() * 0.5, top: touch.clientY - dy - down.outerHeight() * 0.5 });
+				        down.toggleClass("move", e.type === "touchmove");
+				    });
+				    update(e.originalEvent.touches);
+				    return false;
+				})
+				.on("touchend", function (e) {
+				    $.each(e.originalEvent.changedTouches, function (i, touch) {
+				        if (!touches[touch.identifier]) return;
+				        touches[touch.identifier].remove();
+				        delete touches[touch.identifier];
+				        update(e.originalEvent.touches);
+				    });
+				});
+            $(window).on("resize", function () {
+                var p = touchball.parent();
+                if (p.is("body")) p = $(window);
+                var w = p.width();
+                var h = p.height();
+                var s = Math.min(w, h) * 0.95;
+                var leftright = (w - s) * 0.5;
+                var topbottom = (h - s) * 0.5;
+                touchball.css({ left: leftright, right: leftright, top: topbottom, bottom: topbottom });
+                if (w < h) {
+                    debugPitch.css({ top: "-6em", left: 0, textAlign: "center" });
+                    debugYaw.css({ top: "-4em", left: 0, textAlign: "center" });
+                    debugRoll.css({ top: "-2em", left: 0, textAlign: "center" });
+                }
+                else {
+                    debugPitch.css({ top: "0em", left: "-100%", textAlign: "right" });
+                    debugYaw.css({ top: "2em", left: "-100%", textAlign: "right" });
+                    debugRoll.css({ top: "4em", left: "-100%", textAlign: "right" });
+                }
+            }).trigger("resize");
+
+        })
+    </script>
+    <style type="text/css">
+        .touchball {
+            position: fixed;
+            display: block;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgb(240,240,240);
+            border-radius: 100%;
         }
-				
-        debugPitch.text("Pitch = "+fmt(pitch));
-				debugYaw.text("Yaw = "+fmt(yaw));
-				debugRoll.text("Roll = "+fmt(roll));
-				telemachus.v.setPitchYawRollXYZ(pitch, yaw, roll, 0, 0, 0);
-			};
-			setTimeout(function(){update([]);},100);
-			console.log("telemachus",telemachus)
-			var touches = {};
-			$(document)
-				.on("touchstart touchmove", function(e)
-				{
-					var dx = touchball.offset().left;
-					var dy = touchball.offset().top;
-					$.each(e.originalEvent.touches, function(i,touch)
-					{
-						var down = touches[touch.identifier] || (touches[touch.identifier] = $("<div>").appendTo(touchball).addClass("touch").text(touch.identifier));
-						down.css({left:touch.clientX-dx-down.outerWidth()*0.5,top:touch.clientY-dy-down.outerHeight()*0.5});
-						down.toggleClass("move",e.type==="touchmove");
-					});
-					update(e.originalEvent.touches);
-					return false;
-				})
-				.on("touchend", function(e)
-				{
-					$.each(e.originalEvent.changedTouches, function(i,touch)
-					{
-						if (!touches[touch.identifier]) return;
-						touches[touch.identifier].remove();
-						delete touches[touch.identifier];
-						update(e.originalEvent.touches);
-					});
-				});
-			$(window).on("resize",function()
-			{
-				var p = touchball.parent();
-				if (p.is("body")) p = $(window);
-				var w = p.width();
-				var h = p.height();
-				var s = Math.min(w,h)*0.95;
-				var leftright = (w-s)*0.5;
-				var topbottom = (h-s)*0.5;
-				touchball.css({left:leftright,right:leftright,top:topbottom,bottom:topbottom});
-				if (w<h)
-				{
-					debugPitch.css({top:"-6em",left:0,textAlign:"center"});
-					debugYaw.css({top:"-4em",left:0,textAlign:"center"});
-					debugRoll.css({top:"-2em",left:0,textAlign:"center"});
-				}
-				else
-				{
-					debugPitch.css({top:"0em",left:"-100%",textAlign:"right"});
-					debugYaw.css({top:"2em",left:"-100%",textAlign:"right"});
-					debugRoll.css({top:"4em",left:"-100%",textAlign:"right"});
-				}
-			}).trigger("resize");
 
-		})
-		</script>
-		<style type="text/css">
-		.touchball
-		{
-			position: fixed;
-			display: block;
-			top: 0;
-			bottom: 0;
-			left: 0;
-			right: 0;
-			background: rgb(240,240,240);
-			border-radius: 100%;
-		}
-		.touchball:before,
-		.touchball:after
-		{
-			position: absolute;
-			display: block;
-			content: "";
-			left: 49.8%;
-			right: 49.8%;
-			top: 49.8%;
-			bottom: 49.8%;
-			background: rgba(0,0,0,0.1);
-		}
-		.touchball:before
-		{
-			left: 0;
-			right: 0;
-		}
-		.touchball:after
-		{
-			top: 0;
-			bottom: 0;
-		}
-		.target
-		{
-			position: absolute;
-			display: block;
-			width: 20%;
-			height: 20%;
-			background: rgba(255,255,0,0.1);
-			border-radius: 100%;
-		}
-		.target:before,
-		.target:after
-		{
-			position: absolute;
-			display: block;
-			content: "";
-			left: 49%;
-			right: 49%;
-			top: 49%;
-			bottom: 49%;
-			background: rgba(0,0,0,0.1);
-		}
-		.target:before
-		{
-			top: 0;
-			bottom: 0;
-		}
-		.target:after
-		{
-			left: 0;
-			right: 0;
-		}
-		.target > *:before
-		{
-			content: "";
-			display: block;
-			position: absolute;
-			left: 25%;
-			width: 35%;
-			top: 49%;
-			bottom: 49%;
-			background: rgba(0,0,0,0.1);
-			-webkit-transform: translate(-50%,0) rotate(45deg) translate(50%,0);
-		}
-		.target > *:after
-		{
-			content: "";
-			display: block;
-			position: absolute;
-			right: 25%;
-			width: 35%;
-			top: 49%;
-			bottom: 49%;
-			background: rgba(0,0,0,0.1);
-			-webkit-transform: translate(50%,0) rotate(-45deg) translate(-50%,0);
-		}
-		.mouse
-		{
-			position: absolute;
-			width: 32px;
-			height: 32px;
-			border: 4px solid black;
-			border-radius: 100%;
-		}
-		.mousedown,
-		.mouseup,
-		.touch
-		{
-			position: absolute;
-			width: 64px;
-			height: 64px;
-			border: 8px solid orange;
-			border-radius: 100%;
-		}
-		.mouseup
-		{
-			width: 48px;
-			height: 48px;
-			border: 8px solid yellow;
-		}
-		.touch
-		{
-			border-color: green;
-		}
-		.touch.move
-		{
-			border-color: blue;
-		}
-		.debug
-		{
-			position: absolute;
-			width: 100%;
-			background: #ccc;
-			text-align: center;
-		}
-		</style>
-	</head>
-	<body>
-	</body>
+            .touchball:before,
+            .touchball:after {
+                position: absolute;
+                display: block;
+                content: "";
+                left: 49.8%;
+                right: 49.8%;
+                top: 49.8%;
+                bottom: 49.8%;
+                background: rgba(0,0,0,0.1);
+            }
+
+            .touchball:before {
+                left: 0;
+                right: 0;
+            }
+
+            .touchball:after {
+                top: 0;
+                bottom: 0;
+            }
+
+        .target {
+            position: absolute;
+            display: block;
+            width: 20%;
+            height: 20%;
+            background: rgba(255,255,0,0.1);
+            border-radius: 100%;
+        }
+
+            .target:before,
+            .target:after {
+                position: absolute;
+                display: block;
+                content: "";
+                left: 49%;
+                right: 49%;
+                top: 49%;
+                bottom: 49%;
+                background: rgba(0,0,0,0.1);
+            }
+
+            .target:before {
+                top: 0;
+                bottom: 0;
+            }
+
+            .target:after {
+                left: 0;
+                right: 0;
+            }
+
+            .target > *:before {
+                content: "";
+                display: block;
+                position: absolute;
+                left: 25%;
+                width: 35%;
+                top: 49%;
+                bottom: 49%;
+                background: rgba(0,0,0,0.1);
+                -webkit-transform: translate(-50%,0) rotate(45deg) translate(50%,0);
+            }
+
+            .target > *:after {
+                content: "";
+                display: block;
+                position: absolute;
+                right: 25%;
+                width: 35%;
+                top: 49%;
+                bottom: 49%;
+                background: rgba(0,0,0,0.1);
+                -webkit-transform: translate(50%,0) rotate(-45deg) translate(-50%,0);
+            }
+
+        .mouse {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border: 4px solid black;
+            border-radius: 100%;
+        }
+
+        .mousedown,
+        .mouseup,
+        .touch {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            border: 8px solid orange;
+            border-radius: 100%;
+        }
+
+        .mouseup {
+            width: 48px;
+            height: 48px;
+            border: 8px solid yellow;
+        }
+
+        .touch {
+            border-color: green;
+        }
+
+            .touch.move {
+                border-color: blue;
+            }
+
+        .debug {
+            position: absolute;
+            width: 100%;
+            background: #ccc;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+</body>
 </html>

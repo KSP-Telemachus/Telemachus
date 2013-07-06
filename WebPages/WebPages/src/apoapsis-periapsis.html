@@ -1,32 +1,34 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <title>Telemachus - Periapsis and Apoapsis</title>
     <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
     <link rel="stylesheet" type="text/css" href="jKSPWAPIGraph.css" />
-    
+
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script type="text/javascript" src="jKSPWAPIGraph.js"></script>
     <script type="text/javascript">
-      google.setOnLoadCallback(onLoad);
+        google.setOnLoadCallback(onLoad);
 
-      function onLoad() {
-      jQuery(document).ready(function($) {
-      initKSPWAPIGraph("pe=o.PeA&ap=o.ApA&met=v.missionTime", function(rawData, d){
-      rawData.push([d.met, d.pe, d.ap]);},
-      [['Mission Time', 'Periapsis', 'Apoapsis']],
-      {
-      title: 'Periapsis and Apoapsis',
-      vAxis: { title: 'Height (m)' },
-      hAxis: { title: 'Mission Time (s)' },
-      legend: { position: 'bottom' }
-      }, "chart_div");});
-      }
-   </script>
-  </head>
-  <body>
+        function onLoad() {
+            jQuery(document).ready(function ($) {
+                initKSPWAPIGraph("pe=o.PeA&ap=o.ApA&met=v.missionTime", function (rawData, d) {
+                    rawData.push([d.met, d.pe, d.ap]);
+                },
+                [['Mission Time', 'Periapsis', 'Apoapsis']],
+                {
+                    title: 'Periapsis and Apoapsis',
+                    vAxis: { title: 'Height (m)' },
+                    hAxis: { title: 'Mission Time (s)' },
+                    legend: { position: 'bottom' }
+                }, "chart_div");
+            });
+        }
+    </script>
+</head>
+<body>
     <div id="chart_div" class="full"></div>
-  </body>
+</body>
 </html>
