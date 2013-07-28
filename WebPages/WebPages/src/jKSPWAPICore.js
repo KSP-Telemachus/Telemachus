@@ -138,8 +138,8 @@ setInterval("sNotify.loopQueue()", 900);
 var jKSPWAPI = {
 
     DATA_SIZE: 1000,
-    UPDATE_INTERVAL: 300,
-    IDLE_UPDATE_INTERVAL: 4000,
+    UPDATE_INTERVAL: 200,
+    IDLE_UPDATE_INTERVAL: 1000,
     SPLICE_SIZE: 10,
     SIG_FIG: 5,
     NOTIFICATIONS: true,
@@ -200,7 +200,6 @@ var jKSPWAPI = {
 
             $.get(APIString, callback).error(function () {
                 rawData.length = 1;
-                rawData.push(new Array(rawData[0].length + 1).join('0').split('').map(parseFloat));
 
                 t = setTimeout(
 					function () { update(); }, jKSPWAPI.IDLE_UPDATE_INTERVAL);

@@ -7,9 +7,10 @@ function initKSPWAPIGraph(APIString, postUpdate, rawData, options, divName) {
 
     function drawChart(rawData) {
         try {
-            //var myView = new google.visualization.DataView(google.visualization.arrayToDataTable(rawData));
-            //myView.hideRows(1);
-            chart.draw(google.visualization.arrayToDataTable(rawData), $.extend(options, { backgroundColor: { fill: "#FFFFFF" } }));
+            
+            if (rawData.length > 1) {
+                chart.draw(google.visualization.arrayToDataTable(rawData), $.extend(options, { backgroundColor: { fill: "#AAAAAA" } }));
+            }
         }
         catch (e) {
             //Sensor graph reset when the number of sensors changes.
@@ -18,18 +19,22 @@ function initKSPWAPIGraph(APIString, postUpdate, rawData, options, divName) {
     }
 
     function appendCurrentValueToLegend(rawData) {
+        try{
+            if (rawData.length > 1) {
+                for (var i = 1; i < rawData[0].length; i++) {
+                    var last = rawData[0][i].lastIndexOf("(");
 
-        for (var i = 1; i < rawData[0].length; i++) {
-            var last = rawData[0][i].lastIndexOf("(");
+                    if (last != -1) {
+                        rawData[0][i] = rawData[0][i].slice(0, last);
+                    }
 
-            if (last != -1) {
-                rawData[0][i] = rawData[0][i].slice(0, last);
+                    rawData[0][i] = rawData[0][i] +
+                    " (" + jKSPWAPI.formatters.sigFigs(rawData[rawData.length - 1][i], jKSPWAPI.SIG_FIG) + ")";
+                }
             }
-
-            rawData[0][i] = rawData[0][i] +
-			" (" + jKSPWAPI.formatters.sigFigs(rawData[rawData.length - 1][i], jKSPWAPI.SIG_FIG) + ")";
         }
-
+        catch(e){
+        }
     }
 }
 

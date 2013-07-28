@@ -682,6 +682,15 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.srf_velocity.magnitude; },
                 "v.surfaceVelocity", "Surface Velocity", formatters.Default, APIEntry.UnitType.VELOCITY));
             registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.srf_velocity.x; },
+                "v.surfaceVelocityx", "Surface Velocity x", formatters.Default, APIEntry.UnitType.VELOCITY));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.srf_velocity.y; },
+                "v.surfaceVelocityy", "Surface Velocity y", formatters.Default, APIEntry.UnitType.VELOCITY));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.srf_velocity.z; },
+                "v.surfaceVelocityz", "Surface Velocity z", formatters.Default, APIEntry.UnitType.VELOCITY));
+            registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.angularVelocity.magnitude; },
                 "v.angularVelocity", "Angular Velocity", formatters.Default, APIEntry.UnitType.VELOCITY));
             registerAPI(new PlotableAPIEntry(

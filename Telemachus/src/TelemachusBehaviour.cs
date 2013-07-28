@@ -138,6 +138,11 @@ namespace Telemachus
             startDataLink();
         }
 
+        public void OnDestroy()
+        {
+            stopDataLink();
+        }
+
         public void Update()
         {
             delayedAPIRunner.execute();

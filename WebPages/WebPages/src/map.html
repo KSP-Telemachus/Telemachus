@@ -31,7 +31,6 @@
                 jKSPWAPI.initPoll("longs=v.long&lat=v.lat&name=v.name&alt=v.altitude&m=v.surfaceVelocity&body=b.name", function (rawData) { }, function (rawData, d) {
 
                     if (previousBody != d.body) {
-
                         try {
                             newBody = L.KSP.CelestialBody[d.body.toUpperCase()];
                             newBody.addTo(map);
@@ -46,9 +45,7 @@
                         marker[0].setLatLng([d.lat, d.longs]);
                         marker[0].bindPopup(d.name + " </br>Altitude: " + d.alt + "</br>Surface Velocity: " + d.m);
                         marker[0].update();
-
                     }
-
                 }, rawData)
             });
         }

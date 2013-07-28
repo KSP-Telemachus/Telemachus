@@ -81,7 +81,7 @@
     <Content Include="src\leafletksp.css" />
     <Content Include="src\leafletksp.js" />
     <Content Include="src\map.html" />
-    <Content Include="src\marker-icon.png" />
+    <Content Include="src\marker-icon%402x.png" />
     <Content Include="src\marker-shadow.png" />
     <Content Include="src\markers-anomaly.png" />
     <Content Include="src\markers-shadow.png" />
