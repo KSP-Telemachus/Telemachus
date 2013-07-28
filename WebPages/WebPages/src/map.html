@@ -36,8 +36,13 @@
                             newBody.addTo(map);
                             previousBody = d.body;
                         } catch (e) {
-                            alert("Body not supported yet.")
-                            previousBody = d.body;
+                            if (d.body === undefined) {
+                                previousBody = d.body;
+                            } else {
+                                alert("Body not supported yet. (" + d.body + ")")
+                                previousBody = -1;
+                            }
+                            
                         }
                     }
 

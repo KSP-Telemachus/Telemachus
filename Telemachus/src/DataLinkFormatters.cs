@@ -17,6 +17,7 @@ namespace Telemachus
     {
         public DataSourceResultFormatter SensorModuleList { get; set; }
         public DataSourceResultFormatter ResourceList { get; set; }
+        public DataSourceResultFormatter CurrentResourceList { get; set; }
         public DataSourceResultFormatter MaxResourceList { get; set; }
         public DataSourceResultFormatter APIEntry { get; set; }
         public DataSourceResultFormatter String { get; set; }
@@ -45,6 +46,7 @@ namespace Telemachus
             SensorModuleList = new SensorModuleListJSONFormatter();
             ResourceList = new ResourceListJSONFormatter();
             MaxResourceList = new MaxResourceListJSONFormatter();
+            CurrentResourceList = new CurrentResourceListJSONFormatter();
             APIEntry = new APIEntryJSONFormatter();
             String = new StringJSONFormatter();
             Vector3d = new Vector3dJSONFormatter();
@@ -191,6 +193,31 @@ namespace Telemachus
                     foreach (PartResource p in resources)
                     {
                         amount += p.amount;
+                    }
+
+                    return varName + JSON_ASSIGN + amount.ToString();
+                }
+
+                return varName + JSON_ASSIGN + "-1";
+            }
+        }
+
+        public class CurrentResourceListJSONFormatter : JSONFormatter
+        {
+            public override string format(object input)
+            {
+                List<PartResource> resources = (List<PartResource>)input;
+
+                if (resources.Count > 0)
+                {
+                    double amount = 0d;
+
+                    foreach (PartResource p in resources)
+                    {
+                        if (p.part.inStageIndex == Staging.CurrentStage)
+                        {
+                            amount += p.amount;
+                        }
                     }
 
                     return varName + JSON_ASSIGN + amount.ToString();

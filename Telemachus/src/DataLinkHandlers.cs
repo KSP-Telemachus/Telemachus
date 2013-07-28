@@ -835,6 +835,12 @@ namespace Telemachus
                 "r.resource", "Resource Information [string resource type]", 
                 formatters.ResourceList, APIEntry.UnitType.UNITLESS));
 
+            vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
+            registerAPI(new APIEntry(
+                dataSources => { return getsResourceValues(dataSources); },
+                "r.resourceCurrent", "Resource Information [string resource type]",
+                formatters.CurrentResourceList, APIEntry.UnitType.UNITLESS));
+
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
                 "r.resourceMax", "Max Resource Information [string resource type]",
