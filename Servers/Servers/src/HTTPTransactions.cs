@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace Servers
 {
@@ -23,7 +24,7 @@ namespace Servers
                 get { return itsContent; }
                 set
                 {
-                    //Dynamically update the conetent length when it is set
+                    //Dynamically update the content length when it is set
                     if (attributes.ContainsKey("Content-Length"))
                     {
                         attributes.Remove("Content-Length");
@@ -69,12 +70,35 @@ namespace Servers
 
             public void parse(String input)
             {
-                String[] lines = input.Split(NEW_LINE.ToCharArray());
+                String[] lines = Regex.Split(input, NEW_LINE);
                 int i = parseHeader(lines) + 1;
                 for (; i < input.Length; i++)
                 {
                     content += input[i];
                 }
+            }
+
+            public bool tryParse(string input)
+            {
+                String[] lines = Regex.Split(input, NEW_LINE);
+                int i = parseHeader(lines) + 1;
+                
+                if (i == 0)
+                {
+                    return false;
+                }
+
+                for (; i < lines.Length; i++)
+                {
+                    content += lines[i];
+                }
+
+                if (content.Length == int.Parse(attributes["Content-Length"]))
+                {
+                    return true;
+                }
+
+                return false;
             }
 
             private int parseHeader(String[] input)
@@ -86,16 +110,28 @@ namespace Servers
                 protocol = firstLine[2];
 
                 int i = 0;
-                for (i = 1; i < input.Length && input[i] != Server.HEADER_END; i++)
+                for (i = 1; i < input.Length && input[i] != ""; i++)
                 {
                     String[] attr = input[i].Split(HEADER_ATTR_ASSIGN);
                     if (attr.Length == 2)
                     {
-                        attributes.Add(attr[0], attr[1]);
+                        attributes.Add(attr[0], attr[1].TrimStart(' '));
                     }
                 }
 
-                return i;
+                if (input[i] != "")
+                {
+                    return -1;
+                }
+                else
+                {
+                    return i;
+                }
+            }
+
+            public override string ToString()
+            {
+                return content + " " + attributes["Content-Length"];
             }
         }
 

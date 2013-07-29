@@ -20,6 +20,7 @@ namespace Servers
             List<IHTTPRequestResponsibility> requestChainOfResponsibility = new List<IHTTPRequestResponsibility>();
 
             public const String GET = "GET";
+            public const String POST = "POST";
             public const String HEADER_END = "\r\n\r\n";
 
             public Server(ServerConfiguration configuration)
@@ -88,6 +89,17 @@ namespace Servers
                         if (cc.progressiveMessage.Length > configuration.maxRequestLength)
                         {
                             throw new RequestEntityTooLargeResponsePage();
+                        }
+                    }
+                    else if (cc.progressiveMessage.ToString().StartsWith(POST))
+                    {
+                        serverOut(cc.progressiveMessage.ToString());
+                        HTTPRequest request = new HTTPRequest();
+
+                        if (request.tryParse(cc.progressiveMessage.ToString()))
+                        {
+                            //request.parse(cc.progressiveMessage.ToString());
+                            processRequest(cc, request);
                         }
                     }
                     else

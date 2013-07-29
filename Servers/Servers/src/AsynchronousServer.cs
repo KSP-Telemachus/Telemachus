@@ -190,7 +190,7 @@ namespace Servers
             public event Server.ConnectionRead OnConnectionRead;
 
             Socket socket;
-            public const int BUFFER_SIZE = 1024;
+            public const int BUFFER_SIZE = 2048;
             public byte[] buffer { get; set; }
             public StringBuilder progressiveMessage { get; set; }
 

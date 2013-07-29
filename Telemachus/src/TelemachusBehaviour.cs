@@ -134,7 +134,6 @@ namespace Telemachus
         public void Awake()
         {
             DontDestroyOnLoad(this);
-
             startDataLink();
         }
 

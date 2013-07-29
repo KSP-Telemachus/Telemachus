@@ -51,7 +51,15 @@ namespace Telemachus
         {
             if (request.path.StartsWith(PAGE_PREFIX))
             {
-                dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
+                PluginLogger.print(request.ToString());
+                if(request.requestType == Server.GET)
+                {
+                    dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
+                }
+                else if (request.requestType == Server.POST)
+                {
+                    dataRates.addUpLinkPoint(System.DateTime.Now, request.content.Length);
+                }
 
                 try
                 {
@@ -63,13 +71,27 @@ namespace Telemachus
                     PluginLogger.debug(e.Message + " "  + e.StackTrace);
                 }
 
-                dataRates.addDownLinkPoint(
-                    System.DateTime.Now, 
-                    ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
-                        argumentsParse(request.path.Remove(0, 
-                            request.path.IndexOf(ARGUMENTS_START) + 1), 
-                            dataSources)
-                   )));
+                if (request.requestType == Server.GET)
+                {
+                    dataRates.addDownLinkPoint(
+                        System.DateTime.Now,
+                        ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
+                            argumentsParse(request.path.Remove(0,
+                                request.path.IndexOf(ARGUMENTS_START) + 1),
+                                dataSources)
+                        )));
+                }
+                else if (request.requestType == Server.POST)
+                {
+                    dataRates.addDownLinkPoint(
+                        System.DateTime.Now,
+                        ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
+                            argumentsParse(request.content,
+                                dataSources)
+                        )));
+                }
+                
+                
 
                 return true;
             }

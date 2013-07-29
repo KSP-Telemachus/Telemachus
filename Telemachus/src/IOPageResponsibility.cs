@@ -1,8 +1,12 @@
 ﻿//Author: Richard Bunt
+#define SYSTEMIO
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Servers.MinimalHTTPServer;
+
+
 
 namespace Telemachus
 {
@@ -18,6 +22,8 @@ namespace Telemachus
 
         static OKResponsePage.ByteReader KSPByteReader = fileName => 
         {
+
+#if (KSPIO)
             KSP.IO.BinaryReader binaryReader = null;
             long fileLen = 0;
             if (fileName.Length > 0)
@@ -34,22 +40,35 @@ namespace Telemachus
             }
             byte[] content = binaryReader.ReadBytes((int)fileLen);
             binaryReader.Close();
+#endif
+
+#if(SYSTEMIO)
+            byte[] content = System.IO.File.ReadAllBytes(buildPath(escapeFileName(fileName)));
+#endif
 
             return content;
         };
 
         static OKResponsePage.TextReader KSPTextReader = fileName => 
         {
-            KSP.IO.TextReader textReader = null;
+            
             if (fileName.Length > 0)
             {
-                textReader = KSP.IO.TextReader.CreateForType<TelemachusDataLink>
+#if (KSPIO)
+                KSP.IO.TextReader textReader = KSP.IO.TextReader.CreateForType<TelemachusDataLink>
                    (fileName);
-            }
-            string content = textReader.ReadToEnd();
-            textReader.Close();
+                string content = textReader.ReadToEnd();
+                textReader.Close();
+#endif
 
-            return content;
+#if(SYSTEMIO)
+                string content = System.IO.File.ReadAllText(buildPath(escapeFileName(fileName)));
+#endif
+
+                return content;
+            }
+
+            return "";
         };
 
         #endregion
@@ -64,7 +83,7 @@ namespace Telemachus
                 {   
                     OKResponsePage page = new OKResponsePage(
                             KSPByteReader, KSPTextReader, 
-                            request.path.Substring(PAGE_PREFIX.Length - 1));
+                            request.path.Substring(PAGE_PREFIX.Length));
                     ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(page);
 
                     return true;
@@ -76,6 +95,20 @@ namespace Telemachus
             }
 
             return false;
+        }
+
+        #endregion
+
+        #region Methods
+
+        static protected string buildPath(string fileName)
+        {
+            return UnityEngine.Application.dataPath + "/../GameData/Telemachus/Plugins/PluginData/Telemachus/" + fileName;
+        }
+
+        static protected string escapeFileName(string fileName)
+        {
+            return fileName.Replace("..", "");
         }
 
         #endregion
