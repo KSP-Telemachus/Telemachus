@@ -93,12 +93,10 @@ namespace Servers
                     }
                     else if (cc.progressiveMessage.ToString().StartsWith(POST))
                     {
-                        serverOut(cc.progressiveMessage.ToString());
                         HTTPRequest request = new HTTPRequest();
 
                         if (request.tryParse(cc.progressiveMessage.ToString()))
                         {
-                            //request.parse(cc.progressiveMessage.ToString());
                             processRequest(cc, request);
                         }
                     }

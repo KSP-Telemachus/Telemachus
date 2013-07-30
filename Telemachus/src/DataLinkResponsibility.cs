@@ -51,7 +51,6 @@ namespace Telemachus
         {
             if (request.path.StartsWith(PAGE_PREFIX))
             {
-                PluginLogger.print(request.ToString());
                 if(request.requestType == Server.GET)
                 {
                     dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
@@ -91,8 +90,6 @@ namespace Telemachus
                         )));
                 }
                 
-                
-
                 return true;
             }
 

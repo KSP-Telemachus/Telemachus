@@ -642,6 +642,7 @@ namespace Telemachus
 
             CoM = v.findWorldCenterOfMass();
             up = (CoM - v.mainBody.position).normalized;
+            
             north = Vector3d.Exclude(up, (v.mainBody.position + v.mainBody.transform.up * 
                 (float)v.mainBody.Radius) - CoM).normalized;
 
@@ -753,6 +754,12 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.argumentOfPeriapsis; },
                 "o.argumentOfPeriapsis", "Argument of Periapsis", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.orbit.timeToTransition1; },
+                "o.timeToTransition1", "Time to Transition 1", formatters.Default, APIEntry.UnitType.TIME));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.orbit.timeToTransition1; },
+                "o.timeToTransition2", "Time to Transition 2", formatters.Default, APIEntry.UnitType.TIME));
         }
 
         #endregion

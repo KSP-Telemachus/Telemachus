@@ -164,15 +164,20 @@ var jKSPWAPI = {
 
         function sanitise(str) {
 
-            return str.replace("nan", "0");
+            return str.replace(/nan/g, '0');
         }
 
         function readStream() {
 
             var callback = function (response, status) {
                 if (status == "success") {
+                    try{
 
-                    d = $.parseJSON(sanitise(response));
+                        d = $.parseJSON(sanitise(response));
+                    }
+                    catch (e) {
+                        console.log(e.message + " " + response)
+                    }
 
                     if (!d.p) {
                         postUpdate(rawData, d);
@@ -249,7 +254,6 @@ var jKSPWAPI = {
         $.get("datalink?" + APIString, callback).error(function () {
             jKSPWAPI.log("Command failed: " + APIString);
             d.ret = 4;
-            //jKSPWAPI.generateNotificationWithCode(4);
             postUpdate(d);
         }
 		);
@@ -323,27 +327,15 @@ var jKSPWAPI = {
             }
             vprime[f.length - 1] = v;
 
-            var val = false;
-            var pos = 1;
+
             for (var i = 1; i < f.length; i++) {
-
-                if (vprime[i] > 0) {
-                    val = true;
-                }
-
-                if (!val) {
-                    pos = pos + 1;
-                }
-
                 if (vprime[i] < 10) {
-                    if (pos != u.length - 1) {
-                        vprime[i] = "0" + vprime[i];
-                    }
+                    vprime[i] = "0" + vprime[i];
                 }
             }
 
             var formatted = "";
-            for (var i = pos; i < f.length; i++) {
+            for (var i = 0; i < f.length; i++) {
                 formatted = formatted + vprime[i] + u[i] + " ";
             }
 

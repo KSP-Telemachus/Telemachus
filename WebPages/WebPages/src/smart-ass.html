@@ -29,7 +29,8 @@
             });
         }
 
-        function execute() {
+        function execute(id) {
+            $(id).buttonMarkup({ icon: "refresh" });
             jKSPWAPI.call(
             "ret=mj.surface2[" + $('#heading').val() + "," + $('#pitch').val() + "," + $('#roll').val() + "]",
             function (d) {
@@ -39,6 +40,7 @@
                 else if (d.ret > 0) {
                     jKSPWAPI.generateNotificationWithCode(d.ret);
                 }
+                setTimeout(function () { $(id).buttonMarkup({ icon: theicon }) }, 500);
             });
         }
     </script>
@@ -76,7 +78,7 @@
                 <input id="roll" type="range" name="slider" value="90" min="0" max="360" data-highlight="false" />
               </div>
               </center>
-            <input type="submit" value="Execute" onclick="execute()" />
+            <input type="submit" id="8" data-icon="star" data-iconpos="bottom" value="Execute" onclick="execute('#8')" />
         </div>
     </div>
 </body>

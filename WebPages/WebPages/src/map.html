@@ -13,7 +13,7 @@
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
     <script>
         function startMap() {
-            var previousBody = "";
+            var previousBody = -1;
             var newBody;
             jQuery(document).ready(function ($) {
                 map = new L.KSP.Map('map', {
@@ -47,7 +47,7 @@
                     }
 
                     if (!isNaN(d.lat) && !isNaN(d.longs)) {
-                        marker[0].setLatLng([d.lat, d.longs]);
+                        marker[0].setLatLng([d.lat % 180, d.longs % 360]);
                         marker[0].bindPopup(d.name + " </br>Altitude: " + d.alt + "</br>Surface Velocity: " + d.m);
                         marker[0].update();
                     }
