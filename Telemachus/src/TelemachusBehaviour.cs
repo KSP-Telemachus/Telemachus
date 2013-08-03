@@ -228,7 +228,8 @@ namespace Telemachus
                     new BodyDataLinkHandler(formatters),
                     new ResourceDataLinkHandler(vesselChangeDetector, formatters),
                     new APIDataLinkHandler(this, formatters, serverConfiguration),
-                    new NavBallDataLinkHandler(formatters)
+                    new NavBallDataLinkHandler(formatters),
+                    new MapViewDataLinkHandler(formatters)
                     }, formatters
                 ));
 

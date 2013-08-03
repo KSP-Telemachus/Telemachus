@@ -53,11 +53,11 @@ namespace Telemachus
             {
                 if(request.requestType == Server.GET)
                 {
-                    dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length);
+                    dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length * 8);
                 }
                 else if (request.requestType == Server.POST)
                 {
-                    dataRates.addUpLinkPoint(System.DateTime.Now, request.content.Length);
+                    dataRates.addUpLinkPoint(System.DateTime.Now, request.content.Length * 8);
                 }
 
                 try
@@ -78,7 +78,7 @@ namespace Telemachus
                             argumentsParse(request.path.Remove(0,
                                 request.path.IndexOf(ARGUMENTS_START) + 1),
                                 dataSources)
-                        )));
+                        ))*8);
                 }
                 else if (request.requestType == Server.POST)
                 {
@@ -87,7 +87,7 @@ namespace Telemachus
                         ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
                             argumentsParse(request.content,
                                 dataSources)
-                        )));
+                        ))*8);
                 }
                 
                 return true;

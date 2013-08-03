@@ -577,6 +577,26 @@ namespace Telemachus
                 "t.timeWarp", "Time Warp [int rate]", formatters.Default));
         }
 
+        #endregion
+    }
+
+    public class MapViewDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+         public MapViewDataLinkHandler(FormatterProvider formatters)
+            : base(formatters)
+        {
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { if (MapView.MapIsEnabled) 
+                        { MapView.ExitMapView(); } else { MapView.EnterMapView(); }; return 0d; }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
+                },
+                "m.toggleMapView", " Toggle Map View", formatters.Default));
+        }
 
         #endregion
     }
@@ -760,6 +780,7 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.timeToTransition1; },
                 "o.timeToTransition2", "Time to Transition 2", formatters.Default, APIEntry.UnitType.TIME));
+            
         }
 
         #endregion

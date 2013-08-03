@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>D-Pad</title>
+
+
+
+    <link rel="stylesheet" href="https://d10ajoocuyu32n.cloudfront.net/mobile/1.3.1/jquery.mobile-1.3.1.min.css">
+
+
+    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="jKSPWAPICore.js"></script>
+    <!-- jQuery and jQuery Mobile -->
+    <script src="https://d10ajoocuyu32n.cloudfront.net/jquery-1.9.1.min.js"></script>
+    <script src="https://d10ajoocuyu32n.cloudfront.net/mobile/1.3.1/jquery.mobile-1.3.1.min.js"></script>
+
+    <!-- Extra Codiqa features -->
+    <script src="https://d10ajoocuyu32n.cloudfront.net/codiqa.ext.js"></script>
+
+
+    <script>
+        var pi = 0;
+        var ya = 0;
+        var ro = 0;
+        var x = 0;
+        var y = 0;
+        var z = 0;
+
+        function command(command, command2) {
+
+            jKSPWAPI.call("ret=" + command + "&ret2=" + command2, function (d) {
+                if (d.ret > 0) {
+                    jKSPWAPI.generateNotificationWithCode(d.ret);
+                }
+            });
+        }
+
+        function pitch(value) {
+            pi = value;
+            update();
+        }
+
+        function yaw(value) {
+            ya = value;
+            update();
+        }
+
+        function roll(value) {
+            ro = value;
+            update();
+        }
+
+        function x_trans(value) {
+            x = value;
+            update();
+        }
+        
+        function y_trans(value) {
+            y = value;
+            update();
+        }
+
+        function z_trans(value) {
+            z = value;
+            update();
+        }
+
+        function update() {
+            console.log("v.setPitchYawRollXYZ[" + pi + "," + ya + "," + ro + "," + x + "," + y + "," + z + "]");
+           
+            command("v.setFbW[1]", "v.setPitchYawRollXYZ[" + pi + "," + ya + "," + ro + "," + x + "," + y + "," + z + "]");
+
+            if (pi == 0 && ya == 0 && ro == 0 && x == 0 && y == 0 && y == 0 && z == 0) {
+                command("v.setFbW[0]", "v.setFbW[0]");
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Home -->
+    <div data-role="page" id="page1">
+        <div data-role="content">
+            <div class="ui-grid-b">
+                <div class="ui-block-a">
+                    <input type="submit" data-icon="back" data-iconpos="top" value="" onmousedown="roll(-1)" onclick="roll(0)" onmouseup="roll(0)" touchcancel="roll(0)">
+                </div>
+                <div class="ui-block-b">
+                    <input type="submit" data-icon="arrow-u" data-iconpos="top" value="" onmousedown="pitch(1)" onclick="pitch(0)">
+                </div>
+                <div class="ui-block-c">
+                    <input type="submit" data-icon="forward" data-iconpos="top" value="" onmousedown="roll(1)" onclick="roll(0)" onmouseup="roll(0)">
+                </div>
+                <div class="ui-block-a">
+                    <input type="submit" data-icon="arrow-l" data-iconpos="bottom" value="" onmousedown="yaw(1)" onclick="yaw(0)">
+                </div>
+                <div class="ui-block-b">
+                    <input type="submit" data-icon="arrow-d" data-iconpos="bottom" value="" onmousedown="pitch(-1)" onclick="pitch(0)">
+                </div>
+                <div class="ui-block-c">
+                    <input type="submit" data-icon="arrow-r" data-iconpos="bottom" value="" onmousedown="yaw(-1)" onclick="yaw(0)">
+                </div>
+            </div>
+            <div class="ui-grid-b">
+                <div class="ui-block-a">
+                    <input type="submit" data-icon="arrow-u" data-iconpos="top" value="">
+                </div>
+                <div class="ui-block-b">
+                    <input type="submit" data-icon="arrow-l" data-iconpos="top" value="">
+                </div>
+                <div class="ui-block-c">
+                    <input type="submit" data-icon="arrow-r" data-iconpos="top" value="">
+                </div>
+                <div class="ui-block-a">
+                    <input type="submit" data-icon="arrow-d" data-iconpos="bottom" value="">
+                </div>
+                <div class="ui-block-b">
+                    <input type="submit" data-icon="arrow-u" data-iconpos="bottom" value="">
+                </div>
+                <div class="ui-block-c">
+                    <input type="submit" data-icon="arrow-d" data-iconpos="bottom" value="">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

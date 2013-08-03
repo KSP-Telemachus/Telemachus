@@ -60,6 +60,7 @@
     <Content Include="src\altitude.html" />
     <Content Include="src\apoapsis-periapsis.html" />
     <Content Include="src\config.xml" />
+    <Content Include="src\d-pad.html" />
     <Content Include="src\marker-icon.png" />
     <Content Include="src\post.html" />
     <Content Include="src\density.html" />
@@ -96,7 +97,6 @@
     <Content Include="src\temperature.html" />
     <Content Include="src\time-apoapsis-periapsis.html" />
     <Content Include="src\touchball-pyr.html" />
-    <Content Include="src\touchball-xyz.html" />
     <Content Include="src\velocity.html" />
     <Content Include="src\zoom-in.png" />
     <Content Include="src\zoom-out.png" />
