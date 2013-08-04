@@ -4,9 +4,22 @@
     <title>D-Pad</title>
     <meta name="viewport" content="width=device-width, user-scalable=no" />
     <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
-
-    <script src="jquery-1.9.1.min.js"></script>
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
+    <script type="text/javascript">
+
+        $(function () {
+            $("#slider").slider({
+                min: 0,
+                max: 10,
+                range: "min", value: 10, slide: function (event, ui) {
+                    $("#power-value").text("Power: " + ui.value / 10);
+                }
+            });
+        });
+    </script>
     <script type="text/javascript">
         $(document).ready(function () {
             var pitch = 0;
@@ -33,42 +46,44 @@
                 });
 
             function down(sender) {
+
+                var power = $("#slider").slider('value') / 10;
                 switch ($(sender).attr('id')) {
                     case "rollleft":
-                        roll = -1;
+                        roll = -power;
                         break;
                     case "pitchup":
-                        pitch = 1;
+                        pitch = -power;
                         break;
                     case "rollright":
-                        roll = 1;
+                        roll = power;
                         break;
                     case "yawleft":
-                        yaw = -1;
+                        yaw = -power;
                         break;
                     case "pitchdown":
-                        pitch = -1;
+                        pitch = power;
                         break;
                     case "yawright":
-                        yaw = 1;
+                        yaw = power;
                         break;
                     case "forwards":
-                        y = 1;
+                        y = power;
                         break;
                     case "up":
-                        z = 1;
+                        z = power;
                         break;
                     case "right":
-                        x = 1;
+                        x = power;
                         break;
                     case "backwards":
-                        y = -1;
+                        y = -power;
                         break;
                     case "down":
-                        z = -1;
+                        z = -power;
                         break;
                     case "left":
-                        x = -1;
+                        x = -power;
                         break;
                 }
 
@@ -119,7 +134,7 @@
             }
 
             function update() {
-                console.log("v.setPitchYawRollXYZ[" + pitch + "," + yaw + "," + roll + "," + x + "," + y + "," + z + "]");
+                //console.log("v.setPitchYawRollXYZ[" + pitch + "," + yaw + "," + roll + "," + x + "," + y + "," + z + "]");
                 commandactivate("v.setPitchYawRollXYZ[" + pitch + "," + yaw + "," + roll + "," + x + "," + y + "," + z + "]");
 
                 if (pitch == 0 && yaw == 0 && roll == 0 && x == 0 && y == 0 && z == 0) {
@@ -128,7 +143,7 @@
             }
 
             function commandactivate(command) {
-               
+
                 jKSPWAPI.call("ret=v.setFbW[1]&ret2=" + command, function (d) {
                     if (d.ret > 0) {
                         jKSPWAPI.generateNotificationWithCode(d.ret);
@@ -146,57 +161,128 @@
             }
         })
     </script>
+
     <style type="text/css">
+        body, html {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
 
-    body, html { 
-        height:100%; 
-        padding:0; 
-        margin:0;
-    }
+        .button {
+            position: relative;
+            float: left;
+            width: 32.3%;
+            height: 19%;
+            margin: 0.5%;
+        }
 
-    .button {
-        position:relative;
-        float: left;
-        width: 32.3%;
-        height: 23.75%;
-        margin: 0.5%;
-    }
+        .inner-mousenormal {
+            width: 99%;
+            height: 99%;
+            margin: auto;
+            padding: 0;
+            background-color: #E0E0E0;
+            border-style: solid;
+            border-width: 2px;
+            border-left-color: darkgray;
+            border-top-color: darkgray;
+            border-right-color: gray;
+            border-bottom-color: gray;
+        }
 
-    .inner-mousenormal {
-        width: 99%;
-        height: 99%;
-        margin: auto;
-        padding: 0;
-        background-color: #E0E0E0;
-        border-style: solid;
-        border-width: 2px;
-    }
+            .inner-mousenormal:hover {
+                background-color: #F0F0F0;
+            }
 
-    .inner-mousenormal p { 
-        margin-top: 10%;
-        margin-bottom:0;
-        text-align: center;
-        font-size: 40pt;
-    }
+            .inner-mousenormal p {
+                margin-top: 10%;
+                margin-bottom: 0;
+                text-align: center;
+                font-size: 40pt;
+            }
 
-    .inner-mousenormal.activated {
-        background-color: grey;
-    }
+            .inner-mousenormal.activated {
+                background-color: grey;
+            }
 
+        .power-box {
+            padding-top: 0%;
+            position: relative;
+            float: left;
+            height: 5%;
+            width: 96%;
+            margin-left: 2%;
+            margin-right:2%;
+        }
     </style>
 </head>
 <body>
-    <div class="button"><div id="rollleft" class="inner-mousenormal"><p>&#8634</p></div></div>
-    <div class="button"><div id= "pitchup" class="inner-mousenormal"><p>&uarr;</p></div></div>
-    <div class="button"><div id="rollright" class="inner-mousenormal"><p>&#8635</p></div></div>
-    <div class="button"><div id="yawleft" class="inner-mousenormal"><p>&larr;</p></div></div>
-    <div class="button"><div id="pitchdown" class="inner-mousenormal"><p>&darr;</p></div></div>
-    <div class="button"><div id="yawright" class="inner-mousenormal"><p>&rarr;</p></div></div>
-    <div class="button"><div id="forwards" class="inner-mousenormal"><p>&#8607</p></div></div>
-    <div class="button"><div id="up" class="inner-mousenormal"><p>&uarr;</p></div></div>
-    <div class="button"><div id="right" class="inner-mousenormal"><p>&rarr;</p></div></div>
-    <div class="button"><div id="backwards" class="inner-mousenormal"><p>&#8609</p></div></div>
-    <div class="button"><div id="down" class="inner-mousenormal"><p>&darr;</p></div></div>
-    <div class="button"><div id="left" class="inner-mousenormal"><p>&larr;</p></div></div>
+    <div class="button">
+        <div id="rollleft" class="inner-mousenormal">
+            <p>&#8634</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="pitchup" class="inner-mousenormal">
+            <p>&uarr;</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="rollright" class="inner-mousenormal">
+            <p>&#8635</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="yawleft" class="inner-mousenormal">
+            <p>&larr;</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="pitchdown" class="inner-mousenormal">
+            <p>&darr;</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="yawright" class="inner-mousenormal">
+            <p>&rarr;</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="forwards" class="inner-mousenormal">
+            <p>&#8607</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="up" class="inner-mousenormal">
+            <p>&uarr;</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="right" class="inner-mousenormal">
+            <p>&rarr;</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="backwards" class="inner-mousenormal">
+            <p>&#8609</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="down" class="inner-mousenormal">
+            <p>&darr;</p>
+        </div>
+    </div>
+    <div class="button">
+        <div id="left" class="inner-mousenormal">
+            <p>&larr;</p>
+        </div>
+    </div>
+    <div class="power-box">
+        <p id="power-value" class="ui-state-default ui-corner-all" style="padding: 4px;">
+            Power: 1
+        </p>
+        <div id="slider"></div>
+    </div>
 </body>
 </html>

@@ -219,6 +219,7 @@ namespace Telemachus
             APIHandlers.Add(new FlightDataLinkHandler(formatters));
             APIHandlers.Add(new MechJebDataLinkHandler(formatters));
             APIHandlers.Add(new TimeWarpDataLinkHandler(formatters));
+            APIHandlers.Add(new TargetDataLinkHandler(formatters, this));
 
             APIHandlers.Add(new CompoundDataLinkHandler(
                 new List<DataLinkHandler>() { 
@@ -230,6 +231,7 @@ namespace Telemachus
                     new APIDataLinkHandler(this, formatters, serverConfiguration),
                     new NavBallDataLinkHandler(formatters),
                     new MapViewDataLinkHandler(formatters)
+                    
                     }, formatters
                 ));
 

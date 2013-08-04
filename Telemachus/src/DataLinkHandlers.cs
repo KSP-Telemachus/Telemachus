@@ -580,6 +580,104 @@ namespace Telemachus
         #endregion
     }
 
+    public class TargetDataLinkHandler : DataLinkHandler
+    {
+        #region Fields
+
+        IKSPAPI KSPAPI = null;
+        
+        #endregion
+
+        #region Initialisation
+
+        public TargetDataLinkHandler(FormatterProvider formatters, IKSPAPI KSPAPI)
+            : base(formatters)
+        {
+            
+            this.KSPAPI = KSPAPI;
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    return FlightGlobals.fetch.VesselTarget.GetName();
+                },
+                "tar.name", "Target Name", formatters.String, APIEntry.UnitType.STRING));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources =>
+                {
+                    return FlightGlobals.fetch.VesselTarget.GetType();
+                },
+                "tar.type", "Target Type", formatters.String, APIEntry.UnitType.STRING));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().PeA; },
+                "tar.o.PeA", "Periapsis", formatters.Default, APIEntry.UnitType.DISTANCE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().ApA; },
+                "tar.o.ApA", "Apoapsis", formatters.Default, APIEntry.UnitType.DISTANCE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().timeToAp; },
+                "tar.o.timeToAp", "Time to Apoapsis", formatters.Default, APIEntry.UnitType.TIME));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().timeToPe; },
+                "tar.o.timeToPe", "Time to Periapsis", formatters.Default, APIEntry.UnitType.TIME));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().inclination; },
+                "tar.o.inclination", "Inclination", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().eccentricity; },
+                "tar.o.eccentricity", "Eccentricity", formatters.Default, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().period; },
+                "tar.o.period", "Orbital Period", formatters.Default, APIEntry.UnitType.TIME));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().argumentOfPeriapsis; },
+                "tar.o.argumentOfPeriapsis", "Argument of Periapsis", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().timeToTransition1; },
+                "tar.o.timeToTransition1", "Time to Transition 1", formatters.Default, APIEntry.UnitType.TIME));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().timeToTransition1; },
+                "tar.o.timeToTransition2", "Time to Transition 2", formatters.Default, APIEntry.UnitType.TIME));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().semiMajorAxis; },
+               "tar.o.sma", "Semimajor Axis", formatters.Default, APIEntry.UnitType.DISTANCE));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().LAN; },
+               "tar.o.lan", "Longitude of Ascending Node", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().meanAnomalyAtEpoch; },
+               "tar.o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
+        }
+
+        #endregion
+
+        #region DataLinkHandler
+
+       
+
+        public override bool process(String API, out APIEntry result)
+        {
+            if (!base.process(API, out result))
+            {
+                if (API.StartsWith("tar."))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        #endregion
+    }
+
     public class MapViewDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
@@ -780,6 +878,16 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.timeToTransition1; },
                 "o.timeToTransition2", "Time to Transition 2", formatters.Default, APIEntry.UnitType.TIME));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { return dataSources.vessel.orbit.semiMajorAxis; },
+               "o.sma", "Semimajor Axis", formatters.Default, APIEntry.UnitType.DISTANCE));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { return dataSources.vessel.orbit.LAN; },
+               "o.lan", "Longitude of Ascending Node", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { return dataSources.vessel.orbit.meanAnomalyAtEpoch; },
+               "o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
+
             
         }
 
