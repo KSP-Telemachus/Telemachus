@@ -1,130 +1,202 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <title>D-Pad</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
 
-
-
-    <link rel="stylesheet" href="https://d10ajoocuyu32n.cloudfront.net/mobile/1.3.1/jquery.mobile-1.3.1.min.css">
-
-
-    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+    <script src="jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="jKSPWAPICore.js"></script>
-    <!-- jQuery and jQuery Mobile -->
-    <script src="https://d10ajoocuyu32n.cloudfront.net/jquery-1.9.1.min.js"></script>
-    <script src="https://d10ajoocuyu32n.cloudfront.net/mobile/1.3.1/jquery.mobile-1.3.1.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var pitch = 0;
+            var yaw = 0;
+            var roll = 0;
+            var x = 0;
+            var y = 0;
+            var z = 0;
 
-    <!-- Extra Codiqa features -->
-    <script src="https://d10ajoocuyu32n.cloudfront.net/codiqa.ext.js"></script>
+            $(".inner-mousenormal")
+                .on("touchstart touchmove mousedown", function (e) {
+                    e.preventDefault();
+                    down(this);
+                    $(this).addClass("activated");
+                })
+                .on("touchend touchcancel", function (e) {
+                    e.preventDefault();
+                    up(this);
+                    $(this).removeClass("activated");
+                }).on("mouseup", function (e) {
+                    e.preventDefault();
+                    up(this);
+                    $(".inner-mousenormal").removeClass("activated");
+                });
 
-
-    <script>
-        var pi = 0;
-        var ya = 0;
-        var ro = 0;
-        var x = 0;
-        var y = 0;
-        var z = 0;
-
-        function command(command, command2) {
-
-            jKSPWAPI.call("ret=" + command + "&ret2=" + command2, function (d) {
-                if (d.ret > 0) {
-                    jKSPWAPI.generateNotificationWithCode(d.ret);
+            function down(sender) {
+                switch ($(sender).attr('id')) {
+                    case "rollleft":
+                        roll = -1;
+                        break;
+                    case "pitchup":
+                        pitch = 1;
+                        break;
+                    case "rollright":
+                        roll = 1;
+                        break;
+                    case "yawleft":
+                        yaw = -1;
+                        break;
+                    case "pitchdown":
+                        pitch = -1;
+                        break;
+                    case "yawright":
+                        yaw = 1;
+                        break;
+                    case "forwards":
+                        y = 1;
+                        break;
+                    case "up":
+                        z = 1;
+                        break;
+                    case "right":
+                        x = 1;
+                        break;
+                    case "backwards":
+                        y = -1;
+                        break;
+                    case "down":
+                        z = -1;
+                        break;
+                    case "left":
+                        x = -1;
+                        break;
                 }
-            });
-        }
 
-        function pitch(value) {
-            pi = value;
-            update();
-        }
-
-        function yaw(value) {
-            ya = value;
-            update();
-        }
-
-        function roll(value) {
-            ro = value;
-            update();
-        }
-
-        function x_trans(value) {
-            x = value;
-            update();
-        }
-        
-        function y_trans(value) {
-            y = value;
-            update();
-        }
-
-        function z_trans(value) {
-            z = value;
-            update();
-        }
-
-        function update() {
-            console.log("v.setPitchYawRollXYZ[" + pi + "," + ya + "," + ro + "," + x + "," + y + "," + z + "]");
-           
-            command("v.setFbW[1]", "v.setPitchYawRollXYZ[" + pi + "," + ya + "," + ro + "," + x + "," + y + "," + z + "]");
-
-            if (pi == 0 && ya == 0 && ro == 0 && x == 0 && y == 0 && y == 0 && z == 0) {
-                command("v.setFbW[0]", "v.setFbW[0]");
+                update();
             }
-        }
+
+            function up(sender) {
+                switch ($(sender).attr('id')) {
+                    case "rollleft":
+                        roll = 0;
+                        break;
+                    case "pitchup":
+                        pitch = 0;
+                        break;
+                    case "rollright":
+                        roll = 0;
+                        break;
+                    case "yawleft":
+                        yaw = 0;
+                        break;
+                    case "pitchdown":
+                        pitch = 0;
+                        break;
+                    case "yawright":
+                        yaw = 0;
+                        break;
+                    case "forwards":
+                        y = 0;
+                        break;
+                    case "up":
+                        z = 0;
+                        break;
+                    case "right":
+                        x = 0;
+                        break;
+                    case "backwards":
+                        y = 0;
+                        break;
+                    case "down":
+                        z = 0;
+                        break;
+                    case "left":
+                        x = 0;
+                        break;
+                }
+
+                update();
+            }
+
+            function update() {
+                console.log("v.setPitchYawRollXYZ[" + pitch + "," + yaw + "," + roll + "," + x + "," + y + "," + z + "]");
+                commandactivate("v.setPitchYawRollXYZ[" + pitch + "," + yaw + "," + roll + "," + x + "," + y + "," + z + "]");
+
+                if (pitch == 0 && yaw == 0 && roll == 0 && x == 0 && y == 0 && z == 0) {
+                    commanddisable("v.setPitchYawRollXYZ[0,0,0,0,0,0]");
+                }
+            }
+
+            function commandactivate(command) {
+               
+                jKSPWAPI.call("ret=v.setFbW[1]&ret2=" + command, function (d) {
+                    if (d.ret > 0) {
+                        jKSPWAPI.generateNotificationWithCode(d.ret);
+                    }
+                });
+            }
+
+            function commanddisable(command) {
+
+                jKSPWAPI.call("ret=v.setFbW[0]&ret2=" + command, function (d) {
+                    if (d.ret > 0) {
+                        jKSPWAPI.generateNotificationWithCode(d.ret);
+                    }
+                });
+            }
+        })
     </script>
+    <style type="text/css">
+
+    body, html { 
+        height:100%; 
+        padding:0; 
+        margin:0;
+    }
+
+    .button {
+        position:relative;
+        float: left;
+        width: 32.3%;
+        height: 23.75%;
+        margin: 0.5%;
+    }
+
+    .inner-mousenormal {
+        width: 99%;
+        height: 99%;
+        margin: auto;
+        padding: 0;
+        background-color: #E0E0E0;
+        border-style: solid;
+        border-width: 2px;
+    }
+
+    .inner-mousenormal p { 
+        margin-top: 10%;
+        margin-bottom:0;
+        text-align: center;
+        font-size: 40pt;
+    }
+
+    .inner-mousenormal.activated {
+        background-color: grey;
+    }
+
+    </style>
 </head>
 <body>
-    <!-- Home -->
-    <div data-role="page" id="page1">
-        <div data-role="content">
-            <div class="ui-grid-b">
-                <div class="ui-block-a">
-                    <input type="submit" data-icon="back" data-iconpos="top" value="" onmousedown="roll(-1)" onclick="roll(0)" onmouseup="roll(0)" touchcancel="roll(0)">
-                </div>
-                <div class="ui-block-b">
-                    <input type="submit" data-icon="arrow-u" data-iconpos="top" value="" onmousedown="pitch(1)" onclick="pitch(0)">
-                </div>
-                <div class="ui-block-c">
-                    <input type="submit" data-icon="forward" data-iconpos="top" value="" onmousedown="roll(1)" onclick="roll(0)" onmouseup="roll(0)">
-                </div>
-                <div class="ui-block-a">
-                    <input type="submit" data-icon="arrow-l" data-iconpos="bottom" value="" onmousedown="yaw(1)" onclick="yaw(0)">
-                </div>
-                <div class="ui-block-b">
-                    <input type="submit" data-icon="arrow-d" data-iconpos="bottom" value="" onmousedown="pitch(-1)" onclick="pitch(0)">
-                </div>
-                <div class="ui-block-c">
-                    <input type="submit" data-icon="arrow-r" data-iconpos="bottom" value="" onmousedown="yaw(-1)" onclick="yaw(0)">
-                </div>
-            </div>
-            <div class="ui-grid-b">
-                <div class="ui-block-a">
-                    <input type="submit" data-icon="arrow-u" data-iconpos="top" value="">
-                </div>
-                <div class="ui-block-b">
-                    <input type="submit" data-icon="arrow-l" data-iconpos="top" value="">
-                </div>
-                <div class="ui-block-c">
-                    <input type="submit" data-icon="arrow-r" data-iconpos="top" value="">
-                </div>
-                <div class="ui-block-a">
-                    <input type="submit" data-icon="arrow-d" data-iconpos="bottom" value="">
-                </div>
-                <div class="ui-block-b">
-                    <input type="submit" data-icon="arrow-u" data-iconpos="bottom" value="">
-                </div>
-                <div class="ui-block-c">
-                    <input type="submit" data-icon="arrow-d" data-iconpos="bottom" value="">
-                </div>
-            </div>
-        </div>
-    </div>
+    <div class="button"><div id="rollleft" class="inner-mousenormal"><p>&#8634</p></div></div>
+    <div class="button"><div id= "pitchup" class="inner-mousenormal"><p>&uarr;</p></div></div>
+    <div class="button"><div id="rollright" class="inner-mousenormal"><p>&#8635</p></div></div>
+    <div class="button"><div id="yawleft" class="inner-mousenormal"><p>&larr;</p></div></div>
+    <div class="button"><div id="pitchdown" class="inner-mousenormal"><p>&darr;</p></div></div>
+    <div class="button"><div id="yawright" class="inner-mousenormal"><p>&rarr;</p></div></div>
+    <div class="button"><div id="forwards" class="inner-mousenormal"><p>&#8607</p></div></div>
+    <div class="button"><div id="up" class="inner-mousenormal"><p>&uarr;</p></div></div>
+    <div class="button"><div id="right" class="inner-mousenormal"><p>&rarr;</p></div></div>
+    <div class="button"><div id="backwards" class="inner-mousenormal"><p>&#8609</p></div></div>
+    <div class="button"><div id="down" class="inner-mousenormal"><p>&darr;</p></div></div>
+    <div class="button"><div id="left" class="inner-mousenormal"><p>&larr;</p></div></div>
 </body>
 </html>
