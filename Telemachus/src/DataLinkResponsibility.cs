@@ -116,7 +116,6 @@ namespace Telemachus
 
         private String argumentsParse(String args, DataSources dataSources)
         {
-
             APIEntry currentEntry = null;
             List<string> APIResults = new List<string>(); 
             String[] argsSplit = args.Split(ARGUMENTS_DELIMETER);

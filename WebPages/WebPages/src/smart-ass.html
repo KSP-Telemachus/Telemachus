@@ -58,12 +58,18 @@
             <input type="submit" id="5" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Normal" onclick="command('mj.normalminus', '#5', 'minus')" />
             <input type="submit" id="6" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialplus', '#6', 'plus')" />
             <input type="submit" id="7" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialminus', '#7', 'minus')" />
+            <input type="submit" id="8" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Target" onclick="command('mj.targetplus', '#8', 'plus')" />
+            <input type="submit" id="9" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Target" onclick="command('mj.targetminus', '#9', 'minus')" />
+            <input type="submit" id="10" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Relative" onclick="command('mj.relativeplus', '#10', 'plus')" />
+            <input type="submit" id="11" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Relative" onclick="command('mj.relativeminus', '#11', 'minus')" />
+            <input type="submit" id="12" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Parallel" onclick="command('mj.parallelplus', '#12', 'plus')" />
+            <input type="submit" id="13" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Parallel" onclick="command('mj.parallelminus', '#13', 'minus')" />
             <center>
                 <div data-role="fieldcontain">
                     <label for="slider2">
                         Pitch
                     </label>
-                    <input id="pitch" type="range" name="slider" value="90" min="0" max="360" data-highlight="false" />
+                    <input id="pitch" type="range" name="slider" value="90" min="-90" max="90" data-highlight="false" />
                 </div>
                 <div data-role="fieldcontain">
                     <label for="slider1">
@@ -77,7 +83,7 @@
                 </label>
                 <input id="roll" type="range" name="slider" value="90" min="0" max="360" data-highlight="false" />
               </div>
-              </center>
+            </center>
             <input type="submit" id="8" data-icon="star" data-iconpos="bottom" value="Execute" onclick="execute('#8')" />
         </div>
     </div>

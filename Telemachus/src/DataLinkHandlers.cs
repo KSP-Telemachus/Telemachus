@@ -92,6 +92,60 @@ namespace Telemachus
                 dataSources =>
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return (FlightGlobals.fetch.VesselTarget != null ? reflectAttitudeTo(dataSources, Vector3d.forward, "TARGET") : false);}),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
+                },
+               "mj.targetplus", "Target Plus", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return (FlightGlobals.fetch.VesselTarget != null ? reflectAttitudeTo(dataSources, Vector3d.back, "TARGET") : false); }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
+                },
+               "mj.targetminus", "Target Minus", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return (FlightGlobals.fetch.VesselTarget != null ? reflectAttitudeTo(dataSources, Vector3d.forward, "RELATIVE_VELOCITY") : false); }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
+                },
+               "mj.relativeplus", "Relative Plus", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return (FlightGlobals.fetch.VesselTarget != null ? reflectAttitudeTo(dataSources, Vector3d.back, "RELATIVE_VELOCITY") : false); }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
+                },
+               "mj.relativeminus", "Relative Minus", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return (FlightGlobals.fetch.VesselTarget != null ? reflectAttitudeTo(dataSources, Vector3d.forward, "TARGET_ORIENTATION") : false); }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
+                },
+               "mj.parallelplus", "Parallel Plus", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { return (FlightGlobals.fetch.VesselTarget != null ? reflectAttitudeTo(dataSources, Vector3d.back, "TARGET_ORIENTATION") : false); }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
+                },
+               "mj.parallelminus", "Parallel Minus", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                         (x) => { return surface(dataSources); }),
                         UnityEngine.SendMessageOptions.DontRequireReceiver); 
                     return predictFailure(dataSources.vessel);
@@ -425,82 +479,86 @@ namespace Telemachus
                 "f.throttleDown", "Throttle Down", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
-                dataSources =>
-                {
-                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                        (x) => { dataSources.vessel.ActionGroups.ToggleGroup(KSPActionGroup.RCS); return 0d ; }),
-                        UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
-                },
-                "f.rcs", "RCS", formatters.Default));
+                buildActionGroupToggleDelayedLamda(KSPActionGroup.RCS),
+                "f.rcs", "RCS [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.SAS),
-                "f.sas", "SAS", formatters.Default));
+                "f.sas", "SAS [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Light),
-                "f.light", "Light", formatters.Default));
+                "f.light", "Light [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Gear),
-                "f.gear", "Gear", formatters.Default));
+                "f.gear", "Gear [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Brakes),
-                "f.brake", "Brake", formatters.Default));
+                "f.brake", "Brake [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Abort),
-                "f.abort", "Abort", formatters.Default));
+                "f.abort", "Abort [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom01),
-                "f.ag1", "Action Group 1", formatters.Default));
+                "f.ag1", "Action Group 1 [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom02),
-                "f.ag2", "Action Group 2", formatters.Default));
+                "f.ag2", "Action Group 2 [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom03),
-                "f.ag3", "Action Group 3", formatters.Default));
+                "f.ag3", "Action Group 3 [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom04),
-                "f.ag4", "Action Group 4", formatters.Default));
+                "f.ag4", "Action Group 4 [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom05),
-                "f.ag5", "Action Group 5", formatters.Default));
+                "f.ag5", "Action Group 5 [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom06),
-                "f.ag6", "Action Group 6", formatters.Default));
+                "f.ag6", "Action Group 6 [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom07),
-                "f.ag7", "Action Group 7", formatters.Default));
+                "f.ag7", "Action Group 7 [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom08),
-                "f.ag8", "Action Group 8", formatters.Default));
+                "f.ag8", "Action Group 8 [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom09),
-                "f.ag9", "Action Group 9", formatters.Default));
+                "f.ag9", "Action Group 9 [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom10),
-                "f.ag10", "Action Group 10", formatters.Default));
+                "f.ag10", "Action Group 10 [optional bool on/off]", formatters.Default));
         }
 
         private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
         {
             return dataSources =>
                 {
-                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                        (x) => { dataSources.vessel.ActionGroups.ToggleGroup(actionGroup); return 0d; }),
-                        UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
+                    if (dataSources.args.Count == 0)
+                    {
+                        TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                            (x) => { dataSources.vessel.ActionGroups.ToggleGroup(actionGroup); return 0d; }),
+                            UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
+                    }
+                    else
+                    {
+                        TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                            (x) => { dataSources.vessel.ActionGroups.SetGroup(actionGroup, bool.Parse(dataSources.args[0])); return 0d; }),
+                            UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
+                    }
                 };
         }
 
@@ -582,72 +640,75 @@ namespace Telemachus
 
     public class TargetDataLinkHandler : DataLinkHandler
     {
-        #region Fields
-
-        IKSPAPI KSPAPI = null;
-        
-        #endregion
-
         #region Initialisation
 
-        public TargetDataLinkHandler(FormatterProvider formatters, IKSPAPI KSPAPI)
+        public TargetDataLinkHandler(FormatterProvider formatters)
             : base(formatters)
         {
-            
-            this.KSPAPI = KSPAPI;
-
             registerAPI(new PlotableAPIEntry(
                 dataSources => {
-                    return FlightGlobals.fetch.VesselTarget.GetName();
+                    return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetName() : "No Target Selected.";
                 },
                 "tar.name", "Target Name", formatters.String, APIEntry.UnitType.STRING));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources =>
                 {
-                    return FlightGlobals.fetch.VesselTarget.GetType();
+                    return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetType().ToString() : "";
                 },
                 "tar.type", "Target Type", formatters.String, APIEntry.UnitType.STRING));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? Vector3.Distance(FlightGlobals.fetch.VesselTarget.GetTransform().position, dataSources.vessel.GetTransform().position)  : 0; },
+                "tar.distance", "Target Distance", formatters.Default, APIEntry.UnitType.DISTANCE));
 
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().PeA; },
-                "tar.o.PeA", "Periapsis", formatters.Default, APIEntry.UnitType.DISTANCE));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? (FlightGlobals.fetch.VesselTarget.GetOrbit().GetVel() - dataSources.vessel.orbit.GetVel()).magnitude : 0;},
+                "tar.o.relativeVelocity", "Target Relative Velocity", formatters.Default, APIEntry.UnitType.VELOCITY));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().ApA; },
-                "tar.o.ApA", "Apoapsis", formatters.Default, APIEntry.UnitType.DISTANCE));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().vel.magnitude : 0; },
+                "tar.o.velocity", "Target Velocity", formatters.Default, APIEntry.UnitType.VELOCITY));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().timeToAp; },
-                "tar.o.timeToAp", "Time to Apoapsis", formatters.Default, APIEntry.UnitType.TIME));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().PeA : 0; },
+                "tar.o.PeA", "Target Periapsis", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().timeToPe; },
-                "tar.o.timeToPe", "Time to Periapsis", formatters.Default, APIEntry.UnitType.TIME));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().ApA : 0; },
+                "tar.o.ApA", "Target Apoapsis", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().inclination; },
-                "tar.o.inclination", "Inclination", formatters.Default, APIEntry.UnitType.DEG));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().timeToAp : 0; },
+                "tar.o.timeToAp", "Target Time to Apoapsis", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().eccentricity; },
-                "tar.o.eccentricity", "Eccentricity", formatters.Default, APIEntry.UnitType.UNITLESS));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().timeToPe : 0; },
+                "tar.o.timeToPe", "Target Time to Periapsis", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().period; },
-                "tar.o.period", "Orbital Period", formatters.Default, APIEntry.UnitType.TIME));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().inclination : 0; },
+                "tar.o.inclination", "Target Inclination", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().argumentOfPeriapsis; },
-                "tar.o.argumentOfPeriapsis", "Argument of Periapsis", formatters.Default, APIEntry.UnitType.DEG));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().eccentricity : 0; },
+                "tar.o.eccentricity", "Target Eccentricity", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().timeToTransition1; },
-                "tar.o.timeToTransition1", "Time to Transition 1", formatters.Default, APIEntry.UnitType.TIME));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().period : 0; },
+                "tar.o.period", "Target Orbital Period", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().timeToTransition1; },
-                "tar.o.timeToTransition2", "Time to Transition 2", formatters.Default, APIEntry.UnitType.TIME));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().argumentOfPeriapsis : 0; },
+                "tar.o.argumentOfPeriapsis", "Target Argument of Periapsis", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
-               dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().semiMajorAxis; },
-               "tar.o.sma", "Semimajor Axis", formatters.Default, APIEntry.UnitType.DISTANCE));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().timeToTransition1 : 0; },
+                "tar.o.timeToTransition1", "Target Time to Transition 1", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
-               dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().LAN; },
-               "tar.o.lan", "Longitude of Ascending Node", formatters.Default, APIEntry.UnitType.DEG));
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().timeToTransition1 : 0; },
+                "tar.o.timeToTransition2", "Target Time to Transition 2", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
-               dataSources => { return FlightGlobals.fetch.VesselTarget.GetOrbit().meanAnomalyAtEpoch; },
-               "tar.o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
+               dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().semiMajorAxis : 0; },
+               "tar.o.sma", "Target Semimajor Axis", formatters.Default, APIEntry.UnitType.DISTANCE));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().LAN : 0; },
+               "tar.o.lan", "Target Longitude of Ascending Node", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().meanAnomalyAtEpoch : 0; },
+               "tar.o.maae", "Target Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+               dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().referenceBody.name : ""; },
+               "tar.o.orbitingBody", "Target Orbiting Body", formatters.String, APIEntry.UnitType.STRING));
         }
 
         #endregion
@@ -678,6 +739,92 @@ namespace Telemachus
         #endregion
     }
 
+    public class DockingDataLinkHandler : DataLinkHandler
+    {
+        #region Initialisation
+
+        public DockingDataLinkHandler(FormatterProvider formatters)
+            : base(formatters)
+        {
+            registerAPI(new PlotableAPIEntry(
+                dataSources =>
+                {
+                    return FlightGlobals.fetch.VesselTarget != null ?
+                         Vector3.Angle(FlightGlobals.fetch.VesselTarget.GetTransform().forward.normalized, 
+                       dataSources.vessel.GetTransform().forward) 
+                    : 0; },
+                "dock.ax", "Docking x Angle", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources =>
+                {
+                    return FlightGlobals.fetch.VesselTarget != null ?
+                        
+                       Vector3.Angle(FlightGlobals.fetch.VesselTarget.GetTransform().up.normalized, 
+                       dataSources.vessel.GetTransform().up) 
+                        : 0;
+                },
+                "dock.ay", "Relative Pitch Angle", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+               dataSources =>
+               {
+                   return FlightGlobals.fetch.VesselTarget != null ?
+                      Vector3d.Angle(
+                      Vector3d.Project(FlightGlobals.fetch.VesselTarget.GetTransform().forward, dataSources.vessel.ReferenceTransform.up), 
+                      dataSources.vessel.ReferenceTransform.forward) : 0;
+               },
+               "dock.az", "Docking z Angle", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? (FlightGlobals.fetch.VesselTarget.GetTransform().position - dataSources.vessel.GetTransform().position).x : 0; },
+                "dock.x", "Target x Distance", formatters.Default, APIEntry.UnitType.DISTANCE));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? (FlightGlobals.fetch.VesselTarget.GetTransform().position - dataSources.vessel.GetTransform().position).y : 0; },
+                "dock.y", "Target y Distance", formatters.Default, APIEntry.UnitType.DISTANCE));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? (FlightGlobals.fetch.VesselTarget.GetTransform().position - dataSources.vessel.GetTransform().position).z : 0; },
+                "dock.z", "Target z Distance", formatters.Default, APIEntry.UnitType.DISTANCE));
+        }
+
+        #endregion
+
+        #region Methods
+
+        //-180 to 180 angle
+        /*public static float AngleSigned(Vector3 v1, Vector3 v2, Vector3 up)
+        {
+
+            Vector3 dirToTarget = FlightGlobals.fetch.VesselTarget.GetTransform().position - pm_dock.part.transform.position;
+            
+            double relativeVel = (FlightGlobals.fetch.VesselTarget as ModuleDockingNode).GetObtVelocity() - (pm_dock as ModuleDockingNode).GetObtVelocity();
+
+
+            double dist_x = dirToTarget.magnitude * Math.Sin(AngleAroundNormal(dirToTarget, lazorCam.forward, lazorCam.up) * Mathf.Deg2Rad);
+
+            double ang_x = AngleAroundNormal(-(FlightGlobals.fetch.VesselTarget as ModuleDockingNode).GetFwdVector(), lazorCam.forward, lazorCam.up);
+
+            double dist_y = dirToTarget.magnitude * Math.Sin(AngleAroundNormal(dirToTarget, lazorCam.forward, -lazorCam.right) * Mathf.Deg2Rad);
+
+            double ang_y = AngleAroundNormal(-(FlightGlobals.fetch.VesselTarget as ModuleDockingNode).GetFwdVector(), lazorCam.forward, -lazorCam.right);
+            double ang_z = AngleAroundNormal((FlightGlobals.fetch.VesselTarget as ModuleDockingNode).GetTransform().up, lazorCam.up, -lazorCam.forward);
+
+            if (Vector3.Dot(Vector3.Cross(v1, v2), up) < 0) //greater than 90 i.e v1 left of v2
+                return -Vector3.Angle(v1, v2);
+            return Vector3.Angle(v1, v2);
+        }
+
+        //return signed angle in relation to normal's 2d plane
+        public static float AngleAroundNormal(Vector3 a, Vector3 b, Vector3 up)
+        {
+            return AngleSigned(Vector3.Cross(up, a), Vector3.Cross(up, b), up);
+        }*/
+
+        #endregion
+    }
+
     public class MapViewDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
@@ -690,10 +837,34 @@ namespace Telemachus
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                         (x) => { if (MapView.MapIsEnabled) 
-                        { MapView.ExitMapView(); } else { MapView.EnterMapView(); }; return 0d; }),
+                        { MapView.ExitMapView(); } else { MapView.EnterMapView(); } return 0d; }),
                         UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
                 },
                 "m.toggleMapView", " Toggle Map View", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
+               dataSources =>
+               {
+                   TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                       (x) =>
+                       {
+                            MapView.EnterMapView(); return 0d;
+                       }),
+                       UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
+               },
+               "m.enterMapView", " Enter Map View", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
+              dataSources =>
+              {
+                  TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                      (x) =>
+                      {
+                          MapView.ExitMapView(); return 0d;
+                      }),
+                      UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
+              },
+              "m.exitMapView", " Exit Map View", formatters.Default));
         }
 
         #endregion
@@ -712,6 +883,9 @@ namespace Telemachus
             registerAPI(new APIEntry(
                dataSources => { return dataSources.vessel.orbit.referenceBody.position; },
                "b.position", "Body Position", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+            registerAPI(new APIEntry(
+               dataSources => { return dataSources.vessel.orbit.referenceBody.position; },
+               "b.body.o.", "Body Position", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
@@ -734,7 +908,8 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   return calculatePitch(dataSources.vessel);
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                   return (result.eulerAngles.x > 180) ? (360.0 - result.eulerAngles.x) : -result.eulerAngles.x;
                },
                "n.pitch", "Pitch",formatters.Default, APIEntry.UnitType.DEG));
 
@@ -746,13 +921,37 @@ namespace Telemachus
                        (result.eulerAngles.z - 360.0) : result.eulerAngles.z;
                },
                "n.roll", "Roll", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources =>
+                {
+                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                    return result.eulerAngles.y;
+                },
+                "n.rawheading", "Raw Heading", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+               dataSources =>
+               {
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                   return result.eulerAngles.x ;
+               },
+               "n.rawpitch", "Raw Pitch", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+               dataSources =>
+               {
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                   return result.eulerAngles.z;
+               },
+               "n.rawroll", "Raw Roll", formatters.Default, APIEntry.UnitType.DEG));
         }
 
         #endregion
 
         #region Methods
 
-        //Taken from MechJeb2
+        //Borrowed from MechJeb2
         private Quaternion updateHeadingPitchRollField(Vessel v)
         {
             Vector3d CoM, north, up;
@@ -769,11 +968,13 @@ namespace Telemachus
                 Quaternion.Inverse(v.GetTransform().rotation) * rotationSurface);
         }
 
-        private double calculatePitch(Vessel v)
+        /*private double calculatePitch(Vessel v)
         {
-            return (Vector3d.Angle((v.CoM - v.mainBody.position).normalized,
-                v.transform.up) - 90) * -1;
-        }
+            Vector3d worldUp = (v.CoM - v.mainBody.position).normalized;
+            double angle = Vector3d.Angle(worldUp, v.transform.up);
+
+            return worldUp.x - v.transform.up.x < 0 ? angle : -angle;
+        }*/
 
         #endregion
     }
@@ -849,6 +1050,9 @@ namespace Telemachus
             : base(formatters)
         {
             registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.orbit.GetRelativeVel().magnitude; },
+                "o.relativeVelocity", "Relative Velocity", formatters.Default, APIEntry.UnitType.VELOCITY));
+            registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.PeA; },
                 "o.PeA", "Periapsis", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
@@ -887,8 +1091,6 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources => { return dataSources.vessel.orbit.meanAnomalyAtEpoch; },
                "o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
-
-            
         }
 
         #endregion
