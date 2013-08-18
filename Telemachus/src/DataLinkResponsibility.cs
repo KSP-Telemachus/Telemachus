@@ -17,6 +17,7 @@ namespace Telemachus
         public const char ARGUMENTS_ASSIGN = '=';
         public const char ARGUMENTS_DELIMETER = '&';
         public const char ACCESS_DELIMITER = '.';
+        public const int BITS_PER_BYTE = 8;
 
         #endregion
 
@@ -53,11 +54,11 @@ namespace Telemachus
             {
                 if(request.requestType == Server.GET)
                 {
-                    dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length * 8);
+                    dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length * BITS_PER_BYTE);
                 }
                 else if (request.requestType == Server.POST)
                 {
-                    dataRates.addUpLinkPoint(System.DateTime.Now, request.content.Length * 8);
+                    dataRates.addUpLinkPoint(System.DateTime.Now, request.content.Length * BITS_PER_BYTE);
                 }
 
                 try
@@ -78,7 +79,7 @@ namespace Telemachus
                             argumentsParse(request.path.Remove(0,
                                 request.path.IndexOf(ARGUMENTS_START) + 1),
                                 dataSources)
-                        ))*8);
+                        )) * BITS_PER_BYTE);
                 }
                 else if (request.requestType == Server.POST)
                 {
@@ -87,7 +88,7 @@ namespace Telemachus
                         ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
                             argumentsParse(request.content,
                                 dataSources)
-                        ))*8);
+                        )) * BITS_PER_BYTE);
                 }
                 
                 return true;
