@@ -793,35 +793,6 @@ namespace Telemachus
 
         #region Methods
 
-        //-180 to 180 angle
-        /*public static float AngleSigned(Vector3 v1, Vector3 v2, Vector3 up)
-        {
-
-            Vector3 dirToTarget = FlightGlobals.fetch.VesselTarget.GetTransform().position - pm_dock.part.transform.position;
-            
-            double relativeVel = (FlightGlobals.fetch.VesselTarget as ModuleDockingNode).GetObtVelocity() - (pm_dock as ModuleDockingNode).GetObtVelocity();
-
-
-            double dist_x = dirToTarget.magnitude * Math.Sin(AngleAroundNormal(dirToTarget, lazorCam.forward, lazorCam.up) * Mathf.Deg2Rad);
-
-            double ang_x = AngleAroundNormal(-(FlightGlobals.fetch.VesselTarget as ModuleDockingNode).GetFwdVector(), lazorCam.forward, lazorCam.up);
-
-            double dist_y = dirToTarget.magnitude * Math.Sin(AngleAroundNormal(dirToTarget, lazorCam.forward, -lazorCam.right) * Mathf.Deg2Rad);
-
-            double ang_y = AngleAroundNormal(-(FlightGlobals.fetch.VesselTarget as ModuleDockingNode).GetFwdVector(), lazorCam.forward, -lazorCam.right);
-            double ang_z = AngleAroundNormal((FlightGlobals.fetch.VesselTarget as ModuleDockingNode).GetTransform().up, lazorCam.up, -lazorCam.forward);
-
-            if (Vector3.Dot(Vector3.Cross(v1, v2), up) < 0) //greater than 90 i.e v1 left of v2
-                return -Vector3.Angle(v1, v2);
-            return Vector3.Angle(v1, v2);
-        }
-
-        //return signed angle in relation to normal's 2d plane
-        public static float AngleAroundNormal(Vector3 a, Vector3 b, Vector3 up)
-        {
-            return AngleSigned(Vector3.Cross(up, a), Vector3.Cross(up, b), up);
-        }*/
-
         #endregion
     }
 
@@ -970,7 +941,7 @@ namespace Telemachus
                dataSources =>
                {
                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
-                   return result.eulerAngles.x ;
+                   return result.eulerAngles.x;
                },
                "n.rawpitch", "Raw Pitch", formatters.Default, APIEntry.UnitType.DEG));
 

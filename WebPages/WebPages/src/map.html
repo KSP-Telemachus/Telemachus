@@ -28,7 +28,7 @@
                 rawData = [[0]];
                 var marker = [L.marker([0, 0]), L.marker([0, 0])];
                 marker[0].addTo(map);
-                jKSPWAPI.initPoll("longs=v.long&lat=v.lat&name=v.name&alt=v.altitude&m=v.surfaceVelocity&body=b.name", function (rawData) { }, function (rawData, d) {
+                jKSPWAPI.initPoll("longs=v.long&lat=v.lat&name=v.name&alt=v.altitude&m=v.surfaceVelocity&body=v.body", function (rawData) { }, function (rawData, d) {
 
                     if (previousBody != d.body) {
                         try {
