@@ -541,6 +541,18 @@ namespace Telemachus
             registerAPI(new ActionAPIEntry(
                 buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom10),
                 "f.ag10", "Action Group 10 [optional bool on/off]", formatters.Default));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.RCS]; },
+                "v.rcsValue", "Query RCS value", formatters.String, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.SAS]; },
+                "v.sasValue", "Query SAS value", formatters.String, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.Light]; },
+                "v.lightValue", "Query light value", formatters.String, APIEntry.UnitType.UNITLESS));
         }
 
         private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
