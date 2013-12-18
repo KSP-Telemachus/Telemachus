@@ -47,7 +47,7 @@
                     }
 
                     if (!isNaN(d.lat) && !isNaN(d.longs)) {
-                        marker[0].setLatLng([d.lat % 180, d.longs % 360]);
+                        marker[0].setLatLng([d.lat, (d.longs > 180 ? d.longs - 360.0 : d.longs)]);
                         marker[0].bindPopup(d.name + " </br>Altitude: " + d.alt + "</br>Surface Velocity: " + d.m);
                         marker[0].update();
                     }

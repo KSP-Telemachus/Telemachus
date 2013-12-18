@@ -103,7 +103,9 @@ namespace Telemachus
 
         static protected string buildPath(string fileName)
         {
-            return UnityEngine.Application.dataPath + "/../GameData/Telemachus/Plugins/PluginData/Telemachus/" + fileName;
+            string assemblyPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            const string webFiles = "PluginData/Telemachus/";
+            return assemblyPath.Replace("Telemachus.dll", "") + webFiles + fileName;
         }
 
         static protected string escapeFileName(string fileName)
