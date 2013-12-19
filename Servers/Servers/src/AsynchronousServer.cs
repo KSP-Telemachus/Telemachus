@@ -51,7 +51,6 @@ namespace Servers
 
             public void startListening()
             {
-                IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
                 bool success = false;
                 Socket listener = null;
 
@@ -76,6 +75,7 @@ namespace Servers
                 //Try to bind to all the available adaptors
                 if (!success)
                 {
+                    IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
                     foreach (IPAddress ip in ipHostInfo.AddressList)
                     {
                         if (ip.AddressFamily == AddressFamily.InterNetwork)
