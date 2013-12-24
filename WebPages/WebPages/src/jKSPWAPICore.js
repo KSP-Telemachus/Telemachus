@@ -267,7 +267,6 @@ var jKSPWAPI = {
         jKSPWAPI.call("api=a.apiSubSet[" + API.toString().replace(/\[[^\]]*\]/g, '') + "]", postUpdate);
     },
 
-
     log: function (msg) {
         setTimeout(function () {
             throw new Error("[jKSPWAPI]" + msg);
