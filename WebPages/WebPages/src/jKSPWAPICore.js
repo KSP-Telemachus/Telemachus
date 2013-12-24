@@ -264,7 +264,7 @@ var jKSPWAPI = {
     },
 
     getAPISubset: function (API, postUpdate) {
-        jKSPWAPI.call("api=a.apiSubSet[" + API.toString() + "]", postUpdate);
+        jKSPWAPI.call("api=a.apiSubSet[" + API.toString().replace(/\[[^\]]*\]/g, '') + "]", postUpdate);
     },
 
 
