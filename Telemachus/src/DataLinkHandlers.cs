@@ -905,6 +905,42 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.meanAnomalyAtEpoch; },
                "b.o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
+			registerAPI(new PlotableAPIEntry(
+				dataSources => {
+					CelestialBody body = FlightGlobals.Bodies[int.Parse(dataSources.args[0])];
+
+					// Find a common reference body between vessel and body
+					List<CelestialBody> parentBodies = new List<CelestialBody>();
+					CelestialBody parentBody = dataSources.vessel.mainBody;
+					while(true) {
+						if (parentBody == body) {
+							return double.NaN;
+						}
+						parentBodies.Add(parentBody);
+						if (parentBody == Planetarium.fetch.Sun) {
+							break;
+						} else {
+							parentBody = parentBody.referenceBody;
+						}
+					}
+
+					while (!parentBodies.Contains(body.referenceBody)) {
+						body = body.referenceBody;
+					}
+
+					Orbit orbit = dataSources.vessel.orbit;
+					while (orbit.referenceBody != body.referenceBody) {
+						orbit = orbit.referenceBody.orbit;
+					}
+
+					// Calculate the phase angle
+					double ut = Planetarium.GetUniversalTime();
+					Vector3d vesselPos = orbit.getRelativePositionAtUT(ut);
+					Vector3d bodyPos = body.orbit.getRelativePositionAtUT(ut);
+					double phaseAngle = (Math.Atan2(bodyPos.y, bodyPos.x) - Math.Atan2(vesselPos.y, vesselPos.x)) * 180.0 / Math.PI;
+					return (phaseAngle < 0) ? phaseAngle + 360 : phaseAngle;
+				},
+				"b.o.phaseAngle", "Phase Angle", formatters.Default, APIEntry.UnitType.DEG));
         }
 
         #endregion
@@ -1059,6 +1095,28 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.referenceBody.name; },
                 "v.body", "Body Name", formatters.String, APIEntry.UnitType.STRING));
+			registerAPI(new PlotableAPIEntry(
+				dataSources => {
+					if (dataSources.vessel.mainBody == Planetarium.fetch.Sun) {
+						return double.NaN;
+					} else {
+						double ut = Planetarium.GetUniversalTime();
+						CelestialBody body = dataSources.vessel.mainBody;
+						Vector3d bodyPrograde = body.orbit.getOrbitalVelocityAtUT(ut);
+						Vector3d bodyNormal = body.orbit.GetOrbitNormal();
+						Vector3d vesselPos = dataSources.vessel.orbit.getRelativePositionAtUT(ut);
+						Vector3d vesselPosInPlane = Vector3d.Exclude(bodyNormal, vesselPos); // Project the vessel position into the body's orbital plane
+						double angle = Vector3d.Angle(vesselPosInPlane, bodyPrograde);
+						if (Vector3d.Dot(Vector3d.Cross(vesselPosInPlane, bodyPrograde), bodyNormal) < 0) { // Correct for angles > 180 degrees
+							angle = 360 - angle;
+						}
+						if (dataSources.vessel.orbit.GetOrbitNormal().z < 0) { // Check for retrograde orbit
+							angle = 360 - angle;
+						}
+						return angle;
+					}
+				},
+				"v.angleToPrograde", "Angle to Prograde", formatters.Default, APIEntry.UnitType.DEG));
         }
 
         #endregion
