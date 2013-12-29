@@ -718,6 +718,9 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().meanAnomalyAtEpoch : 0; },
                "tar.o.maae", "Target Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
+			registerAPI(new PlotableAPIEntry(
+				dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * 180.0 / Math.PI : double.NaN; },
+				"tar.o.trueAnomaly", "Target True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().referenceBody.name : ""; },
                "tar.o.orbitingBody", "Target Orbiting Body", formatters.String, APIEntry.UnitType.STRING));
@@ -905,6 +908,9 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.meanAnomalyAtEpoch; },
                "b.o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
+			registerAPI(new PlotableAPIEntry(
+				dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * 180.0 / Math.PI; },
+				"b.o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
 			registerAPI(new PlotableAPIEntry(
 				dataSources => {
 					CelestialBody body = FlightGlobals.Bodies[int.Parse(dataSources.args[0])];
@@ -1171,6 +1177,9 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources => { return dataSources.vessel.orbit.meanAnomalyAtEpoch; },
                "o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
+			registerAPI(new PlotableAPIEntry(
+				dataSources => { return dataSources.vessel.orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * 180.0 / Math.PI; },
+				"o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
         }
 
         #endregion
