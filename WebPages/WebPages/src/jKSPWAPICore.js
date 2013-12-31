@@ -353,7 +353,7 @@ var jKSPWAPI = {
             if (v === undefined) {
                 return 0;
             } else {
-                return v.toFixed(2);
+                return v.toPrecision(6).replace(/((\.\d*?[1-9])|\.)0+($|e)/, '$2$3');
             }
         },
 
