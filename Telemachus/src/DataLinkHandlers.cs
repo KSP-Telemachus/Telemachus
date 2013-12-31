@@ -645,6 +645,9 @@ namespace Telemachus
                         UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
                 },
                 "t.timeWarp", "Time Warp [int rate]", formatters.Default));
+			registerAPI(new PlotableAPIEntry(
+				dataSources => { return Planetarium.GetUniversalTime(); },
+				"t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.TIME));
         }
 
         #endregion
