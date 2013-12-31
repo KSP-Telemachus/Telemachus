@@ -716,7 +716,11 @@ namespace Telemachus
                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().LAN : 0; },
                "tar.o.lan", "Target Longitude of Ascending Node", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
-               dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().meanAnomalyAtEpoch : 0; },
+				dataSources => {
+					if (FlightGlobals.fetch.VesselTarget == null) { return 0; }
+					Orbit orbit = FlightGlobals.fetch.VesselTarget.GetOrbit();
+					return orbit.getObtAtUT(0) / orbit.period * 2.0 * Math.PI;
+				},
                "tar.o.maae", "Target Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
 			registerAPI(new PlotableAPIEntry(
 				dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * 180.0 / Math.PI : double.NaN; },
@@ -1175,7 +1179,10 @@ namespace Telemachus
                dataSources => { return dataSources.vessel.orbit.LAN; },
                "o.lan", "Longitude of Ascending Node", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
-               dataSources => { return dataSources.vessel.orbit.meanAnomalyAtEpoch; },
+				dataSources => {
+					Orbit orbit = dataSources.vessel.orbit;
+					return orbit.getObtAtUT(0) / orbit.period * 2.0 * Math.PI;
+				},
                "o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
 			registerAPI(new PlotableAPIEntry(
 				dataSources => { return dataSources.vessel.orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * 180.0 / Math.PI; },
