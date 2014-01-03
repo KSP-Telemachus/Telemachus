@@ -345,6 +345,24 @@ var jKSPWAPI = {
             return formatted;
         },
 
+        date: function (v) {
+          year = ((v / (365 * 24 * 3600)) | 0) + 1
+          v %= (365 * 24 * 3600)
+          day = ((v / (24 * 3600)) | 0) + 1
+          v %= (24 * 3600)
+          return "Year " + year + ", day " + day + " at " + jKSPWAPI.formatters.hourMinSec(v)
+        },
+
+        hourMinSec: function (v) {
+          hour = (v / 3600) | 0
+          v %= 3600
+          min = (v / 60) | 0
+          if (min < 10) { min = "0" + min }
+          sec = (v % 60).toFixed()
+          if (sec < 10) { sec = "0" + sec }
+          return "" + hour + ":" + min + ":" + sec;
+        },
+
         deg: function (v) {
             return jKSPWAPI.formatters.fix(v) + '\xB0';
         },
@@ -353,13 +371,13 @@ var jKSPWAPI = {
             if (v === undefined) {
                 return 0;
             } else {
-                return v.toFixed(2);
+                return v.toPrecision(6).replace(/((\.\d*?[1-9])|\.)0+($|e)/, '$2$3');
             }
         },
 
         pad: function (v) {
-            return ("\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0" +
-				v).slice(-20)
+            return ("\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0\xA0" +
+				v).slice(-30)
         },
 
         sigFigs: function (n, sig) {
