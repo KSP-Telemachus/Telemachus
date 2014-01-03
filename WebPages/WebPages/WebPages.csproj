@@ -68,7 +68,7 @@
     <Content Include="src\dynamic-pressure.html" />
     <Content Include="src\electricity.html" />
     <Content Include="src\flight-control.html" />
-    <Content Include="src\fuel-oxidiser.html" />
+    <Content Include="src\fuel-oxidizer.html" />
     <Content Include="src\g-force.html" />
     <Content Include="src\gravity.html" />
     <Content Include="src\inclination-aop.html" />
