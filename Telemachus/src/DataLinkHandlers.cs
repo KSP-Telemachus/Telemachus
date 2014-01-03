@@ -647,7 +647,7 @@ namespace Telemachus
                 "t.timeWarp", "Time Warp [int rate]", formatters.Default));
 			registerAPI(new PlotableAPIEntry(
 				dataSources => { return Planetarium.GetUniversalTime(); },
-				"t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.TIME));
+				"t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.DATE));
         }
 
         #endregion
@@ -722,11 +722,14 @@ namespace Telemachus
 				dataSources => {
 					if (FlightGlobals.fetch.VesselTarget == null) { return 0; }
 					Orbit orbit = FlightGlobals.fetch.VesselTarget.GetOrbit();
-					return orbit.getObtAtUT(0) / orbit.period * 2.0 * Math.PI;
+					return orbit.getObtAtUT(0) / orbit.period * (2.0 * Math.PI);
 				},
                "tar.o.maae", "Target Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
 			registerAPI(new PlotableAPIEntry(
-				dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * 180.0 / Math.PI : double.NaN; },
+				dataSources => { return FlightGlobals.fetch.VesselTarget != null ? Planetarium.GetUniversalTime() - FlightGlobals.fetch.VesselTarget.GetOrbit().ObT : 0; },
+				"tar.o.timeOfPeriapsisPassage", "Target Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
+			registerAPI(new PlotableAPIEntry(
+				dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI) : double.NaN; },
 				"tar.o.trueAnomaly", "Target True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().referenceBody.name : ""; },
@@ -916,7 +919,10 @@ namespace Telemachus
                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.meanAnomalyAtEpoch; },
                "b.o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
 			registerAPI(new PlotableAPIEntry(
-				dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * 180.0 / Math.PI; },
+				dataSources => { return Planetarium.GetUniversalTime() - FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.ObT; },
+				"b.o.timeOfPeriapsisPassage", "Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
+			registerAPI(new PlotableAPIEntry(
+				dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI); },
 				"b.o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
 			registerAPI(new PlotableAPIEntry(
 				dataSources => {
@@ -950,7 +956,7 @@ namespace Telemachus
 					double ut = Planetarium.GetUniversalTime();
 					Vector3d vesselPos = orbit.getRelativePositionAtUT(ut);
 					Vector3d bodyPos = body.orbit.getRelativePositionAtUT(ut);
-					double phaseAngle = (Math.Atan2(bodyPos.y, bodyPos.x) - Math.Atan2(vesselPos.y, vesselPos.x)) * 180.0 / Math.PI;
+					double phaseAngle = (Math.Atan2(bodyPos.y, bodyPos.x) - Math.Atan2(vesselPos.y, vesselPos.x)) * (180.0 / Math.PI);
 					return (phaseAngle < 0) ? phaseAngle + 360 : phaseAngle;
 				},
 				"b.o.phaseAngle", "Phase Angle", formatters.Default, APIEntry.UnitType.DEG));
@@ -1184,11 +1190,14 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
 				dataSources => {
 					Orbit orbit = dataSources.vessel.orbit;
-					return orbit.getObtAtUT(0) / orbit.period * 2.0 * Math.PI;
+					return orbit.getObtAtUT(0) / orbit.period * (2.0 * Math.PI);
 				},
                "o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
 			registerAPI(new PlotableAPIEntry(
-				dataSources => { return dataSources.vessel.orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * 180.0 / Math.PI; },
+				dataSources => { return Planetarium.GetUniversalTime() - dataSources.vessel.orbit.ObT; },
+				"o.timeOfPeriapsisPassage", "Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
+			registerAPI(new PlotableAPIEntry(
+				dataSources => { return dataSources.vessel.orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI); },
 				"o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
         }
 
@@ -1700,7 +1709,7 @@ namespace Telemachus
     {
         #region Enumeration
 
-        public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME, STRING, TEMP, PRES, GRAV, ACC, DENSITY, DYNAMICPRESSURE, G};
+		public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME, STRING, TEMP, PRES, GRAV, ACC, DENSITY, DYNAMICPRESSURE, G, DATE };
 
         #endregion
 
