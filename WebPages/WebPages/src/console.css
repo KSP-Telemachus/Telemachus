@@ -1,0 +1,227 @@
+body {
+  background: rgb(240, 240, 240);
+  font-family: Helvetica, Arial, sans-serif;
+  margin: 10px 20px;
+  width: auto;
+  height: auto;
+}
+
+body > header {
+  position: relative;
+  text-align: center;
+  margin: 1.33em 0;
+}
+
+body > footer {
+  clear: both;
+  margin: 20px 0;
+  text-align: center;
+}
+
+body > footer button {
+  font-size: 1em;
+}
+
+h1 {
+  display: inline;
+}
+
+body > header nav {
+  display: inline;
+}
+
+body > header nav > a {
+  font-size: 2em;
+}
+
+.dropdown a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.dropdown > a:hover {
+  color: rgb(0, 128, 192);
+}
+
+.dropdown > ul {
+  display: none;
+  position: absolute;
+  background-color: white;
+  border: thin solid rgb(192, 192, 192);
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  min-width: 150px;
+  border-radius: 5px;
+  box-shadow: 0px 1px 3px 0.5px rgba(0, 0, 0, 0.25);
+  z-index: 2001;
+}
+
+.dropdown li:hover {
+  background-color: rgb(0,128,192);
+  color: white;
+}
+
+.dropdown li a {
+  display: block;
+  padding: 0.5ex 1em;
+}
+
+#met {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 10px;
+  background-color: black;
+  border-radius: 4px;
+  border: thin solid white;
+  color: rgb(192,128,0);
+  font-family: "Lucida Console", Monaco, monospace;
+}
+
+#ut {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 0;
+  padding: 10px;
+  background-color: black;
+  border-radius: 4px;
+  border: thin solid white;
+  color: rgb(192,128,0);
+  font-family: "Lucida Console", Monaco, monospace;
+}
+
+#telemetry {
+  position: relative;
+  float: right;
+  width: 25%;
+  height: 100%;
+  background-color: white;
+  border-radius: 5px;
+  box-sizing: border-box;
+  padding: 10px;
+  box-shadow: 0px 1px 3px 1px rgba(0,0,0,0.5) inset;	
+}
+
+#telemetry h2 {
+  text-align: center;
+  margin-top: 0;
+}
+
+#telemetry dl {
+  overflow: auto;
+}
+
+#telemetry dt {
+  font-weight: bold;
+  margin: 0 0 0.5ex 0;
+  padding-top: 1ex;
+  border-top: thin solid rgb(192,192,192);
+  position: relative;
+}
+
+#telemetry dt a {
+  position: absolute;
+  right: 0;
+  top: 0.5ex;
+  color: black;
+  text-decoration: none;
+}
+
+#telemetry dt a:hover {
+  color: #c00000;
+}
+
+#telemetry dt a:after {
+  content: '\00d7';
+}
+
+#telemetry dd {
+  color: rgb(0, 128, 0);
+  margin-left: 0;
+  margin: 0.5ex 0 0 0;
+  padding-bottom: 1ex;
+  font-family: "Lucida Console", Monaco, monospace;
+}
+
+#telemetry dd:last-child {
+  border-bottom: thin solid rgb(192,192,192);
+}
+
+#telemetry form {
+  position: absolute;
+  bottom: 0;
+}
+
+#apiCategory {
+  width: 100%;
+}
+
+#charts {
+  width: 75%;
+}
+
+.chart {
+  box-sizing: border-box;
+  padding-right: 30px;
+  position: relative;
+}
+
+.chart header {
+  margin: 0 0 0.5ex 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.chart header h2 {
+  display: inline;
+}
+
+.chart header nav {
+  display: inline;
+}
+
+.chart header nav > a {
+  font-size: 1.5em;
+}
+
+.chart.large {
+  height: 65%;
+  padding-bottom: 30px;
+}
+
+.chart.small {
+  float: left;
+  height: 35%;
+  width: 50%;
+}
+
+.chart .display {
+  box-sizing: border-box;
+  width: 100%;
+  background-color: black;
+  border-radius: 10px;
+  border: 10px solid rgb(192,192,192);
+}
+
+.chart .display > * {
+  width: 100%;
+  height: 100%;
+}
+
+.chart .alert {
+  position: relative;
+  margin: 0 20px;
+  text-align: center;
+  color: rgb(192,0,0);
+  font-family: "Lucida Console", Monaco, monospace;
+  z-index: 2000;
+  text-shadow: 0 0 2px black;
+  -webkit-user-select: none; /* Chrome/Safari */        
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+ */
+  user-select: none;
+}

@@ -1,0 +1,110 @@
+<html>
+<head>
+  <title>Telemachus Console</title>
+  <link rel="stylesheet" type="text/css" href="leafletksp.css">
+  <link rel="stylesheet" href="console.css" media="screen">
+  <script src="jquery-1.9.1.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="leafletksp.js"></script>
+  <script src="console.js" type="text/javascript"></script>
+</head>
+<body>
+  <header>
+    <h1></h1>
+    <nav class="dropdown">
+      <a href="#" title="Change console" role="presentation">&#9776;</a>
+      <ul>
+      </ul>
+    </nav>
+    <p id="met">T+00:00:00 MET</p>
+    <p id="ut">Year 1, Day 1, 00:00:00 UT</p>
+  </header>
+  <div id="container">
+    <article id="telemetry">
+      <header>
+        <h2>Telemetry</h2>
+      </header>
+      <dl>
+      </dl>
+      <form>
+        <div>
+          <select id="apiCategory">
+            <option value="^v\.">Vessel</option>
+            <option value="^o\.">Orbit</option>
+            <option value="^n\.">Nav Ball</option>
+            <option value="^s\.">Sensors</option>
+            <option value="^tar\.">Target</option>
+            <option value="^dock\.">Docking</option>
+            <option value="^r\.">Resources</option>
+            <optgroup label="Celestial Bodies">
+              <option value="^b\..*\[0\]">Kerbol</option>
+              <option value="^b\..*\[1\]">Kerbin</option>
+              <option value="^b\..*\[2\]">Mun</option>
+              <option value="^b\..*\[3\]">Minmus</option>
+              <option value="^b\..*\[4\]">Moho</option>
+              <option value="^b\..*\[5\]">Eve</option>
+              <option value="^b\..*\[6\]">Duna</option>
+              <option value="^b\..*\[7\]">Ike</option>
+              <option value="^b\..*\[8\]">Jool</option>
+              <option value="^b\..*\[9\]">Laythe</option>
+              <option value="^b\..*\[10\]">Vall</option>
+              <option value="^b\..*\[11\]">Bop</option>
+              <option value="^b\..*\[12\]">Tylo</option>
+              <option value="^b\..*\[13\]">Gilly</option>
+              <option value="^b\..*\[14\]">Pol</option>
+              <option value="^b\..*\[15\]">Dres</option>
+              <option value="^b\..*\[16\]">Eeloo</option>
+            </optgroup>
+            <option value="^(?!([vbnos]|dock|tar)\.)">Other</option>
+          </select>
+          <select id="apiSelect">
+          </select>
+          <input type="submit" value="Add">
+        </div>
+      </form>
+    </article>
+    <div id="charts">
+      <article class="large chart">
+        <header>
+          <h2></h2>
+          <nav class="dropdown">
+            <a href="#" title="Change display" role="presentation">&#9776;</a>
+            <ul>
+            </ul>
+          </nav>
+        </header>
+        <div class="display"></div>
+        <p class="alert"></p>
+      </article>
+      <article class="small chart">
+        <header>
+          <h2></h2>
+          <nav class="dropdown">
+            <a href="#" title="Change display" role="presentation">&#9776;</a>
+            <ul>
+            </ul>
+          </nav>
+        </header>
+        <div class="display"></div>
+        <p class="alert"></p>
+      </article>
+      <article class="small chart">
+        <header>
+          <h2></h2>
+          <nav class="dropdown">
+            <a href="#" title="Change display" role="presentation">&#9776;</a>
+            <ul>
+            </ul>
+          </nav>
+        </header>
+        <div class="display"></div>
+        <p class="alert"></p>
+      </article>
+    </div>
+  </div>
+  <footer>
+    <button id="saveLayout">Save layout</button>
+    <button id="deleteLayout">Delete layout</button>
+    <!-- <button id="newChart" disabled>New chart</button> -->
+  </footer>
+</body>
+</html>
