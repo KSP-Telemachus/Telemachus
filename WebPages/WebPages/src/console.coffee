@@ -63,6 +63,20 @@ standardCharts =
     series: ["v.long", "v.lat", "v.name", "v.body"]
     type: "map"
 
+testCharts =
+  "Sine and Cosine":
+    series: ["test.sin", "test.cos"]
+    yaxis: { label: "Angle", unit: "\u00B0", min: null, max: null}
+  "Quadratic":
+    series: ["test.square"]
+    yaxis: { label: "Altitude", unit: "m", min: 0, max: null}
+  "Random":
+    series: ["test.rand"]
+    yaxis: { label: "Velocity", unit: "m/s", min: 0, max: null}
+  "Square Root":
+    series: ["test.sqrt"]
+    yaxis: { label: "Velocity", unit: "m/s", min: 0, max: null}
+
 customCharts = {}
 
 charts = {}
@@ -90,17 +104,21 @@ standardLayouts =
     charts: ["Target Distance", "Relative Velocity"],
     telemetry: ["tar.name", "tar.o.sma", "tar.o.eccentricity", "tar.o.inclination", "tar.o.lan", "tar.o.argumentOfPeriapsis", "tar.o.timeOfPeriapsisPassage", "tar.o.trueAnomaly", "tar.distance", "tar.o.relativeVelocity"]
 
+testLayouts =
+  "Test":
+    charts: ["Sine and Cosine", "Quadratic", "Random"]
+    telemetry: ['test.rand', 'test.sin', 'test.cos', 'test.square', 'test.exp', 'test.sqrt', 'test.log']
+
 customLayouts = {}
 
 layouts = {}
 
 defaultLayout = "Flight Dynamics"
 
-celestialBodies = [ "Kerbol", "Kerbin", "Mun", "Minmus", "Moho", "Eve", "Duna", "Ike", "Jool", "Laythe", "Vall", "Bop", "Tylo", "Gilly", "Pol", "Dres", "Eeloo" ]
-
-resources = ["ElectricCharge", "LiquidFuel", "Oxidizer", "MonoPropellant"]
-
 Telemachus =
+  CELESTIAL_BODIES: [ "Kerbol", "Kerbin", "Mun", "Minmus", "Moho", "Eve", "Duna", "Ike", "Jool", "Laythe", "Vall", "Bop", "Tylo", "Gilly", "Pol", "Dres", "Eeloo" ]
+  RESOURCES: ["ElectricCharge", "SolidFuel", "LiquidFuel", "Oxidizer", "MonoPropellant", "IntakeAir", "XenonGas"]
+  
   api: {}
   telemetry: { "p.paused": 0, "v.missionTime": 0, "t.universalTime": 0 }
   lastUpdate: null
@@ -112,7 +130,9 @@ Telemachus =
   format: (value, api) ->
     if !value? then "No Data"
     else if $.isArray(value) then @format(value[1][0], api)
-    else @formatters[@api[api].units.toLowerCase()](value)
+    else
+      units = @api[api].units.toLowerCase()
+      if units of @formatters then @formatters[units](value) else value.toString()
 
   subscribe: ($collection, apis...) ->
     @$telemetrySubscribers = @$telemetrySubscribers.add($collection)
@@ -138,28 +158,45 @@ Telemachus =
   unsubscribeAlerts: ($collection) ->
     @$alertSubscribers = @$alertSubscribers.not($collection)
   
-  loadAPI: ->
-    $.get("datalink", { api: "a.api" }, "json").then (data, textStatus, jqXHR) =>
-      for api in JSON.parse(data).api
-        if api.apistring.match(/^b\./)
-          @api[api.apistring + "[#{i}]"] = api for i in [0...celestialBodies.length]
-        else if api.apistring.match(/^r\./)
-          if api.apistring != "r.resourceCurrent"
-            for r in resources
-              resourceApi = $.extend({}, api)
-              resourceApi.name = r.replace(/([a-z])([A-Z])/g, "$1 $2")
-              resourceApi.name += " Max" if api.apistring.match(/Max$/) 
-              @api[api.apistring + "[#{r}]"] = resourceApi
-        else if api.plotable and api.apistring != "s.sensor"
-          @api[api.apistring] = api
-    
-      @downlink()
-      @api
-    , =>
-      @$alertSubscribers.trigger("telemetryAlert", ["No Signal Found"])
-      timeout = $.Deferred()
-      setTimeout((-> timeout.resolve()), 5000)
-      timeout.then(=> @loadAPI())
+  loadAPI: (testMode) ->
+    if testMode
+      @api =
+        "p.paused": { apistring: 'p.paused', name: "Paused", units: 'UNITLESS'}
+        "v.missionTime": { apistring: 'v.missionTime', name: "Mission Time", units: 'TIME'}
+        "t.universalTime": { apistring: 't.universalTime', name: "Universal Time", units: 'DATE'}
+        "test.rand": { apistring: 'test.rand', name: "Random", units: 'UNITLESS'}
+        "test.sin": { apistring: 'test.sin', name: "Sine", units: 'UNITLESS'}
+        "test.cos": { apistring: 'test.cos', name: "Cosine", units: 'UNITLESS'}
+        "test.square": { apistring: 'test.square', name: "Quadratic", units: 'UNITLESS'}
+        "test.exp": { apistring: 'test.exp', name: "Exponential", units: 'UNITLESS'}
+        "test.sqrt": { apistring: 'test.sqrt', name: "Square Root", units: 'UNITLESS'}
+        "test.log": { apistring: 'test.log', name: "Logarithmic", units: 'UNITLESS'}
+      
+      @testStart = Date.now()
+      @testDownlink()
+      $.Deferred().resolve(@api).promise()
+    else
+      $.get("datalink", { api: "a.api" }, "json").then (data, textStatus, jqXHR) =>
+        for api in JSON.parse(data).api
+          if api.apistring.match(/^b\./)
+            @api[api.apistring + "[#{i}]"] = api for i in [0...@CELESTIAL_BODIES.length]
+          else if api.apistring.match(/^r\./)
+            if api.apistring != "r.resourceCurrent"
+              for r in @RESOURCES
+                resourceApi = $.extend({}, api)
+                resourceApi.name = r.replace(/([a-z])([A-Z])/g, "$1 $2")
+                resourceApi.name += " Max" if api.apistring.match(/Max$/) 
+                @api[api.apistring + "[#{r}]"] = resourceApi
+          else if api.plotable and api.apistring != "s.sensor"
+            @api[api.apistring] = api
+        
+        @downlink()
+        @api
+      , =>
+        @$alertSubscribers.trigger("telemetryAlert", ["No Signal Found"])
+        timeout = $.Deferred()
+        setTimeout((-> timeout.resolve()), 5000)
+        timeout.then(=> @loadAPI())
   
   downlink: ->
     query = {}
@@ -199,6 +236,38 @@ Telemachus =
       @$alertSubscribers.trigger("telemetryAlert", ["No Signal Found"])
       setTimeout((=> @downlink()), 5000)
   
+  testDownlink: ->
+    rand = Math.random() * 1000
+    paused = if rand >= 10 then 0 else Math.floor(rand / 2)
+    
+    switch paused
+      when 4 then @$alertSubscribers.trigger("telemetryAlert", ["Signal Lost"])
+      when 3 then @$alertSubscribers.trigger("telemetryAlert", ["Signal Terminated"])
+      when 2 then @$alertSubscribers.trigger("telemetryAlert", ["Signal Power Loss"])
+      when 1 then @$alertSubscribers.trigger("telemetryAlert", ["Game Paused"])
+      when 0 then @$alertSubscribers.trigger("telemetryAlert", [null])
+    
+    if paused != 1
+      @lastUpdate = Date.now()
+      t = (@lastUpdate - @testStart) / 1000
+      lastRand = @telemetry["test.rand"] ? rand
+      @telemetry = { "p.paused": paused, "v.missionTime": t, "t.universalTime": @lastUpdate / 1000}
+      x = t / 120
+      for api of @apiSubscriptionCounts
+        unless api of @telemetry
+          @telemetry[api] = if paused != 0 then null else
+            switch api
+              when 'test.rand' then lastRand + (rand - 500) / 10
+              when 'test.sin' then 1000 * Math.sin(x * 2 * Math.PI)
+              when 'test.cos' then 1000 * Math.cos(x * 2 * Math.PI)
+              when 'test.square' then x * x
+              when 'test.exp' then Math.exp(x)
+              when 'test.sqrt' then Math.sqrt(x)
+              when 'test.log' then Math.log(x)
+      @$telemetrySubscribers.trigger("telemetry", [@telemetry])
+      
+    setTimeout((=> @testDownlink()), if paused == 0 then 500 else 5000)
+    
   formatters:
     unitless: (v) -> if typeof v == "number" then v.toPrecision(6) else v
     velocity: (v) -> siUnit(v, "m/s") 
@@ -218,13 +287,19 @@ $(document).ready ->
   #  Custom layout import/export
   
   if window.localStorage?
-    customCharts = JSON.parse(window.localStorage.getItem("customCharts")) ? {}
+    customCharts = JSON.parse(window.localStorage.getItem("telemachus.console.charts")) ? {}
     $.extend(charts, standardCharts, customCharts)
-    customLayouts = JSON.parse(window.localStorage.getItem("customLayouts")) ? {}
+    customLayouts = JSON.parse(window.localStorage.getItem("telemachus.console.layouts")) ? {}
     $.extend(layouts, standardLayouts, customLayouts)
     savedDefault = window.localStorage.getItem("defaultLayout")
     defaultLayout = savedDefault if savedDefault? and savedDefault of layouts
     
+  testMode = (window.location.protocol == "file:" or window.location.hash == "#test")
+  if testMode
+    $.extend(layouts, testLayouts)
+    $.extend(charts, testCharts)
+    defaultLayout = "Test"
+  
   # Populate layout and chart menus
   $layoutMenu = $("body > header nav ul")
   populateLayoutMenu = ->
@@ -283,7 +358,7 @@ $(document).ready ->
       layouts[name] = customLayouts[name] =
         charts: ($(elem).text().trim() for elem in $(".chart h2"))
         telemetry: ($(elem).data("api") for elem in $("#telemetry dt"))
-      window.localStorage.setItem("customLayouts", JSON.stringify(customLayouts))
+      window.localStorage.setItem("telemachus.console.layouts", JSON.stringify(customLayouts))
       populateLayoutMenu()
       $("h1").text(name)
       $("#deleteLayout").prop("disabled", false)
@@ -294,7 +369,7 @@ $(document).ready ->
         layoutName = $("h1").text().trim()
         return unless layoutName of customLayouts
         delete customLayouts[layoutName]
-        window.localStorage.setItem("customLayouts", JSON.stringify(customLayouts))
+        window.localStorage.setItem("telemachus.console.layouts", JSON.stringify(customLayouts))
         console.log("hello")
         
         if layoutName of standardLayouts
@@ -311,7 +386,7 @@ $(document).ready ->
   
   Telemachus.subscribeAlerts($(".alert"))
   
-  Telemachus.loadAPI().done ->
+  Telemachus.loadAPI(testMode).done ->
     $("#apiCategory").change()
     reloadLayout()
   
