@@ -311,9 +311,9 @@ class Chart
     windowStart = 0
     windowEnd = @data.length - 1
     for e, i in @data
-      windowStart = i if e < @xaxis.min
-      windowEnd = i if e <= @xaxis.max
-    @data = @data.slice(windowStart, windowEnd - windowStart + 1)
+      windowStart = i if e[0] < @xaxis.min
+      windowEnd = i if e[0] <= @xaxis.max
+    @data = @data.slice(windowStart, windowEnd + 1)
   
   draw: ->
     width = @$canvas.width()
@@ -849,7 +849,8 @@ missionTimeString = (t) ->
   result + hourMinSec(t) + " MET"
 
 durationString = (t) ->
-  result = ""
+  result = if t < 0 then "-" else ""
+  t = Math.abs(t)
   if t >= 365 * 24 * 3600
     result += (t / (365 * 24 * 3600) | 0) + " years "
     t %= 365 * 24 * 3600

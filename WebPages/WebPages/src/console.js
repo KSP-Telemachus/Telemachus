@@ -674,14 +674,14 @@
       _ref = this.data;
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         e = _ref[i];
-        if (e < this.xaxis.min) {
+        if (e[0] < this.xaxis.min) {
           windowStart = i;
         }
-        if (e <= this.xaxis.max) {
+        if (e[0] <= this.xaxis.max) {
           windowEnd = i;
         }
       }
-      return this.data = this.data.slice(windowStart, windowEnd - windowStart + 1);
+      return this.data = this.data.slice(windowStart, windowEnd + 1);
     };
 
     Chart.prototype.draw = function() {
@@ -1445,7 +1445,8 @@
 
   durationString = function(t) {
     var result;
-    result = "";
+    result = t < 0 ? "-" : "";
+    t = Math.abs(t);
     if (t >= 365 * 24 * 3600) {
       result += (t / (365 * 24 * 3600) | 0) + " years ";
       t %= 365 * 24 * 3600;
