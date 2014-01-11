@@ -1,18 +1,19 @@
 ﻿using System;
-using MinimalHTTPServer;
+using Servers.MinimalHTTPServer;
 using System.Collections.Generic;
+using Servers.AsynchronousServer;
 
 namespace ServersTest
 {
-    class TelemachusResponsibility : IHTTPRequestResponsibility
+    class RunningResponsibility : IHTTPRequestResponsibility
     {
-        public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
+        public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
-            if (request.path.StartsWith("/telemachus"))
+            if (request.path.StartsWith("/server"))
             {
                 try
                 {
-                    cc.Send(new OKPage(System.IO.File.ReadAllText(request.path.TrimStart(new char[]{'/'}))).ToString());
+                    cc.Send(new OKResponsePage("Server Running.").ToString());
                 }
                 catch
                 {
@@ -24,43 +25,9 @@ namespace ServersTest
         }
     }
 
-    class DataLinkResponsibility : IHTTPRequestResponsibility
-    {
-        DataLinks dataLinks = null;
-        Dictionary<string, string> dictionary =
-        new Dictionary<string, string>();
-
-        public DataLinkResponsibility(DataLinks dataLinks)
-        {
-            this.dataLinks = dataLinks;
-        }
-        
-        public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
-        {
-            if (request.path.StartsWith("/telemachus/datalink"))
-            {
-                String args = request.path.Remove(0, request.path.IndexOf('?') + 1);
-                String[] argsSplit = args.Split('&');
-
-                foreach (String arg in argsSplit)
-                {
-
-                }
-            }
-
-            return false;
-        }
-    }
-
-    public class DataLinks
-    {
-        public TestProgram tp = new TestProgram();
-        public TestProgram tp2 = new TestProgram();
-    }
-
     class ElseResponsibility : IHTTPRequestResponsibility
     {
-        public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
+        public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
             cc.Send(new IOLessDataLinkNotFound().ToString());
             return true;

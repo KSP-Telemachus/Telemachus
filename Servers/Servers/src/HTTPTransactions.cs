@@ -151,7 +151,7 @@ namespace Servers
                     r.content = tr(filename);
                 };
 
-            static ContentReader Base64ImageContentReader =
+            static ContentReader Base64ContentReader =
                 (ByteReader br, TextReader tr, string filename, ref Dictionary<string, string> attr, HTTPResponse r) =>
                 {
                     r.byteContent = br(filename);
@@ -166,11 +166,26 @@ namespace Servers
                     "text/html", TextContentReader);
                 contentTypes[".css"] = new KeyValuePair<string, ContentReader>(
                     "text/css", TextContentReader);
-                contentTypes[".jpg"] = new KeyValuePair<string, ContentReader>("image/jpeg", Base64ImageContentReader);
-                contentTypes[".jpeg"] = new KeyValuePair<string, ContentReader>("image/jpeg", Base64ImageContentReader);
-                contentTypes[".png"] = new KeyValuePair<string, ContentReader>("image/png", Base64ImageContentReader);
                 contentTypes[".js"] = new KeyValuePair<string, ContentReader>(
                     "application/x-javascript", TextContentReader);
+                contentTypes[".jpg"] = new KeyValuePair<string, ContentReader>(
+                    "image/jpeg", Base64ContentReader);
+                contentTypes[".jpeg"] = new KeyValuePair<string, ContentReader>(
+                    "image/jpeg", Base64ContentReader);
+                contentTypes[".png"] = new KeyValuePair<string, ContentReader>(
+                    "image/png", Base64ContentReader);
+                contentTypes[".gif"] = new KeyValuePair<string, ContentReader>(
+                    "image/gif", Base64ContentReader);
+                contentTypes[".svg"] = new KeyValuePair<string, ContentReader>(
+                    "image/svg+xml", Base64ContentReader);
+                contentTypes[".eot"] = new KeyValuePair<string, ContentReader>(
+                    "application/vnd.ms-fontobject", Base64ContentReader);
+                contentTypes[".ttf"] = new KeyValuePair<string, ContentReader>(
+                    "application/font-sfnt", Base64ContentReader);
+                contentTypes[".woff"] = new KeyValuePair<string, ContentReader>(
+                    "application/font-woff", Base64ContentReader);
+                contentTypes[".otf"] = new KeyValuePair<string, ContentReader>(
+                    "application/font-sfnt", Base64ContentReader);
             }
 
             public HTTPResponse(ByteReader br, TextReader tr, String fileName) : this()

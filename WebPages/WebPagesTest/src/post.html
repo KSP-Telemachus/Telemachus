@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Telemachus - Post Test</title>
+    <script type="text/javascript" src="../jquery-1.9.1.min.js"></script>
+    <script type="text/javascript">
+        function onLoad() {
+            $.ajax({
+                type: 'POST',
+                url: '../datalink',
+                data: {
+                    altitude: "v.altitude", terrain_height: "v.terrainHeight"
+                },
+                success: function (data) {
+                    document.writeln("Data: " + data);
+                },
+                error: function (xhr, textStatus, error) {
+                    document.writeln(xhr.statusText);
+                    document.writeln(textStatus);
+                    document.writeln(error);
+                }
+            });
+        }
+    </script>
+</head>
+<body onload="onLoad()">
+</body>
+</html>

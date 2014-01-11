@@ -196,7 +196,6 @@ namespace Servers
 
             private Server server = null;
             private Server.ServerShutdown shutdownCallback = null;
-            private bool done = false;
 
             public ClientConnection(Socket socket, Server server)
             {
@@ -301,26 +300,12 @@ namespace Servers
                         OnConnectionNotify(this, e.ToString());
                     }
                 }
-                finally
-                {
-                    tryShutdown();
-                }
             }
 
             private void tryShutdown()
             {
-                lock (this)
-                {
-                    if (!done)
-                    {
-                        done = true;
-                    }
-                    else
-                    {
-                        socket.Shutdown(SocketShutdown.Both);
-                        socket.BeginDisconnect(false, new AsyncCallback(DisconnectCallback), this);
-                    }
-                }
+                socket.Shutdown(SocketShutdown.Both);
+                socket.BeginDisconnect(false, new AsyncCallback(DisconnectCallback), this);
             }
 
             private void DisconnectCallback(IAsyncResult ar)

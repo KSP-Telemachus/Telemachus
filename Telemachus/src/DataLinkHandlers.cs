@@ -1330,6 +1330,12 @@ namespace Telemachus
 
         #endregion
 
+        #region Lock
+
+        readonly private System.Object cacheLock = new System.Object();
+
+        #endregion
+
         #region Cache
 
         protected void setDirty(bool value)
@@ -1352,7 +1358,7 @@ namespace Telemachus
             string ID = dataSources.args[0];
             List<T> avail = null, ret = null;
 
-            lock (this)
+            lock (cacheLock)
             {
                 accesses++;
 
