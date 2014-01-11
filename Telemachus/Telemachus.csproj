@@ -83,14 +83,13 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)Servers.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
+    <PostBuildEvent>del /F /Q "$(ProjectDir)..\publish\GameData"
+del  /F /Q "C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData\Telemachus"
+xcopy "$(TargetDir)Servers.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
 xcopy "$(TargetDir)Telemachus.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
 xcopy "$(ProjectDir)..\Parts\*" "$(ProjectDir)..\publish\GameData\Telemachus\Parts\"  /e /y /i /r
 xcopy "$(ProjectDir)..\WebPages\WebPages\src\*" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\PluginData\Telemachus\" /e /y /i /r
-
 xcopy "$(ProjectDir)..\licences\*" "$(ProjectDir)..\publish\GameData\Telemachus\" /e /y /i /r
-
-
 xcopy "$(ProjectDir)..\publish\GameData\*"  "C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData\" /e /y /i /r</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
