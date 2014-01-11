@@ -2,15 +2,27 @@
 <html>
 <head>
     <title>Telemachus - Post Test</title>
-    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="../jquery-1.9.1.min.js"></script>
     <script type="text/javascript">
         function onLoad() {
-            $.post("datalink", {a: "v.altitude", b:"v.terrainHeight"},function (data, status) {
-                document.writeln("Data: " + data + "\nStatus: " + status);
+            $.ajax({
+                type: 'POST',
+                url: 'status.ajax.php',
+                data: {
+                    a: "v.altitude", b: "v.terrainHeight"
+                },
+                success: function (data) {
+                    document.writeln("Data: " + data);
+                },
+                error: function (xhr, textStatus, error) {
+                    document.writeln(xhr.statusText);
+                    document.writeln(textStatus);
+                    document.writeln(error);
+                }
             });
         }
     </script>
 </head>
-<body>
+<body onload="onLoad()">
 </body>
 </html>

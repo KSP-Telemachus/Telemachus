@@ -57,13 +57,25 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="src\BebasNeue-webfont.svg" />
+    <Content Include="src\web-fonts.css" />
+    <Content Include="src\web-fonts.html" />
+    <Content Include="src\images.html" />
     <Content Include="src\post.html" />
+    <Content Include="src\test.gif" />
+    <Content Include="src\test.jpg" />
+    <Content Include="src\test.png" />
+    <Content Include="src\test.svg" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="src\BebasNeue-webfont.eot" />
+    <Content Include="src\BebasNeue-webfont.ttf" />
+    <Content Include="src\BebasNeue-webfont.woff" />
+    <Content Include="src\BebasNeue-webfont.otf" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

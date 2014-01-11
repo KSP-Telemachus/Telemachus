@@ -1,0 +1,11 @@
+﻿@font-face{ 
+	font-family: 'MyWebFont';
+	src: url('BebasNeue-webfont.eot');
+	src: url('BebasNeue-webfont.eot?#iefix') format('embedded-opentype'),
+	     url('BebasNeue-webfont.woff') format('woff'),
+	     url('BebasNeue-webfont.ttf') format('truetype'),
+	     url('BebasNeue-webfont.svg#bebas_neueregular') format('svg'),
+        url('BebasNeue-webfont.otf') format('opentype');
+}
+
+p { font-family: 'MyWebFont', Arial, sans-serif; }
