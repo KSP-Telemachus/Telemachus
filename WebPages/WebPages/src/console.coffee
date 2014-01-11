@@ -63,6 +63,20 @@ standardCharts =
     series: ["v.long", "v.lat", "v.name", "v.body"]
     type: "map"
 
+testCharts =
+  "Sine and Cosine":
+    series: ["test.sin", "test.cos"]
+    yaxis: { label: "Angle", unit: "\u00B0", min: null, max: null}
+  "Quadratic":
+    series: ["test.square"]
+    yaxis: { label: "Altitude", unit: "m", min: 0, max: null}
+  "Random":
+    series: ["test.rand"]
+    yaxis: { label: "Velocity", unit: "m/s", min: null, max: null}
+  "Square Root":
+    series: ["test.sqrt"]
+    yaxis: { label: "Velocity", unit: "m/s", min: 0, max: null}
+
 customCharts = {}
 
 charts = {}
@@ -90,17 +104,21 @@ standardLayouts =
     charts: ["Target Distance", "Relative Velocity"],
     telemetry: ["tar.name", "tar.o.sma", "tar.o.eccentricity", "tar.o.inclination", "tar.o.lan", "tar.o.argumentOfPeriapsis", "tar.o.timeOfPeriapsisPassage", "tar.o.trueAnomaly", "tar.distance", "tar.o.relativeVelocity"]
 
+testLayouts =
+  "Test":
+    charts: ["Sine and Cosine", "Quadratic", "Random"]
+    telemetry: ['test.rand', 'test.sin', 'test.cos', 'test.square', 'test.exp', 'test.sqrt', 'test.log']
+
 customLayouts = {}
 
 layouts = {}
 
 defaultLayout = "Flight Dynamics"
 
-celestialBodies = [ "Kerbol", "Kerbin", "Mun", "Minmus", "Moho", "Eve", "Duna", "Ike", "Jool", "Laythe", "Vall", "Bop", "Tylo", "Gilly", "Pol", "Dres", "Eeloo" ]
-
-resources = ["ElectricCharge", "LiquidFuel", "Oxidizer", "MonoPropellant"]
-
 Telemachus =
+  CELESTIAL_BODIES: [ "Kerbol", "Kerbin", "Mun", "Minmus", "Moho", "Eve", "Duna", "Ike", "Jool", "Laythe", "Vall", "Bop", "Tylo", "Gilly", "Pol", "Dres", "Eeloo" ]
+  RESOURCES: ["ElectricCharge", "SolidFuel", "LiquidFuel", "Oxidizer", "MonoPropellant", "IntakeAir", "XenonGas"]
+  
   api: {}
   telemetry: { "p.paused": 0, "v.missionTime": 0, "t.universalTime": 0 }
   lastUpdate: null
@@ -112,7 +130,9 @@ Telemachus =
   format: (value, api) ->
     if !value? then "No Data"
     else if $.isArray(value) then @format(value[1][0], api)
-    else @formatters[@api[api].units.toLowerCase()](value)
+    else
+      units = @api[api].units.toLowerCase()
+      if units of @formatters then @formatters[units](value) else value.toString()
 
   subscribe: ($collection, apis...) ->
     @$telemetrySubscribers = @$telemetrySubscribers.add($collection)
@@ -124,12 +144,10 @@ Telemachus =
     @$telemetrySubscribers = @$telemetrySubscribers.not($collection)
     for elem in $collection
       apis = $(elem).data("telemachus-api-subscriptions")
-      console.log(elem, apis)
       if apis?
         for api in apis when api of @apiSubscriptionCounts
           @apiSubscriptionCounts[api] = @apiSubscriptionCounts[api] - 1
           delete @apiSubscriptionCounts[api] if @apiSubscriptionCounts[api] <= 0
-    console.log(@apiSubscriptionCounts)
     $collection
   
   subscribeAlerts: ($collection) ->
@@ -138,28 +156,45 @@ Telemachus =
   unsubscribeAlerts: ($collection) ->
     @$alertSubscribers = @$alertSubscribers.not($collection)
   
-  loadAPI: ->
-    $.get("datalink", { api: "a.api" }, "json").then (data, textStatus, jqXHR) =>
-      for api in JSON.parse(data).api
-        if api.apistring.match(/^b\./)
-          @api[api.apistring + "[#{i}]"] = api for i in [0...celestialBodies.length]
-        else if api.apistring.match(/^r\./)
-          if api.apistring != "r.resourceCurrent"
-            for r in resources
-              resourceApi = $.extend({}, api)
-              resourceApi.name = r.replace(/([a-z])([A-Z])/g, "$1 $2")
-              resourceApi.name += " Max" if api.apistring.match(/Max$/) 
-              @api[api.apistring + "[#{r}]"] = resourceApi
-        else if api.plotable and api.apistring != "s.sensor"
-          @api[api.apistring] = api
-    
-      @downlink()
-      @api
-    , =>
-      @$alertSubscribers.trigger("telemetryAlert", ["No Signal Found"])
-      timeout = $.Deferred()
-      setTimeout((-> timeout.resolve()), 5000)
-      timeout.then(=> @loadAPI())
+  loadAPI: (testMode) ->
+    if testMode
+      @api =
+        "p.paused": { apistring: 'p.paused', name: "Paused", units: 'UNITLESS'}
+        "v.missionTime": { apistring: 'v.missionTime', name: "Mission Time", units: 'TIME'}
+        "t.universalTime": { apistring: 't.universalTime', name: "Universal Time", units: 'DATE'}
+        "test.rand": { apistring: 'test.rand', name: "Random", units: 'UNITLESS'}
+        "test.sin": { apistring: 'test.sin', name: "Sine", units: 'UNITLESS'}
+        "test.cos": { apistring: 'test.cos', name: "Cosine", units: 'UNITLESS'}
+        "test.square": { apistring: 'test.square', name: "Quadratic", units: 'UNITLESS'}
+        "test.exp": { apistring: 'test.exp', name: "Exponential", units: 'UNITLESS'}
+        "test.sqrt": { apistring: 'test.sqrt', name: "Square Root", units: 'UNITLESS'}
+        "test.log": { apistring: 'test.log', name: "Logarithmic", units: 'UNITLESS'}
+      
+      @testStart = Date.now()
+      @testDownlink()
+      $.Deferred().resolve(@api).promise()
+    else
+      $.get("datalink", { api: "a.api" }, "json").then (data, textStatus, jqXHR) =>
+        for api in JSON.parse(data).api
+          if api.apistring.match(/^b\./)
+            @api[api.apistring + "[#{i}]"] = api for i in [0...@CELESTIAL_BODIES.length]
+          else if api.apistring.match(/^r\./)
+            if api.apistring != "r.resourceCurrent"
+              for r in @RESOURCES
+                resourceApi = $.extend({}, api)
+                resourceApi.name = r.replace(/([a-z])([A-Z])/g, "$1 $2")
+                resourceApi.name += " Max" if api.apistring.match(/Max$/) 
+                @api[api.apistring + "[#{r}]"] = resourceApi
+          else if api.plotable and api.apistring != "s.sensor"
+            @api[api.apistring] = api
+        
+        @downlink()
+        @api
+      , =>
+        @$alertSubscribers.trigger("telemetryAlert", ["No Signal Found"])
+        timeout = $.Deferred()
+        setTimeout((-> timeout.resolve()), 5000)
+        timeout.then(=> @loadAPI())
   
   downlink: ->
     query = {}
@@ -199,6 +234,38 @@ Telemachus =
       @$alertSubscribers.trigger("telemetryAlert", ["No Signal Found"])
       setTimeout((=> @downlink()), 5000)
   
+  testDownlink: ->
+    rand = Math.random() * 1000
+    paused = if rand >= 10 then 0 else Math.floor(rand / 2)
+    
+    switch paused
+      when 4 then @$alertSubscribers.trigger("telemetryAlert", ["Signal Lost"])
+      when 3 then @$alertSubscribers.trigger("telemetryAlert", ["Signal Terminated"])
+      when 2 then @$alertSubscribers.trigger("telemetryAlert", ["Signal Power Loss"])
+      when 1 then @$alertSubscribers.trigger("telemetryAlert", ["Game Paused"])
+      when 0 then @$alertSubscribers.trigger("telemetryAlert", [null])
+    
+    if paused != 1
+      @lastUpdate = Date.now()
+      t = (@lastUpdate - @testStart) / 1000
+      lastRand = @telemetry["test.rand"] ? rand
+      @telemetry = { "p.paused": paused, "v.missionTime": t, "t.universalTime": @lastUpdate / 1000}
+      x = t / 120
+      for api of @apiSubscriptionCounts
+        unless api of @telemetry
+          @telemetry[api] = if paused != 0 then null else
+            switch api
+              when 'test.rand' then lastRand + (rand - 500) / 10
+              when 'test.sin' then 1000 * Math.sin(x * 2 * Math.PI)
+              when 'test.cos' then 1000 * Math.cos(x * 2 * Math.PI)
+              when 'test.square' then x * x
+              when 'test.exp' then Math.exp(x)
+              when 'test.sqrt' then Math.sqrt(x)
+              when 'test.log' then Math.log(x)
+      @$telemetrySubscribers.trigger("telemetry", [@telemetry])
+      
+    setTimeout((=> @testDownlink()), if paused == 0 then 500 else 5000)
+    
   formatters:
     unitless: (v) -> if typeof v == "number" then v.toPrecision(6) else v
     velocity: (v) -> siUnit(v, "m/s") 
@@ -212,19 +279,295 @@ Telemachus =
     acc: (v) -> v.toPrecision(6) + " G"
     date: (v) -> dateString(v)
 
+class Chart
+  constructor: (canvas, series, yaxis) ->
+    @$canvas = $(canvas)
+    @data = []
+    @series = series.slice()
+    @xaxis = { min: 0, max: 1, ticks: [] }
+    @yaxis = $.extend({ tickSpacingMin: 30 }, yaxis)
+    
+    # Styling parameters
+    @padding = { left: 70, top: 10, right: 10, bottom: 30 }
+    @padding.bottom = 10 if @series.length <= 1
+    @seriesStyles = ['rgb(192, 128, 0)', 'rgb(0, 128, 0)', 'rgb(0, 128, 192)', 'rgb(192, 192, 192)']
+    @gridStyle = 'rgb(96, 96, 96)'
+    @axisStyle = 'rgb(192, 192, 192)'
+    @font = 'bold 10pt "Helvetic Neue",Helvetica,Arial,sans serif'
+    @fontSize = 10
+    @tickLength = 5
+    @tickLabelSpacing = 10
+    @legendSpacing = 40
+    @legendBoxSize = 5
+    
+    @$canvas.resize (event) => @draw()
+    @draw()
+  
+  addSample: (x, series) ->
+    @data.push([x].concat(series))
+    @data.sort((a,b) -> a[0] - b[0])
+    
+    # Discard old data
+    windowStart = 0
+    windowEnd = @data.length - 1
+    for e, i in @data
+      windowStart = i if e[0] < @xaxis.min
+      windowEnd = i if e[0] <= @xaxis.max
+    @data = @data.slice(windowStart, windowEnd + 1)
+  
+  draw: ->
+    width = @$canvas.width()
+    height = @$canvas.height()
+    return if width == 0 or height == 0
+    
+    chartWidth = width - (@padding.left + @padding.right)
+    chartHeight = height - (@padding.top + @padding.bottom)
+    
+    ctx = @$canvas[0].getContext('2d')
+    ctx.save()
+    
+    ctx.clearRect(0, 0, width, height)
+    
+    # X-axis parameters
+    @xaxis.scale = chartWidth / (@xaxis.max - @xaxis.min)
+    
+    # Y-axis parameters
+    if @yaxis.min? and @yaxis.max?
+      ymin = @yaxis.min
+      ymax = @yaxis.max
+    else
+      ymin = @yaxis.min ? Infinity
+      ymax = @yaxis.max ? -Infinity
+      for sample in @data
+        for i in [1...sample.length] when sample[i]?
+          ymin = Math.min(sample[i], ymin) unless @yaxis.min?
+          ymax = Math.max(sample[i], ymax) unless @yaxis.max?
+      ymin = 0 if ymin == Infinity
+      ymax = 0 if ymax == -Infinity
+    
+    @yaxis.ticks = @calculateTicks(@yaxis, ymin, ymax, (chartHeight / @yaxis.tickSpacingMin) | 0)
+    
+    ymin = @yaxis.ticks[0]
+    ymax = @yaxis.ticks[@yaxis.ticks.length - 1]
+    @yaxis.scale = chartHeight / (ymax - ymin)
+    
+    # Set the origin to the bottom left of the chart
+    ctx.translate(@padding.left, height - @padding.bottom)
+    ctx.scale(1, -1) # Make up = +y
+    
+    @drawGrid(ctx, chartWidth, chartHeight, @xaxis.min, ymin)
+    @drawSeries(ctx, @xaxis.min, ymin, i) for i in [@series.length..1]
+    
+    # Erase any over-draw
+    ctx.clearRect(-@padding.left, -@padding.bottom, @padding.left, height)
+    ctx.clearRect(-@padding.left, -@padding.bottom, width, @padding.bottom)
+    
+    @drawAxes(ctx, chartWidth, chartHeight, ymin)
+    @drawLegend(ctx, chartWidth) if @series.length > 1
+    
+    ctx.restore()
+  
+  calculateTicks: (axis, min, max, maxIntervals) ->
+    bottomFixed = axis.min?
+    topFixed = axis.max?
+    
+    reduce = (interval) ->
+      switch interval[0]
+        when 5 then [2, interval[1]]
+        when 2 then [1, interval[1]]
+        when 1 then [5, interval[1] - 1]
+  
+    intervalValue = (interval) -> interval[0] * Math.pow(10, interval[1])
+  
+    intervalAbove = (num, interval) ->
+      v = intervalValue(interval)
+      m = if num < 0 then v + num % v else num % v
+      num - m + v
+    
+    intervalBelow = (num, interval) ->
+      v = intervalValue(interval)
+      m = if num < 0 then v + num % v else num % v
+      if m == 0 then num - v else num - m
+  
+    if max < min
+      if topFixed and bottomFixed
+        [min, max] = [max, min]
+      else if topFixed
+        min = max
+      else
+        max = min
+  
+    if maxIntervals < 1
+      maxIntervals = 1
+
+    bottom = min
+    top = max
+  
+    # Special case for angle axes
+    if bottomFixed and topFixed and top - bottom >= 90 and ((top - bottom) % 90 == 0)
+      intervals = [15, 30, 45, 90]
+      intervals.shift() while ((top - bottom) / intervals[0]) > maxIntervals
+      return (tick for tick in [bottom..top] by intervals[0])
+    
+    if min == max
+      if max == 0
+        return [0, 1]
+      else
+        magnitude = orderOfMagnitude(max)
+        interval = [1, magnitude]
+        bottom = intervalBelow(min, interval) unless bottomFixed
+        top = intervalAbove(max, interval) unless topFixed and not bottomFixed
+        topFixed = bottomFixed = true
+    else
+      magnitude = Math.max(orderOfMagnitude(min), orderOfMagnitude(max))
+      interval = [1, magnitude]
+      bottom = intervalBelow(min, interval) unless bottomFixed
+      top = intervalAbove(min, interval) unless topFixed
+  
+    loop
+      nextInterval = reduce(interval)
+      nextBottom = if bottomFixed then bottom else intervalBelow(min, nextInterval)
+      nextTop = if topFixed then top else intervalAbove(max, nextInterval)
+    
+      break if (nextTop - nextBottom) / intervalValue(nextInterval) > maxIntervals
+    
+      [bottom, top, interval] = [nextBottom, nextTop, nextInterval]
+  
+    ticks = [bottom, top]
+    ticks[1..0] = (i for i in [intervalAbove(bottom, interval)...top] by intervalValue(interval))
+    ticks
+  
+  drawGrid: (ctx, width, height, xoffset, yoffset) ->
+    ctx.save()
+  
+    ctx.strokeStyle = @gridStyle
+  
+    ctx.beginPath()
+    for tick in @xaxis.ticks
+      x = Math.round(@xaxis.scale * (tick - xoffset) - 0.5) + 0.5
+      ctx.moveTo(x, 0)
+      ctx.lineTo(x, height)
+    for tick in @yaxis.ticks
+      y = Math.round(@yaxis.scale * (tick - yoffset) - 0.5) + 0.5
+      ctx.moveTo(0, y)
+      ctx.lineTo(width, y)
+    ctx.stroke()
+  
+    ctx.strokeStyle = @axisStyle
+    ctx.beginPath()
+    y = Math.round(-@yaxis.scale * yoffset - 0.5) + 0.5
+    ctx.moveTo(0, y)
+    ctx.lineTo(width, y)
+    ctx.stroke()
+    
+    ctx.restore()
+  
+  drawSeries: (ctx, xmin, ymin, i) ->
+    ctx.save()
+  
+    ctx.lineWidth = 2
+    ctx.lineJoin = 'round'
+    ctx.lineCap = 'round'
+    ctx.strokeStyle = @seriesStyles[i-1]
+    
+    ctx.beginPath()
+    for d, j in @data when d[i]?
+      if @data[j-1]?[i]?
+        ctx.lineTo(@xaxis.scale * (d[0] - xmin), @yaxis.scale * (d[i] - ymin))
+      else
+        ctx.moveTo(@xaxis.scale * (d[0] - xmin), @yaxis.scale * (d[i] - ymin))
+    ctx.stroke()
+  
+    ctx.restore()
+  
+  drawAxes: (ctx, width, height, yoffset) ->
+    PREFIXES = ['f', 'p', 'n', '\u03bc', 'm', '', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+  
+    ctx.save()
+  
+    ctx.strokeStyle = @axisStyle
+    ctx.beginPath()
+    ctx.moveTo(-@tickLength, 0.5)
+    ctx.lineTo(width + 0.5, 0.5)
+    ctx.moveTo(0.5, 0)
+    ctx.lineTo(0.5, height + 0.5)
+  
+    for tick in @yaxis.ticks when tick != yoffset
+      y = Math.round(@yaxis.scale * (tick - yoffset) - 0.5) + 0.5
+      ctx.moveTo(-@tickLength, y)
+      ctx.lineTo(0.5, y)
+    
+    ctx.stroke()
+  
+    tickMagnitude = Math.max(orderOfMagnitude(@yaxis.ticks[0]), orderOfMagnitude(@yaxis.ticks[@yaxis.ticks.length - 1]))
+    tickMagnitude -= 1 if tickMagnitude > 0
+    tickScale = Math.ceil(tickMagnitude / 3)
+    tickScale -= 1 if tickScale > 0
+    prefix = PREFIXES[tickScale + 5]
+    
+    ctx.font = @font
+    ctx.fillStyle = @axisStyle
+    ctx.textBaseline = 'middle'
+    ctx.scale(1, -1) # Un-flip the Y-axis for right side up text
+    
+    ctx.save()
+    ctx.textAlign = 'center'
+    ctx.translate(-(@padding.left - @fontSize), -height / 2)
+    ctx.rotate(-Math.PI / 2)
+    if (@yaxis.unit? and @yaxis.unit != '') or prefix != ''
+      ctx.fillText("#{@yaxis.label} (#{prefix}#{@yaxis.unit ? ''})", 0, 0, height)
+    else
+      ctx.fillText("#{@yaxis.label}", 0, 0, height)
+    ctx.restore()
+    
+    ctx.textAlign = 'right'
+    tickScale = Math.pow(1000, -tickScale)
+    for tick in @yaxis.ticks
+      y = Math.round(@yaxis.scale * (tick - yoffset) - 0.5) + 0.5
+      ctx.fillText(stripInsignificantZeros((tick * tickScale).toFixed(3)), -@tickLabelSpacing, -y)
+  
+    ctx.restore()
+  
+  drawLegend: (ctx, width, series) ->
+    ctx.save()
+  
+    ctx.font = @font
+    ctx.textAlign = 'left'
+    ctx.textBaseline = 'middle'
+
+    seriesWidths = (ctx.measureText(name).width for name in @series)
+    legendWidth = seriesWidths.reduce((sum, width) -> sum + width) + (@series.length - 1) * @legendSpacing
+  
+    ctx.scale(1, -1) # Flip Y-axis for right side up text
+    x = width / 2 - legendWidth / 2
+    for name, i in @series
+      ctx.fillStyle = @seriesStyles[i]
+      ctx.fillRect(x, @padding.bottom - (@fontSize + @legendBoxSize / 2), @legendBoxSize, @legendBoxSize)
+      ctx.fillStyle = @axisStyle
+      ctx.fillText(name, x + @fontSize, @padding.bottom - @fontSize)
+      x += seriesWidths[i] + @legendSpacing
+  
+    ctx.restore()
+
 $(document).ready ->
   # TODO:
   #  Custom charts (auto-save)
   #  Custom layout import/export
   
   if window.localStorage?
-    customCharts = JSON.parse(window.localStorage.getItem("customCharts")) ? {}
+    customCharts = JSON.parse(window.localStorage.getItem("telemachus.console.charts")) ? {}
     $.extend(charts, standardCharts, customCharts)
-    customLayouts = JSON.parse(window.localStorage.getItem("customLayouts")) ? {}
+    customLayouts = JSON.parse(window.localStorage.getItem("telemachus.console.layouts")) ? {}
     $.extend(layouts, standardLayouts, customLayouts)
     savedDefault = window.localStorage.getItem("defaultLayout")
     defaultLayout = savedDefault if savedDefault? and savedDefault of layouts
     
+  testMode = (window.location.protocol == "file:" or window.location.hash == "#test")
+  if testMode
+    $.extend(layouts, testLayouts)
+    $.extend(charts, testCharts)
+    defaultLayout = "Test"
+  
   # Populate layout and chart menus
   $layoutMenu = $("body > header nav ul")
   populateLayoutMenu = ->
@@ -283,7 +626,7 @@ $(document).ready ->
       layouts[name] = customLayouts[name] =
         charts: ($(elem).text().trim() for elem in $(".chart h2"))
         telemetry: ($(elem).data("api") for elem in $("#telemetry dt"))
-      window.localStorage.setItem("customLayouts", JSON.stringify(customLayouts))
+      window.localStorage.setItem("telemachus.console.layouts", JSON.stringify(customLayouts))
       populateLayoutMenu()
       $("h1").text(name)
       $("#deleteLayout").prop("disabled", false)
@@ -294,8 +637,7 @@ $(document).ready ->
         layoutName = $("h1").text().trim()
         return unless layoutName of customLayouts
         delete customLayouts[layoutName]
-        window.localStorage.setItem("customLayouts", JSON.stringify(customLayouts))
-        console.log("hello")
+        window.localStorage.setItem("telemachus.console.layouts", JSON.stringify(customLayouts))
         
         if layoutName of standardLayouts
           layouts[layoutName] = standardLayouts[layoutName]
@@ -311,7 +653,7 @@ $(document).ready ->
   
   Telemachus.subscribeAlerts($(".alert"))
   
-  Telemachus.loadAPI().done ->
+  Telemachus.loadAPI(testMode).done ->
     $("#apiCategory").change()
     reloadLayout()
   
@@ -427,251 +769,25 @@ setChart = (elem, chartName) ->
             marker.update()
   else
     $canvas = $("<canvas>").attr(width: $display.width(), height: $display.height()).appendTo($display)
-    seriesData = []
+    apis = chart.series
+    
+    # Convert chart definition to a Chart
+    chart = new Chart($canvas, (Telemachus.api[e].name for e in apis when e of Telemachus.api), chart.yaxis)
     
     $display.on "telemetry", (event, data) ->
       t = data["t.universalTime"]
-      sample = (data[e] for e in chart.series)
-      sample[i] = e[1][0] for e, i in sample when $.isArray(e)
-      sample.unshift(t)
-      
-      seriesData = (e for e in seriesData when e[0] < t and e[0] > t - 300)
-      seriesData.push(sample)
-      
-      $canvas = $(".display canvas", elem)
-      return if $canvas.length == 0
-      width = $canvas.width()
-      height = $canvas.height()
-      return if width == 0 or height == 0
-      
-      chartWidth = width - 80
-      chartHeight = height - 40
-      
-      ctx = $canvas[0].getContext('2d')
-      ctx.save()
-      
-      ctx.clearRect(0, 0, width, height)
-      
-      # X-axis parameters
-      xmin = t - 300
-      xmax = t
-      xscale = chartWidth / 300
       missionTime = data["v.missionTime"]
-      xticks = (x for x in [(t - missionTime % 60)...xmin] by -60 when missionTime > 0 and (t - x - 0.01) <= missionTime).reverse()
       
-      # Figure out the Y-axis parameters
-      if chart.yaxis.min? and chart.yaxis.max?
-        ymin = chart.yaxis.min
-        ymax = chart.yaxis.max
-      else
-        dataValues = (e for e in [].concat((e.slice(1) for e in seriesData)...) when e?)
-        if dataValues.length > 0
-          ymin = chart.yaxis.min ? Math.min(dataValues...)
-          ymax = chart.yaxis.max ? Math.max(dataValues...)
-        else
-          ymin = chart.yaxis.min ? chart.yaxis.max ? 0
-          ymax = chart.yaxis.max ? chart.yaxis.min ? 0
+      chart.xaxis.min = t - 300
+      chart.xaxis.max = t
+      chart.xaxis.ticks = (x for x in [(t - missionTime % 60)...(t - 300)] by -60 when missionTime > 0 and (t - x - 0.01) <= missionTime).reverse()
       
-      yticks = calculateTicks(ymin, ymax, chart.yaxis.min?, chart.yaxis.max?, ((height - 40) / 30) | 0)
+      sample = (data[e] for e in apis)
+      sample[i] = e[1][0] for e, i in sample when $.isArray(e)
+      chart.addSample(t, sample)
       
-      ymin = yticks[0]
-      ymax = yticks[yticks.length - 1]
-      yscale = chartHeight / (ymax - ymin)
-      
-      ctx.translate(70, height - 30)
-      ctx.scale(1, -1)
-      
-      drawChartGrid(ctx, chartWidth, chartHeight, xmin, xscale, ymin, yscale, xticks, yticks)
-      drawChartSeries(ctx, xmin, xscale, ymin, yscale, seriesData, i) for i in [chart.series.length..1]
-      
-      ctx.clearRect(-70, -30, 70, height)
-      ctx.clearRect(-70, -30, width, 30)
-      
-      drawChartAxes(ctx, chartWidth, chartHeight, ymin, yscale, yticks, chart.yaxis)
-      drawChartLegend(ctx, chartWidth, chart.series) if chart.series.length > 1
-      
-      ctx.restore()
+      chart.draw()
 
-calculateTicks = (min, max, bottomFixed, topFixed, maxIntervals) ->
-  reduce = (interval) ->
-    switch interval[0]
-      when 5 then [2, interval[1]]
-      when 2 then [1, interval[1]]
-      when 1 then [5, interval[1] - 1]
-  
-  intervalValue = (interval) -> interval[0] * Math.pow(10, interval[1])
-  
-  intervalAbove = (num, interval) ->
-    v = intervalValue(interval)
-    m = if num < 0 then v + num % v else num % v
-    num - m + v
-    
-  intervalBelow = (num, interval) ->
-    v = intervalValue(interval)
-    m = if num < 0 then v + num % v else num % v
-    if m == 0 then num - v else num - m
-  
-  if max < min
-    if topFixed and bottomFixed
-      [min, max] = [max, min]
-    else if topFixed
-      min = max
-    else
-      max = min
-  
-  if maxIntervals < 1
-    maxIntervals = 1
-
-  bottom = min
-  top = max
-  
-  # Special case for angle axes
-  if bottomFixed and topFixed and top - bottom >= 90 and ((top - bottom) % 90 == 0)
-    intervals = [15, 30, 45, 90]
-    intervals.shift() while ((top - bottom) / intervals[0]) > maxIntervals
-    return (tick for tick in [bottom..top] by intervals[0])
-    
-  if min == max
-    if max == 0
-      return [0, 1]
-    else
-      magnitude = orderOfMagnitude(max)
-      interval = [1, magnitude]
-      bottom = intervalBelow(min, interval) unless bottomFixed
-      top = intervalAbove(max, interval) unless topFixed and not bottomFixed
-      topFixed = bottomFixed = true
-  else
-    magnitude = Math.max(orderOfMagnitude(min), orderOfMagnitude(max))
-    interval = [1, magnitude]
-    bottom = intervalBelow(min, interval) unless bottomFixed
-    top = intervalAbove(min, interval) unless topFixed
-  
-  loop
-    nextInterval = reduce(interval)
-    nextBottom = if bottomFixed then bottom else intervalBelow(min, nextInterval)
-    nextTop = if topFixed then top else intervalAbove(max, nextInterval)
-    
-    break if (nextTop - nextBottom) / intervalValue(nextInterval) > maxIntervals
-    
-    [bottom, top, interval] = [nextBottom, nextTop, nextInterval]
-  
-  ticks = [bottom, top]
-  ticks[1..0] = (i for i in [intervalAbove(bottom, interval)...top] by intervalValue(interval))
-  ticks
-
-drawChartGrid = (ctx, width, height, xoffset, xscale, yoffset, yscale, xticks, yticks) ->
-  ctx.save()
-  
-  ctx.strokeStyle = 'rgb(96, 96, 96)'
-  
-  ctx.beginPath()
-  for tick in xticks
-    x = Math.round(xscale * (tick - xoffset) - 0.5) + 0.5
-    ctx.moveTo(x, 0)
-    ctx.lineTo(x, height)
-  for tick in yticks
-    y = Math.round(yscale * (tick - yoffset) - 0.5) + 0.5
-    ctx.moveTo(0, y)
-    ctx.lineTo(width, y)
-  ctx.stroke()
-  
-  ctx.strokeStyle = 'rgb(192, 192, 192)'
-  ctx.beginPath()
-  y = Math.round(-yscale * yoffset - 0.5) + 0.5
-  ctx.moveTo(0, y)
-  ctx.lineTo(width, y)
-  ctx.stroke()
-  
-  ctx.restore()
-
-drawChartSeries = (ctx, xmin, xscale, ymin, yscale, seriesData, i) ->
-  SERIES_COLORS = ['rgb(192, 128, 0)', 'rgb(0, 128, 0)', 'rgb(0, 128, 192)', 'rgb(192, 192, 192)']
-  ctx.save()
-  
-  ctx.lineWidth = 2
-  ctx.lineJoin = 'round'
-  ctx.lineCap = 'round'
-  ctx.strokeStyle = SERIES_COLORS[i-1]
-  
-  ctx.beginPath()
-  for d, j in seriesData when d[i]?
-    if seriesData[j-1]?[i]?
-      ctx.lineTo(xscale * (d[0] - xmin), yscale * (d[i] - ymin))
-    else
-      ctx.moveTo(xscale * (d[0] - xmin), yscale * (d[i] - ymin))
-  ctx.stroke()
-  
-  ctx.restore()
-
-drawChartAxes = (ctx, width, height, yoffset, yscale, yticks, yaxis) ->
-  PREFIXES = ['f', 'p', 'n', '\u03bc', 'm', '', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
-  
-  ctx.save()
-  
-  ctx.strokeStyle = 'rgb(192, 192, 192)'
-  ctx.beginPath()
-  ctx.moveTo(-5, 0.5)
-  ctx.lineTo(width + 0.5, 0.5)
-  ctx.moveTo(0.5, 0)
-  ctx.lineTo(0.5, height + 0.5)
-  
-  for tick in yticks when tick != yoffset
-    y = Math.round(yscale * (tick - yoffset) - 0.5) + 0.5
-    ctx.moveTo(-5, y)
-    ctx.lineTo(0.5, y)
-    
-  ctx.stroke()
-  
-  tickMagnitude = Math.max(orderOfMagnitude(yticks[0]), orderOfMagnitude(yticks[yticks.length - 1]))
-  tickMagnitude -= 1 if tickMagnitude > 0
-  tickScale = Math.ceil(tickMagnitude / 3)
-  tickScale -= 1 if tickScale > 0
-  prefix = PREFIXES[tickScale + 5]
-  
-  ctx.font = 'bold 10pt "Helvetic Neue",Helvetica,Arial,sans serif'
-  ctx.textBaseline = 'middle'
-  ctx.fillStyle = 'rgb(192, 192, 192)'
-  ctx.scale(1, -1)
-  
-  ctx.save()
-  ctx.textAlign = 'center'
-  ctx.translate(-60, -height / 2)
-  ctx.rotate(-Math.PI / 2)
-  ctx.fillText("#{yaxis.label} (#{prefix}#{yaxis.unit})", 0, 0, height)
-  ctx.restore()
-  
-  ctx.textAlign = 'right'
-  tickScale = Math.pow(1000, -tickScale)
-  for tick in yticks
-    y = Math.round(yscale * (tick - yoffset) - 0.5) + 0.5
-    ctx.fillText(stripInsignificantZeros((tick * tickScale).toFixed(3)), -10, -y)
-  
-  ctx.restore()
-
-drawChartLegend = (ctx, width, series) ->
-  SERIES_COLORS = ['rgb(192, 128, 0)', 'rgb(0, 128, 0)', 'rgb(0, 128, 192)', 'rgb(192, 192, 192)']
-  
-  ctx.save()
-  
-  ctx.font = 'bold 10pt "Helvetic Neue",Helvetica,Arial,sans serif'
-  ctx.textAlign = 'left'
-  ctx.textBaseline = 'middle'
-
-  apiWidths = (ctx.measureText(Telemachus.api[api].name).width for api in series)
-  legendWidth = (apiWidths.reduce (sum, width) -> sum + width) + (series.length - 1) * 40
-  
-  ctx.scale(1, -1)
-  x = width / 2 - legendWidth / 2
-  for api, i in series
-    ctx.fillStyle = SERIES_COLORS[i]
-    ctx.fillRect(x, 17.5, 5, 5)
-    ctx.fillStyle = 'rgb(192, 192, 192)'
-    ctx.fillText(Telemachus.api[api].name, x + 10, 20)
-    x += apiWidths[i] + 40
-  
-  ctx.restore()
-  
-  
 reloadLayout = -> setLayout($("h1").text().trim())
 
 setLayout = (name) ->
@@ -683,6 +799,7 @@ setLayout = (name) ->
     addTelemetry(telemetry) for telemetry in layout.telemetry
     setChart(elem, layout.charts[i]) for elem, i in $(".chart")
 
+# Utility functions
 orderOfMagnitude = (v) ->
   return 0 if v == 0
   Math.floor(Math.log(Math.abs(v)) / Math.LN10 + 1.0000000000000001)
@@ -732,7 +849,8 @@ missionTimeString = (t) ->
   result + hourMinSec(t) + " MET"
 
 durationString = (t) ->
-  result = ""
+  result = if t < 0 then "-" else ""
+  t = Math.abs(t)
   if t >= 365 * 24 * 3600
     result += (t / (365 * 24 * 3600) | 0) + " years "
     t %= 365 * 24 * 3600
