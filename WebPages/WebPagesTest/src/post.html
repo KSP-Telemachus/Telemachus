@@ -1,20 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Telemachus - Altitude</title>
-    <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
-    <link rel="stylesheet" type="text/css" href="jKSPWAPIGraph.css" />
-
+    <title>Telemachus - Post Test</title>
     <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="jKSPWAPICore.js"></script>
-    <script type="text/javascript" src="jKSPWAPIGraph.js"></script>
     <script type="text/javascript">
-        google.setOnLoadCallback(onLoad);
-
         function onLoad() {
             $.post("datalink", {a: "v.altitude", b:"v.terrainHeight"},function (data, status) {
-                alert("Data: " + data + "\nStatus: " + status);
+                document.writeln("Data: " + data + "\nStatus: " + status);
             });
         }
     </script>
