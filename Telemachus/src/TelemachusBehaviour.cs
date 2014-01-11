@@ -181,11 +181,17 @@ namespace Telemachus
 
         #endregion
 
+        #region Lock
+
+        readonly private System.Object queueLock = new System.Object();
+
+        #endregion
+
         #region Methods
 
         public void execute()
         {
-            lock (actionQueue)
+            lock (queueLock)
             {
                 foreach (DelayedAPIEntry entry in actionQueue)
                 {
@@ -198,7 +204,7 @@ namespace Telemachus
 
         public void queue(DelayedAPIEntry delayedAPIEntry)
         {
-             lock (actionQueue)
+            lock (queueLock)
             {
                 actionQueue.Add(delayedAPIEntry);
             }
