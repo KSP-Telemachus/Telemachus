@@ -12,8 +12,8 @@ namespace TelemachusTest
     {
         static void Main(string[] args)
         {
-            //time(10000);
-            time2(20000);
+            time(2000);
+            //time2(2000);
         }
 
         static private void time(int numberOfTests)

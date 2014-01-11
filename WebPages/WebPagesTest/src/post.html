@@ -7,9 +7,9 @@
         function onLoad() {
             $.ajax({
                 type: 'POST',
-                url: 'status.ajax.php',
+                url: '../datalink',
                 data: {
-                    a: "v.altitude", b: "v.terrainHeight"
+                    altitude: "v.altitude", terrain_height: "v.terrainHeight"
                 },
                 success: function (data) {
                     document.writeln("Data: " + data);
