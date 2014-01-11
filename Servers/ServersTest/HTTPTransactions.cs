@@ -1,5 +1,5 @@
 ﻿using System;
-using MinimalHTTPServer;
+using Servers.MinimalHTTPServer;
 using System.Text;
 
 namespace ServersTest
