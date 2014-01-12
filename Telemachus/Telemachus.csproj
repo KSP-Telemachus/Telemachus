@@ -65,17 +65,6 @@
     <Compile Include="src\VesselChangeDetector.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Parts\FustekAntenna\model.mu" />
-    <None Include="Parts\FustekAntenna\part.cfg" />
-    <None Include="Parts\TelemachusAntenna\model.mu" />
-    <None Include="Parts\TelemachusAntenna\model000.mbm" />
-    <None Include="Parts\TelemachusAntenna\part.cfg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Parts\FustekAntenna\model000.png" />
-    <Content Include="Parts\FustekAntenna\model001.png" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Servers\Servers\Servers.csproj">
       <Project>{57e9f7c0-db25-4b6d-aa53-c44d95b47468}</Project>
       <Name>Servers</Name>
