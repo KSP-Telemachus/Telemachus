@@ -189,13 +189,15 @@ namespace Servers
             public event Server.ConnectionNotify OnConnectionNotify;
             public event Server.ConnectionRead OnConnectionRead;
 
-            Socket socket;
-            public const int BUFFER_SIZE = 4096;
-            public byte[] buffer { get; set; }
-            public StringBuilder progressiveMessage { get; set; }
-
             private Server server = null;
             private Server.ServerShutdown shutdownCallback = null;
+
+            protected Socket socket;
+            protected const int BUFFER_SIZE = 512;
+            
+            static protected byte[] buffer = null;
+            
+            public StringBuilder progressiveMessage { get; set; }
 
             public ClientConnection(Socket socket, Server server)
             {
