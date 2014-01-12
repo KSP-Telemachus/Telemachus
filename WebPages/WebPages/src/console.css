@@ -1,9 +1,10 @@
 body {
-  background: rgb(240, 240, 240);
   font-family: Helvetica, Arial, sans-serif;
   margin: 10px 20px;
   width: auto;
   height: auto;
+  background-color: rgb(240, 240, 240);
+  background-image: radial-gradient(rgba(0,0,0,0),rgba(0,0,0,0) 67%,rgba(0,0,0,0.1));
 }
 
 body > header {
@@ -79,6 +80,8 @@ body > header nav > a {
   border: thin solid white;
   color: rgb(192,128,0);
   font-family: "Lucida Console", Monaco, monospace;
+  background: black linear-gradient(to bottom, rgba(255,255,255,0.3) 0%,rgba(255,255,255,0.2) 50%,rgba(255,255,255,0.1) 51%,rgba(255,255,255,0.0) 100%);
+  box-shadow: 0px 1px 3px 0.5px rgba(0,0,0,1) inset;	
 }
 
 #ut {
@@ -92,6 +95,8 @@ body > header nav > a {
   border: thin solid white;
   color: rgb(192,128,0);
   font-family: "Lucida Console", Monaco, monospace;
+  background: black linear-gradient(to bottom, rgba(255,255,255,0.3) 0%,rgba(255,255,255,0.2) 50%,rgba(255,255,255,0.1) 51%,rgba(255,255,255,0.0) 100%);
+  box-shadow: 0px 1px 3px 0.5px rgba(0,0,0,1) inset;	
 }
 
 #telemetry {
@@ -208,14 +213,32 @@ body > header nav > a {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   width: 100%;
+  height: 80%;
+  background-color: rgb(196,202,196);
+  background-image: linear-gradient(to bottom,rgb(188,196,188),rgb(200,208,200),rgb(188,196,188));
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0px 1px 2px 0.5px rgba(0, 0, 0, 0.5);
+}
+
+.chart .display svg {
+  width: 100%;
+  height: 100%;
   background-color: black;
-  border-radius: 10px;
-  border: 10px solid rgb(192,192,192);
+  border-radius: 20px;
+  background-image: radial-gradient(100% 75% at 50% -30%, rgba(255,255,255,0.25),rgba(255,255,255,0.1) 99.9%, rgba(0,0,0,0));
+  box-shadow: 0px 5px 80px 0px rgba(0, 0, 0, 0.75) inset;
 }
 
 .chart .display .leaflet-container {
   width: 100%;
   height: 100%;
+  border-radius: 20px;
+  background-image: radial-gradient(100% 75% at 50% -30%, rgba(255,255,255,0.5),rgba(255,255,255,0.2) 99.9%, rgba(0,0,0,0));
+  box-shadow: 0px 5px 80px 0px rgba(0, 0, 0, 0.5) inset;
+  
+  /* Fix rounded corner bug per http://stackoverflow.com/q/5736503 */
+  -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC);
 }
 
 .chart .alert {
