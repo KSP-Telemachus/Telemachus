@@ -66,7 +66,7 @@ standardCharts =
 testCharts =
   "Sine and Cosine":
     series: ["test.sin", "test.cos"]
-    yaxis: { label: "Angle", unit: "\u00B0", min: -1000, max: 1000}
+    yaxis: { label: "Angle", unit: "\u00B0", min: -360, max: 360}
   "Quadratic":
     series: ["test.square"]
     yaxis: { label: "Altitude", unit: "m", min: 0, max: null}
@@ -262,8 +262,8 @@ Telemachus =
           @telemetry[api] = if paused != 0 then null else
             switch api
               when 'test.rand' then lastRand + (rand - 500) / 10
-              when 'test.sin' then 1000 * Math.sin(x * 2 * Math.PI)
-              when 'test.cos' then 1000 * Math.cos(x * 2 * Math.PI)
+              when 'test.sin' then 360 * Math.sin(x * 2 * Math.PI)
+              when 'test.cos' then 360 * Math.cos(x * 2 * Math.PI)
               when 'test.square' then x * x
               when 'test.exp' then Math.exp(x)
               when 'test.sqrt' then Math.sqrt(x)
@@ -352,7 +352,8 @@ class Chart
       .ticks((dataHeight / 39) | 0)
     @yaxis.label = yaxis.label
     @yaxis.unit = yaxis.unit
-    @y.nice(@yaxis.ticks()...)
+    if @y.fixedDomain[0]? and @y.fixedDomain[1]? and (@y.fixedDomain[1] - @y.fixedDomain[0]) % 90 == 0
+      @yaxis.tickValues(angleTicks(@y.fixedDomain, @yaxis.ticks()...))
     
     # Generate the SVG
     
@@ -476,6 +477,9 @@ class Chart
     unless @y.fixedDomain[0]? and @y.fixedDomain[1]?
       extent = d3.extent(d3.merge(e.slice(1) for e in @data))
       extent = [@y.fixedDomain[0] ? extent[0], @y.fixedDomain[1] ? extent[1]]
+      if extent[1] < extent[0]
+        if @y.fixedDomain[0]? then extent[1] = extent[0] else extent[0] = extent[1]
+        
       if @y.prefix.scale(extent[0]) != @y.domain()[0] or @y.prefix.scale(extent[1]) != @y.domain()[1]
         # Check for a SI-prefix change
         magnitude = Math.max(orderOfMagnitude(extent[0]), orderOfMagnitude(extent[1]))
@@ -485,9 +489,10 @@ class Chart
           @svg.select('.y.axis text.label')
             .text(@yaxis.label + (if @yaxis.unit? or @y.prefix.symbol != '' then " (#{@y.prefix.symbol}#{@yaxis.unit})" else ''))
         
-        # Update the domain
-        @y.domain([@y.prefix.scale(@y.fixedDomain[0] ? extent[0]), @y.prefix.scale(@y.fixedDomain[1] ? extent[1])])
-          .nice(@yaxis.ticks()...)
+        # Update the domain to nice values while preserving the fixed ends
+        @y.domain([@y.prefix.scale(extent[0]), @y.prefix.scale(extent[1])]).nice(@yaxis.ticks()...)
+          .domain([@y.prefix.scale(@y.fixedDomain[0] ? @y.domain()[0]),
+            @y.prefix.scale(@y.fixedDomain[1] ? @y.domain()[1])])
         
         refreshYAxis.call(@, dt)
     
@@ -527,6 +532,8 @@ class Chart
     
     @xaxis.tickSize(dataHeight, 0) # Update the height of the x-axis grid lines
     @yaxis.ticks((dataHeight / 39) | 0) # Update the maximum ticks that will fit on the y-axis
+    if @y.fixedDomain[0]? and @y.fixedDomain[1]? and (@y.fixedDomain[1] - @y.fixedDomain[0]) % 90 == 0
+      @yaxis.tickValues(angleTicks(@y.fixedDomain, @yaxis.ticks()...))
     
     # Update width and height of the root SVG element
     @svg.attr("width", @width)
@@ -588,7 +595,7 @@ class Chart
   refreshYAxis = (duration) ->
     # Update the grid lines
     grid = @svg.select("g.y.grid").selectAll("line")
-      .data(@y.ticks(@yaxis.ticks()...))
+      .data(@yaxis.tickValues() ? @y.ticks(@yaxis.ticks()...))
     grid.classed("zero", (d) -> d == 0)
     (if duration? then grid.transition().duration(duration) else grid)
       .attr("y1", (d) => @y(d))
@@ -616,6 +623,12 @@ class Chart
           path += if path.length > 0 and @data[j-1]?[i+1]? then "L" else "M"
           path += "#{@x(d[0])},#{@y(@y.prefix.scale(d[i+1]))}"
         path
+  
+  angleTicks = (domain, maxTicks) ->
+    span = Math.abs(domain[1] - domain[0])
+    for i in [15, 30, 45, 90, 180, 360]
+      return (tick for tick in [domain[0]..domain[1]] by i) if span / i <= maxTicks
+    return domain
     
 $(document).ready ->
   # TODO:
@@ -731,7 +744,7 @@ $(document).ready ->
     for display in $(".display", "#charts")
       $display= $(display)
       $chart = $display.closest(".chart")
-      $display.height($chart.height() - $display.position().top - 20)
+      $display.height($chart.height() - $display.position().top - ($display.outerHeight() - $display.height()))
       $alert = $display.siblings(".alert")
       $alert.css("fontSize", $display.height() / 5).css("marginTop", -($display.outerHeight() + $alert.height()) / 2)
   

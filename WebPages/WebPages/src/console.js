@@ -196,8 +196,8 @@
       yaxis: {
         label: "Angle",
         unit: "\u00B0",
-        min: -1000,
-        max: 1000
+        min: -360,
+        max: 360
       }
     },
     "Quadratic": {
@@ -579,9 +579,9 @@
                   case 'test.rand':
                     return lastRand + (rand - 500) / 10;
                   case 'test.sin':
-                    return 1000 * Math.sin(x * 2 * Math.PI);
+                    return 360 * Math.sin(x * 2 * Math.PI);
                   case 'test.cos':
-                    return 1000 * Math.cos(x * 2 * Math.PI);
+                    return 360 * Math.cos(x * 2 * Math.PI);
                   case 'test.square':
                     return x * x;
                   case 'test.exp':
@@ -643,7 +643,7 @@
   };
 
   Chart = (function() {
-    var activeCharts, refreshXAxis, refreshYAxis, resizeHandler, uniqueId, updateDataPaths;
+    var activeCharts, angleTicks, refreshXAxis, refreshYAxis, resizeHandler, uniqueId, updateDataPaths;
 
     uniqueId = (function() {
       var counter;
@@ -681,7 +681,7 @@
     };
 
     function Chart(parent, series, yaxis) {
-      var $parent, clipPathId, dataHeight, dataWidth, g, magnitude, prefix, rootGroup, tspan, _ref,
+      var $parent, clipPathId, dataHeight, dataWidth, g, magnitude, prefix, rootGroup, tspan,
         _this = this;
       $parent = $(parent);
       this.data = [];
@@ -727,7 +727,9 @@
       this.yaxis = d3.svg.axis().scale(this.y).orient("left").ticks((dataHeight / 39) | 0);
       this.yaxis.label = yaxis.label;
       this.yaxis.unit = yaxis.unit;
-      (_ref = this.y).nice.apply(_ref, this.yaxis.ticks());
+      if ((this.y.fixedDomain[0] != null) && (this.y.fixedDomain[1] != null) && (this.y.fixedDomain[1] - this.y.fixedDomain[0]) % 90 === 0) {
+        this.yaxis.tickValues(angleTicks.apply(null, [this.y.fixedDomain].concat(__slice.call(this.yaxis.ticks()))));
+      }
       this.svg = d3.select($parent[0]).append("svg:svg").attr("width", this.width).attr("height", this.height);
       rootGroup = this.svg.append("svg:g").attr("transform", "translate(" + this.padding.left + ", " + this.padding.top + ")");
       clipPathId = uniqueId();
@@ -832,6 +834,13 @@
           return _results;
         }).call(this)));
         extent = [(_ref3 = this.y.fixedDomain[0]) != null ? _ref3 : extent[0], (_ref4 = this.y.fixedDomain[1]) != null ? _ref4 : extent[1]];
+        if (extent[1] < extent[0]) {
+          if (this.y.fixedDomain[0] != null) {
+            extent[1] = extent[0];
+          } else {
+            extent[0] = extent[1];
+          }
+        }
         if (this.y.prefix.scale(extent[0]) !== this.y.domain()[0] || this.y.prefix.scale(extent[1]) !== this.y.domain()[1]) {
           magnitude = Math.max(orderOfMagnitude(extent[0]), orderOfMagnitude(extent[1]));
           prefix = d3.formatPrefix(Math.pow(10, magnitude - 2));
@@ -839,7 +848,7 @@
             this.y.prefix = prefix;
             this.svg.select('.y.axis text.label').text(this.yaxis.label + ((this.yaxis.unit != null) || this.y.prefix.symbol !== '' ? " (" + this.y.prefix.symbol + this.yaxis.unit + ")" : ''));
           }
-          (_ref5 = this.y.domain([this.y.prefix.scale((_ref6 = this.y.fixedDomain[0]) != null ? _ref6 : extent[0]), this.y.prefix.scale((_ref7 = this.y.fixedDomain[1]) != null ? _ref7 : extent[1])])).nice.apply(_ref5, this.yaxis.ticks());
+          (_ref7 = this.y.domain([this.y.prefix.scale(extent[0]), this.y.prefix.scale(extent[1])])).nice.apply(_ref7, this.yaxis.ticks()).domain([this.y.prefix.scale((_ref5 = this.y.fixedDomain[0]) != null ? _ref5 : this.y.domain()[0]), this.y.prefix.scale((_ref6 = this.y.fixedDomain[1]) != null ? _ref6 : this.y.domain()[1])]);
           refreshYAxis.call(this, dt);
         }
       }
@@ -871,6 +880,9 @@
       this.y.range([dataHeight, 0]);
       this.xaxis.tickSize(dataHeight, 0);
       this.yaxis.ticks((dataHeight / 39) | 0);
+      if ((this.y.fixedDomain[0] != null) && (this.y.fixedDomain[1] != null) && (this.y.fixedDomain[1] - this.y.fixedDomain[0]) % 90 === 0) {
+        this.yaxis.tickValues(angleTicks.apply(null, [this.y.fixedDomain].concat(__slice.call(this.yaxis.ticks()))));
+      }
       this.svg.attr("width", this.width).attr("height", this.height);
       this.svg.select("defs rect").attr("width", dataWidth).attr("height", dataHeight + this.padding.top);
       this.svg.select("g.y.grid").selectAll("line").attr("x2", dataWidth);
@@ -894,9 +906,9 @@
     };
 
     refreshYAxis = function(duration) {
-      var grid, _ref,
+      var grid, _ref, _ref1,
         _this = this;
-      grid = this.svg.select("g.y.grid").selectAll("line").data((_ref = this.y).ticks.apply(_ref, this.yaxis.ticks()));
+      grid = this.svg.select("g.y.grid").selectAll("line").data((_ref = this.yaxis.tickValues()) != null ? _ref : (_ref1 = this.y).ticks.apply(_ref1, this.yaxis.ticks()));
       grid.classed("zero", function(d) {
         return d === 0;
       });
@@ -936,6 +948,26 @@
         }
         return path;
       });
+    };
+
+    angleTicks = function(domain, maxTicks) {
+      var i, span, tick, _i, _len, _ref;
+      span = Math.abs(domain[1] - domain[0]);
+      _ref = [15, 30, 45, 90, 180, 360];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        if (span / i <= maxTicks) {
+          return (function() {
+            var _j, _ref1, _ref2, _results;
+            _results = [];
+            for (tick = _j = _ref1 = domain[0], _ref2 = domain[1]; _ref1 <= _ref2 ? _j <= _ref2 : _j >= _ref2; tick = _j += i) {
+              _results.push(tick);
+            }
+            return _results;
+          })();
+        }
+      }
+      return domain;
     };
 
     return Chart;
@@ -1104,7 +1136,7 @@
         display = _ref3[_i];
         $display = $(display);
         $chart = $display.closest(".chart");
-        $display.height($chart.height() - $display.position().top - 20);
+        $display.height($chart.height() - $display.position().top - ($display.outerHeight() - $display.height()));
         $alert = $display.siblings(".alert");
         $alert.css("fontSize", $display.height() / 5).css("marginTop", -($display.outerHeight() + $alert.height()) / 2);
       }
