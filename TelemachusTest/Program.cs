@@ -12,7 +12,7 @@ namespace TelemachusTest
     {
         static void Main(string[] args)
         {
-            time(2000);
+            time(10000);
         }
 
         static private void time(int numberOfTests)
@@ -27,6 +27,8 @@ namespace TelemachusTest
                 string text;
                 using (WebClient client = new WebClient())
                 {
+                    
+
                     timer.Start();
                     for (int i = 0; i < numberOfTests; i++)
                     {
