@@ -193,7 +193,7 @@ namespace Servers
             private Server.ServerShutdown shutdownCallback = null;
 
             protected Socket socket;
-            protected const int BUFFER_SIZE = 512;
+            protected const int BUFFER_SIZE = 4096;
             
             static protected byte[] buffer = null;
             
