@@ -491,8 +491,9 @@ class Chart
         
         # Update the domain to nice values while preserving the fixed ends
         @y.domain([@y.prefix.scale(extent[0]), @y.prefix.scale(extent[1])]).nice(@yaxis.ticks()...)
-          .domain([@y.prefix.scale(@y.fixedDomain[0] ? @y.domain()[0]),
-            @y.prefix.scale(@y.fixedDomain[1] ? @y.domain()[1])])
+          .domain [
+            if @y.fixedDomain[0]? then @y.prefix.scale(@y.fixedDomain[0]) else @y.domain()[0]
+            if @y.fixedDomain[1]? then @y.prefix.scale(@y.fixedDomain[1]) else @y.domain()[1]]
         
         refreshYAxis.call(@, dt)
     

@@ -790,7 +790,7 @@
     };
 
     Chart.prototype.addSample = function(x, sample) {
-      var $parent, dt, e, extent, i, magnitude, prefix, windowEnd, windowStart, x1, x2, _i, _j, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7;
+      var $parent, dt, e, extent, i, magnitude, prefix, windowEnd, windowStart, x1, x2, _i, _j, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
       this.data.push([x].concat(sample));
       this.data.sort(function(a, b) {
         return a[0] - b[0];
@@ -848,7 +848,7 @@
             this.y.prefix = prefix;
             this.svg.select('.y.axis text.label').text(this.yaxis.label + ((this.yaxis.unit != null) || this.y.prefix.symbol !== '' ? " (" + this.y.prefix.symbol + this.yaxis.unit + ")" : ''));
           }
-          (_ref7 = this.y.domain([this.y.prefix.scale(extent[0]), this.y.prefix.scale(extent[1])])).nice.apply(_ref7, this.yaxis.ticks()).domain([this.y.prefix.scale((_ref5 = this.y.fixedDomain[0]) != null ? _ref5 : this.y.domain()[0]), this.y.prefix.scale((_ref6 = this.y.fixedDomain[1]) != null ? _ref6 : this.y.domain()[1])]);
+          (_ref5 = this.y.domain([this.y.prefix.scale(extent[0]), this.y.prefix.scale(extent[1])])).nice.apply(_ref5, this.yaxis.ticks()).domain([this.y.fixedDomain[0] != null ? this.y.prefix.scale(this.y.fixedDomain[0]) : this.y.domain()[0], this.y.fixedDomain[1] != null ? this.y.prefix.scale(this.y.fixedDomain[1]) : this.y.domain()[1]]);
           refreshYAxis.call(this, dt);
         }
       }
