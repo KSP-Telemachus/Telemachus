@@ -190,7 +190,8 @@ namespace Servers
             public event Server.ConnectionRead OnConnectionRead;
 
             Socket socket;
-            public const int BUFFER_SIZE = 1;
+            // Buffer size should be at least as big as the largest protocol verb
+            public const int BUFFER_SIZE = 512;
             public byte[] buffer { get; set; }
             public StringBuilder progressiveMessage { get; set; }
 
