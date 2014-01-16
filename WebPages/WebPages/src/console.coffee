@@ -1,4 +1,4 @@
-standardCharts = 
+standardCharts =
   "Altitude":
     series: ["v.altitude", "v.heightFromTerrain"]
     yaxis: { label: "Altitude", unit: "m", min: 0, max: null}
@@ -66,7 +66,7 @@ standardCharts =
 testCharts =
   "Sine and Cosine":
     series: ["test.sin", "test.cos"]
-    yaxis: { label: "Angle", unit: "\u00B0", min: null, max: null}
+    yaxis: { label: "Angle", unit: "\u00B0", min: -360, max: 360}
   "Quadratic":
     series: ["test.square"]
     yaxis: { label: "Altitude", unit: "m", min: 0, max: null}
@@ -76,12 +76,18 @@ testCharts =
   "Square Root":
     series: ["test.sqrt"]
     yaxis: { label: "Velocity", unit: "m/s", min: 0, max: null}
+  "Exponential":
+    series: ["test.exp"]
+    yaxis: { label: "Velocity", unit: "m/s", min: 1, max: null}
+  "Logarithmic":
+    series: ["test.log"]
+    yaxis: { label: "Velocity", unit: "m/s", min: null, max: null}
 
 customCharts = {}
 
 charts = {}
 
-standardLayouts = 
+standardLayouts =
   "Flight Dynamics":
     charts: ["Altitude", "Orbital Velocity", "True Anomaly"],
     telemetry: ["o.sma", "o.eccentricity", "o.inclination", "o.lan", "o.argumentOfPeriapsis", "o.timeOfPeriapsisPassage", "o.trueAnomaly", "v.altitude", "v.orbitalVelocity"]
@@ -106,7 +112,7 @@ standardLayouts =
 
 testLayouts =
   "Test":
-    charts: ["Sine and Cosine", "Quadratic", "Random"]
+    charts: ["Sine and Cosine", "Exponential", "Random"]
     telemetry: ['test.rand', 'test.sin', 'test.cos', 'test.square', 'test.exp', 'test.sqrt', 'test.log']
 
 customLayouts = {}
@@ -183,7 +189,7 @@ Telemachus =
               for r in @RESOURCES
                 resourceApi = $.extend({}, api)
                 resourceApi.name = r.replace(/([a-z])([A-Z])/g, "$1 $2")
-                resourceApi.name += " Max" if api.apistring.match(/Max$/) 
+                resourceApi.name += " Max" if api.apistring.match(/Max$/)
                 @api[api.apistring + "[#{r}]"] = resourceApi
           else if api.plotable and api.apistring != "s.sensor"
             @api[api.apistring] = api
@@ -256,8 +262,8 @@ Telemachus =
           @telemetry[api] = if paused != 0 then null else
             switch api
               when 'test.rand' then lastRand + (rand - 500) / 10
-              when 'test.sin' then 1000 * Math.sin(x * 2 * Math.PI)
-              when 'test.cos' then 1000 * Math.cos(x * 2 * Math.PI)
+              when 'test.sin' then 360 * Math.sin(x * 2 * Math.PI)
+              when 'test.cos' then 360 * Math.cos(x * 2 * Math.PI)
               when 'test.square' then x * x
               when 'test.exp' then Math.exp(x)
               when 'test.sqrt' then Math.sqrt(x)
@@ -268,7 +274,7 @@ Telemachus =
     
   formatters:
     unitless: (v) -> if typeof v == "number" then v.toPrecision(6) else v
-    velocity: (v) -> siUnit(v, "m/s") 
+    velocity: (v) -> siUnit(v, "m/s")
     deg: (v) -> v.toPrecision(6) + "\u00B0"
     distance: (v) -> siUnit(v, "m")
     time: (v) -> durationString(v)
@@ -280,280 +286,363 @@ Telemachus =
     date: (v) -> dateString(v)
 
 class Chart
-  constructor: (canvas, series, yaxis) ->
-    @$canvas = $(canvas)
+  uniqueId = (-> counter = 0; -> "chart-id-#{counter++}")()
+  
+  activeCharts = []
+  resizeHandler = (event) ->
+    activeCharts = (c for c in activeCharts when $.contains(document, c.svg.node()))
+    if activeCharts.length == 0
+      $(window).off('resize', resizeHandler)
+    else
+      c.resize() for c in activeCharts
+  
+  constructor: (parent, series, yaxis) ->
+    $parent = $(parent)
     @data = []
     @series = series.slice()
-    @xaxis = { min: 0, max: 1, ticks: [] }
-    @yaxis = $.extend({ tickSpacingMin: 30 }, yaxis)
     
     # Styling parameters
-    @padding = { left: 70, top: 10, right: 10, bottom: 30 }
-    @padding.bottom = 10 if @series.length <= 1
-    @seriesStyles = ['rgb(192, 128, 0)', 'rgb(0, 128, 0)', 'rgb(0, 128, 192)', 'rgb(192, 192, 192)']
-    @gridStyle = 'rgb(96, 96, 96)'
-    @axisStyle = 'rgb(192, 192, 192)'
-    @font = 'bold 10pt "Helvetic Neue",Helvetica,Arial,sans serif'
-    @fontSize = 10
-    @tickLength = 5
-    @tickLabelSpacing = 10
-    @legendSpacing = 40
-    @legendBoxSize = 5
+    # We use 1/2 pixels for the padding so that single pixel lines
+    # will be aligned with display pixels
+    @padding = { left: 70.5, top: 13.5, right: 13.5, bottom: 30.5 }
+    @padding.bottom = 13.5 if @series.length <= 1
+    @legendSpacing = 30
     
-    @$canvas.resize (event) => @draw()
-    @draw()
+    # Determine the (initial) chart size
+    @width = $parent.width()
+    @height = $parent.height()
+    dataWidth = Math.max(@width - (@padding.left + @padding.right), 0)
+    dataHeight = Math.max(@height - (@padding.top + @padding.bottom), 0)
+    
+    # Create the X and Y scales
+    @x = d3.scale.linear()
+      .range([0, dataWidth])
+      .domain([0, 300])
+      
+    magnitude = Math.max(orderOfMagnitude(yaxis.min), orderOfMagnitude(yaxis.max))
+    prefix = d3.formatPrefix(Math.pow(10, magnitude - 2))
+    @y = d3.scale.linear()
+      .range([dataHeight, 0])
+      .domain([prefix.scale(yaxis.min), prefix.scale(yaxis.max)])
+    @y.prefix = prefix
+    @y.fixedDomain = [yaxis.min, yaxis.max]
+    
+    # Create the X and Y axes
+    @xaxis = d3.svg.axis()
+      .scale(@x)
+      .orient("bottom")
+      .tickSize(dataHeight, 0)
+      .tickFormat (d) =>
+        if @missionTimeOffset
+          t = (d - @missionTimeOffset) / 60
+          if t < 0
+            result = "T-"
+            t = -t
+          else
+            result = "T+"
+          h = (t / 60 | 0)
+          m = t % 60 | 0
+          m = "0#{m}" if m < 10
+          result + h + ":" + m
+      .tickValues([])
+      
+    @yaxis = d3.svg.axis()
+      .scale(@y)
+      .orient("left")
+      .ticks((dataHeight / 39) | 0)
+    @yaxis.label = yaxis.label
+    @yaxis.unit = yaxis.unit
+    if @y.fixedDomain[0]? and @y.fixedDomain[1]? and (@y.fixedDomain[1] - @y.fixedDomain[0]) % 90 == 0
+      @yaxis.tickValues(angleTicks(@y.fixedDomain, @yaxis.ticks()...))
+    
+    # Generate the SVG
+    
+    @svg = d3.select($parent[0]).append("svg:svg")
+      .attr("width", @width)
+      .attr("height", @height)
+    
+    rootGroup = @svg.append("svg:g")
+      .attr("transform", "translate(#{@padding.left}, #{@padding.top})")
+    
+    # Clipping rectangle for the chart data to keep it in bounds
+    # (though we allow overshooting the top of the chart)
+    clipPathId = uniqueId()
+    rootGroup.append("svg:defs").append("svg:clipPath")
+        .attr("id", clipPathId)
+      .append("svg:rect")
+        .attr("x", 0)
+        .attr("y", -@padding.top)
+        .attr("width", dataWidth)
+        .attr("height", dataHeight + @padding.top)
+    
+    # Group for the Y-axis grid lines
+    rootGroup.append("svg:g")
+      .attr("class", "y grid")
+      .attr("clip-path", "url(##{clipPathId})")
+    
+    # The X-axis
+    g = rootGroup.append("svg:g")
+      .attr("class", "x axis")
+    g.append("svg:g")
+      .attr("class", "ticks")
+      .attr("clip-path", "url(##{clipPathId})")
+    g.append("svg:path")
+      .attr("class", "domain")
+      .attr("d", "M0,#{dataHeight}H#{dataWidth}")
+    refreshXAxis.call(@)
+    
+    # The Y-axis
+    g = rootGroup.append("svg:g").attr("class", "y axis")
+    g.append("svg:text")
+      .attr("class", "label")
+      .attr("text-anchor", "middle")
+      .attr("x", -dataHeight / 2)
+      .attr("y", -(@padding.left - 18))
+      .attr("transform", "rotate(-90)")
+      .text(@yaxis.label + (if @yaxis.unit? or @y.prefix.symbol != '' then " (#{@y.prefix.symbol}#{@yaxis.unit})" else ''))
+    refreshYAxis.call(@)
+    
+    # The data lines
+    rootGroup.append("svg:g")
+        .attr("class", "data")
+        .attr("clip-path", "url(##{clipPathId})")
+      .selectAll("path").data(@series).enter().append("svg:path")
+    
+    # Add a legend if we have multiple series of data
+    if @series.length > 1
+      tspan = rootGroup.append("svg:text")
+          .attr("class", "legend")
+          .attr("transform", "translate(#{dataWidth / 2}, #{dataHeight + 20})")
+          .attr("text-anchor", "middle")
+        .selectAll("tspan").data(@series).enter().append("svg:tspan")
+          .attr("dx", (d, i) => @legendSpacing if i > 0)
+          .on "mouseover", (d, i) =>
+            if @svg.select(".active").empty()
+              @svg.selectAll(".data path").classed "inactive", (d, j) -> j != i
+              @svg.selectAll(".legend > tspan").classed "inactive", (d, j) -> j != i
+          .on "mouseout", =>
+            if @svg.select(".active").empty()
+              @svg.selectAll(".data path, .legend > tspan").classed "inactive", false
+          .on "click", (d, i) ->
+            if d3.select(@).classed "active"
+              rootGroup.selectAll(".data path, .legend > tspan")
+                .classed("inactive", false)
+                .classed("active", false)
+            else
+              rootGroup.selectAll(".data path").classed("inactive", (d, j) -> j != i)
+              rootGroup.selectAll(".legend > tspan")
+                .classed("inactive", (d, j) -> j != i)
+                .classed("active", (d, j) -> j == i)
+              
+      
+      tspan.append("svg:tspan").attr("class", "bullet").text("\u25fc ") # Unicode medium black square
+      tspan.append("svg:tspan").attr("class", "title").text((d) -> d)
+    
+    activeCharts.push(@)
+    $(window).on('resize', resizeHandler) if activeCharts.length == 1
+    
+    # TODO: Smooth y-axis scaling
   
-  addSample: (x, series) ->
-    @data.push([x].concat(series))
+  destroy: ->
+    i = activeCharts.indexOf(@)
+    activeCharts.splice(i, 1)
+    $(window).off('resize', resizeHandler) if activeCharts.length == 0
+    
+  addSample: (x, sample) ->
+    @data.push([x].concat(sample))
     @data.sort((a,b) -> a[0] - b[0])
     
-    # Discard old data
+    if @lastUpdate?
+      dt = Date.now() - (@lastUpdate ? 0)
+      @lastUpdate += dt
+    else
+      dt = 0
+      @lastUpdate = Date.now()
+    
+    # Discard data outside of the x-axis domain
+    for i in [(@data.length - 1)..0]
+      if @data[i][0] <= @x.domain()[1]
+        windowEnd = i + 1
+        break
+    
+    if dt > 100 and dt < 1000 and @data.length >= 2
+      x1 = @data[@data.length - 2][0]
+      x2 = @data[@data.length - 1][0]
+    else
+      x1 = x2 = 0
+    
     windowStart = 0
-    windowEnd = @data.length - 1
-    for e, i in @data
-      windowStart = i if e[0] < @xaxis.min
-      windowEnd = i if e[0] <= @xaxis.max
-    @data = @data.slice(windowStart, windowEnd + 1)
-  
-  draw: ->
-    width = @$canvas.width()
-    height = @$canvas.height()
-    return if width == 0 or height == 0
+    for i in [1...@data.length]
+      if @data[i][0] >= @x.domain()[0] - (x2 - x1)
+        windowStart = i - 1
+        break
     
-    chartWidth = width - (@padding.left + @padding.right)
-    chartHeight = height - (@padding.top + @padding.bottom)
+    @data = @data.slice(windowStart, windowEnd)
     
-    ctx = @$canvas[0].getContext('2d')
-    ctx.save()
+    # Check the y-axis domain
+    unless @y.fixedDomain[0]? and @y.fixedDomain[1]?
+      extent = d3.extent(d3.merge(e.slice(1) for e in @data))
+      extent = [@y.fixedDomain[0] ? extent[0], @y.fixedDomain[1] ? extent[1]]
+      if extent[1] < extent[0]
+        if @y.fixedDomain[0]? then extent[1] = extent[0] else extent[0] = extent[1]
+        
+      if @y.prefix.scale(extent[0]) != @y.domain()[0] or @y.prefix.scale(extent[1]) != @y.domain()[1]
+        # Check for a SI-prefix change
+        magnitude = Math.max(orderOfMagnitude(extent[0]), orderOfMagnitude(extent[1]))
+        prefix = d3.formatPrefix(Math.pow(10, magnitude - 2))
+        if prefix.symbol != @y.prefix.symbol
+          @y.prefix = prefix
+          @svg.select('.y.axis text.label')
+            .text(@yaxis.label + (if @yaxis.unit? or @y.prefix.symbol != '' then " (#{@y.prefix.symbol}#{@yaxis.unit})" else ''))
+        
+        # Update the domain to nice values while preserving the fixed ends
+        @y.domain([@y.prefix.scale(extent[0]), @y.prefix.scale(extent[1])]).nice(@yaxis.ticks()...)
+          .domain [
+            if @y.fixedDomain[0]? then @y.prefix.scale(@y.fixedDomain[0]) else @y.domain()[0]
+            if @y.fixedDomain[1]? then @y.prefix.scale(@y.fixedDomain[1]) else @y.domain()[1]]
+        
+        refreshYAxis.call(@, dt)
     
-    ctx.clearRect(0, 0, width, height)
-    
-    # X-axis parameters
-    @xaxis.scale = chartWidth / (@xaxis.max - @xaxis.min)
-    
-    # Y-axis parameters
-    if @yaxis.min? and @yaxis.max?
-      ymin = @yaxis.min
-      ymax = @yaxis.max
+    # Update the drawing
+    $parent = $(@svg.node().parentElement)
+    if $parent.length == 0
+      return
+    else if @width != $parent.width() or @height != $parent.height()
+      @resize()
     else
-      ymin = @yaxis.min ? Infinity
-      ymax = @yaxis.max ? -Infinity
-      for sample in @data
-        for i in [1...sample.length] when sample[i]?
-          ymin = Math.min(sample[i], ymin) unless @yaxis.min?
-          ymax = Math.max(sample[i], ymax) unless @yaxis.max?
-      ymin = 0 if ymin == Infinity
-      ymax = 0 if ymax == -Infinity
-    
-    @yaxis.ticks = @calculateTicks(@yaxis, ymin, ymax, (chartHeight / @yaxis.tickSpacingMin) | 0)
-    
-    ymin = @yaxis.ticks[0]
-    ymax = @yaxis.ticks[@yaxis.ticks.length - 1]
-    @yaxis.scale = chartHeight / (ymax - ymin)
-    
-    # Set the origin to the bottom left of the chart
-    ctx.translate(@padding.left, height - @padding.bottom)
-    ctx.scale(1, -1) # Make up = +y
-    
-    @drawGrid(ctx, chartWidth, chartHeight, @xaxis.min, ymin)
-    @drawSeries(ctx, @xaxis.min, ymin, i) for i in [@series.length..1]
-    
-    # Erase any over-draw
-    ctx.clearRect(-@padding.left, -@padding.bottom, @padding.left, height)
-    ctx.clearRect(-@padding.left, -@padding.bottom, width, @padding.bottom)
-    
-    @drawAxes(ctx, chartWidth, chartHeight, ymin)
-    @drawLegend(ctx, chartWidth) if @series.length > 1
-    
-    ctx.restore()
+      refreshXAxis.call(@)
+      updateDataPaths.call(@)
+      
+      if dt > 100 and dt < 1000 # Use smooth scrolling when we're getting frequent updates
+        @svg.selectAll(".data path,.x.axis .tick")
+            .attr("transform", "translate(#{@x(x2) - @x(x1)},0)")
+          .interrupt()
+          .transition()
+            .duration(dt)
+            .ease("linear")
+            .attr("transform", "translate(0,0)")
   
-  calculateTicks: (axis, min, max, maxIntervals) ->
-    bottomFixed = axis.min?
-    topFixed = axis.max?
+  resize: ->
+    $parent = $(@svg.node().parentElement)
+    return if $parent.length == 0
     
-    reduce = (interval) ->
-      switch interval[0]
-        when 5 then [2, interval[1]]
-        when 2 then [1, interval[1]]
-        when 1 then [5, interval[1] - 1]
-  
-    intervalValue = (interval) -> interval[0] * Math.pow(10, interval[1])
-  
-    intervalAbove = (num, interval) ->
-      v = intervalValue(interval)
-      m = if num < 0 then v + num % v else num % v
-      num - m + v
+    @width = $parent.width()
+    @height = $parent.height()
     
-    intervalBelow = (num, interval) ->
-      v = intervalValue(interval)
-      m = if num < 0 then v + num % v else num % v
-      if m == 0 then num - v else num - m
+    # Re-calculate the width and height of the data area
+    dataWidth = Math.max(@width - (@padding.left + @padding.right), 0)
+    dataHeight = Math.max(@height - (@padding.top + @padding.bottom), 0)
+    
+    # Update the ranges of our scaling functions
+    @x.range([0, dataWidth])
+    @y.range([dataHeight, 0])
+    
+    @xaxis.tickSize(dataHeight, 0) # Update the height of the x-axis grid lines
+    @yaxis.ticks((dataHeight / 39) | 0) # Update the maximum ticks that will fit on the y-axis
+    if @y.fixedDomain[0]? and @y.fixedDomain[1]? and (@y.fixedDomain[1] - @y.fixedDomain[0]) % 90 == 0
+      @yaxis.tickValues(angleTicks(@y.fixedDomain, @yaxis.ticks()...))
+    
+    # Update width and height of the root SVG element
+    @svg.attr("width", @width)
+      .attr("height", @height)
+      
+    # Update the data area clipping rectangle
+    @svg.select("defs rect")
+      .attr("width", dataWidth)
+      .attr("height", dataHeight + @padding.top)
+    
+    # Update the width of the grid lines
+    @svg.select("g.y.grid").selectAll("line")
+      .attr("x2", dataWidth)
+    
+    # Update the x-axis domain path
+    @svg.select("g.x.axis path.domain")
+      .attr("d", "M0,#{dataHeight}H#{dataWidth}")
+      
+    # Re-center the y-axis label
+    @svg.select("g.y.axis text").attr("x", -dataHeight / 2)
+    
+    # Re-center the legend (if it exists)
+    @svg.select("text.legend")
+      .attr("transform", "translate(#{dataWidth / 2},#{dataHeight + 20})")
+    
+    refreshXAxis.call(@)
+    refreshYAxis.call(@)
+    updateDataPaths.call(@)
   
-    if max < min
-      if topFixed and bottomFixed
-        [min, max] = [max, min]
-      else if topFixed
-        min = max
-      else
-        max = min
-  
-    if maxIntervals < 1
-      maxIntervals = 1
+  # Private methods
+  refreshXAxis = ->
+    ticks = @svg.select("g.x.axis .ticks").selectAll("g.tick").data(@xaxis.tickValues())
+    ticks.select("line")
+      .attr("x1", @x)
+      .attr("y1", 0)
+      .attr("x2", @x)
+      .attr("y2", @xaxis.tickSize())
+    ticks.select("text") 
+      .attr("x", @x)
+      .attr("y", @xaxis.tickSize())
+      .text(@xaxis.tickFormat())
+      
+    tick = ticks.enter().append("svg:g").attr("class", "tick")
+    tick.append("svg:line")
+      .attr("x1", @x)
+      .attr("y1", 0)
+      .attr("x2", @x)
+      .attr("y2", @xaxis.tickSize())
+    tick.append("svg:text")
+      .attr("x", @x)
+      .attr("y", @xaxis.tickSize())
+      .attr("dx", "0.5em")
+      .attr("dy", "-1ex")
+      .attr("text-anchor", "start")
+      .text(@xaxis.tickFormat())
+    
+    ticks.exit().remove()
 
-    bottom = min
-    top = max
-  
-    # Special case for angle axes
-    if bottomFixed and topFixed and top - bottom >= 90 and ((top - bottom) % 90 == 0)
-      intervals = [15, 30, 45, 90]
-      intervals.shift() while ((top - bottom) / intervals[0]) > maxIntervals
-      return (tick for tick in [bottom..top] by intervals[0])
+  refreshYAxis = (duration) ->
+    # Update the grid lines
+    grid = @svg.select("g.y.grid").selectAll("line")
+      .data(@yaxis.tickValues() ? @y.ticks(@yaxis.ticks()...))
+    grid.classed("zero", (d) -> d == 0)
+    (if duration? then grid.transition().duration(duration) else grid)
+      .attr("y1", (d) => @y(d))
+      .attr("y2", (d) => @y(d))
+      
+    grid.enter().append("svg:line")
+      .attr("x1", 0)
+      .attr("y1", (d) => @y(d))
+      .attr("x2", @width)
+      .attr("y2", (d) => @y(d))
+      .classed("zero", (d) -> d == 0)
+    grid.exit().remove()
     
-    if min == max
-      if max == 0
-        return [0, 1]
-      else
-        magnitude = orderOfMagnitude(max)
-        interval = [1, magnitude]
-        bottom = intervalBelow(min, interval) unless bottomFixed
-        top = intervalAbove(max, interval) unless topFixed and not bottomFixed
-        topFixed = bottomFixed = true
+    # Update the Y-axis
+    if duration?
+      @svg.select("g.y.axis").transition().duration(duration).call(@yaxis)
     else
-      magnitude = Math.max(orderOfMagnitude(min), orderOfMagnitude(max))
-      interval = [1, magnitude]
-      bottom = intervalBelow(min, interval) unless bottomFixed
-      top = intervalAbove(min, interval) unless topFixed
+      @svg.select("g.y.axis").call(@yaxis)
   
-    loop
-      nextInterval = reduce(interval)
-      nextBottom = if bottomFixed then bottom else intervalBelow(min, nextInterval)
-      nextTop = if topFixed then top else intervalAbove(max, nextInterval)
+  updateDataPaths = ->
+    @svg.selectAll("g.data path").data(@series)
+      .attr "d", (d, i) =>
+        path = ""
+        for d, j in @data when d[i+1]
+          path += if path.length > 0 and @data[j-1]?[i+1]? then "L" else "M"
+          path += "#{@x(d[0])},#{@y(@y.prefix.scale(d[i+1]))}"
+        path
+  
+  angleTicks = (domain, maxTicks) ->
+    span = Math.abs(domain[1] - domain[0])
+    for i in [15, 30, 45, 90, 180, 360]
+      return (tick for tick in [domain[0]..domain[1]] by i) if span / i <= maxTicks
+    return domain
     
-      break if (nextTop - nextBottom) / intervalValue(nextInterval) > maxIntervals
-    
-      [bottom, top, interval] = [nextBottom, nextTop, nextInterval]
-  
-    ticks = [bottom, top]
-    ticks[1..0] = (i for i in [intervalAbove(bottom, interval)...top] by intervalValue(interval))
-    ticks
-  
-  drawGrid: (ctx, width, height, xoffset, yoffset) ->
-    ctx.save()
-  
-    ctx.strokeStyle = @gridStyle
-  
-    ctx.beginPath()
-    for tick in @xaxis.ticks
-      x = Math.round(@xaxis.scale * (tick - xoffset) - 0.5) + 0.5
-      ctx.moveTo(x, 0)
-      ctx.lineTo(x, height)
-    for tick in @yaxis.ticks
-      y = Math.round(@yaxis.scale * (tick - yoffset) - 0.5) + 0.5
-      ctx.moveTo(0, y)
-      ctx.lineTo(width, y)
-    ctx.stroke()
-  
-    ctx.strokeStyle = @axisStyle
-    ctx.beginPath()
-    y = Math.round(-@yaxis.scale * yoffset - 0.5) + 0.5
-    ctx.moveTo(0, y)
-    ctx.lineTo(width, y)
-    ctx.stroke()
-    
-    ctx.restore()
-  
-  drawSeries: (ctx, xmin, ymin, i) ->
-    ctx.save()
-  
-    ctx.lineWidth = 2
-    ctx.lineJoin = 'round'
-    ctx.lineCap = 'round'
-    ctx.strokeStyle = @seriesStyles[i-1]
-    
-    ctx.beginPath()
-    for d, j in @data when d[i]?
-      if @data[j-1]?[i]?
-        ctx.lineTo(@xaxis.scale * (d[0] - xmin), @yaxis.scale * (d[i] - ymin))
-      else
-        ctx.moveTo(@xaxis.scale * (d[0] - xmin), @yaxis.scale * (d[i] - ymin))
-    ctx.stroke()
-  
-    ctx.restore()
-  
-  drawAxes: (ctx, width, height, yoffset) ->
-    PREFIXES = ['f', 'p', 'n', '\u03bc', 'm', '', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
-  
-    ctx.save()
-  
-    ctx.strokeStyle = @axisStyle
-    ctx.beginPath()
-    ctx.moveTo(-@tickLength, 0.5)
-    ctx.lineTo(width + 0.5, 0.5)
-    ctx.moveTo(0.5, 0)
-    ctx.lineTo(0.5, height + 0.5)
-  
-    for tick in @yaxis.ticks when tick != yoffset
-      y = Math.round(@yaxis.scale * (tick - yoffset) - 0.5) + 0.5
-      ctx.moveTo(-@tickLength, y)
-      ctx.lineTo(0.5, y)
-    
-    ctx.stroke()
-  
-    tickMagnitude = Math.max(orderOfMagnitude(@yaxis.ticks[0]), orderOfMagnitude(@yaxis.ticks[@yaxis.ticks.length - 1]))
-    tickMagnitude -= 1 if tickMagnitude > 0
-    tickScale = Math.ceil(tickMagnitude / 3)
-    tickScale -= 1 if tickScale > 0
-    prefix = PREFIXES[tickScale + 5]
-    
-    ctx.font = @font
-    ctx.fillStyle = @axisStyle
-    ctx.textBaseline = 'middle'
-    ctx.scale(1, -1) # Un-flip the Y-axis for right side up text
-    
-    ctx.save()
-    ctx.textAlign = 'center'
-    ctx.translate(-(@padding.left - @fontSize), -height / 2)
-    ctx.rotate(-Math.PI / 2)
-    if (@yaxis.unit? and @yaxis.unit != '') or prefix != ''
-      ctx.fillText("#{@yaxis.label} (#{prefix}#{@yaxis.unit ? ''})", 0, 0, height)
-    else
-      ctx.fillText("#{@yaxis.label}", 0, 0, height)
-    ctx.restore()
-    
-    ctx.textAlign = 'right'
-    tickScale = Math.pow(1000, -tickScale)
-    for tick in @yaxis.ticks
-      y = Math.round(@yaxis.scale * (tick - yoffset) - 0.5) + 0.5
-      ctx.fillText(stripInsignificantZeros((tick * tickScale).toFixed(3)), -@tickLabelSpacing, -y)
-  
-    ctx.restore()
-  
-  drawLegend: (ctx, width, series) ->
-    ctx.save()
-  
-    ctx.font = @font
-    ctx.textAlign = 'left'
-    ctx.textBaseline = 'middle'
-
-    seriesWidths = (ctx.measureText(name).width for name in @series)
-    legendWidth = seriesWidths.reduce((sum, width) -> sum + width) + (@series.length - 1) * @legendSpacing
-  
-    ctx.scale(1, -1) # Flip Y-axis for right side up text
-    x = width / 2 - legendWidth / 2
-    for name, i in @series
-      ctx.fillStyle = @seriesStyles[i]
-      ctx.fillRect(x, @padding.bottom - (@fontSize + @legendBoxSize / 2), @legendBoxSize, @legendBoxSize)
-      ctx.fillStyle = @axisStyle
-      ctx.fillText(name, x + @fontSize, @padding.bottom - @fontSize)
-      x += seriesWidths[i] + @legendSpacing
-  
-    ctx.restore()
-
 $(document).ready ->
   # TODO:
   #  Custom charts (auto-save)
   #  Custom layout import/export
   
+  # Load custom charts and layouts
   if window.localStorage?
     customCharts = JSON.parse(window.localStorage.getItem("telemachus.console.charts")) ? {}
     $.extend(charts, standardCharts, customCharts)
@@ -561,7 +650,8 @@ $(document).ready ->
     $.extend(layouts, standardLayouts, customLayouts)
     savedDefault = window.localStorage.getItem("defaultLayout")
     defaultLayout = savedDefault if savedDefault? and savedDefault of layouts
-    
+  
+  # Detect test mode and load test charts and layouts
   testMode = (window.location.protocol == "file:" or window.location.hash == "#test")
   if testMode
     $.extend(layouts, testLayouts)
@@ -587,19 +677,18 @@ $(document).ready ->
     event.preventDefault()
     setChart($(this).closest(".chart"), $(this).text())
     $(this).closest("ul").hide()
-    
-  $(document).on "click.dropdown", ".dropdown > a", ->
+  
+  # Event handlers
+  $(document).on "click.dropdown", ".dropdown button", ->
     $this = $(this)
+    console.log $this.width(), $this.height(), $this.outerWidth(true), $this.outerHeight(true)
     $menu = $this.next()
     $menu.toggle().css
-      left: Math.max($this.position().left + $this.width() - $menu.outerWidth(), 0)
-      top: $this.position().top + Math.min($(window).height() - $menu.outerHeight() - $this.offset().top, $this.height())
+      left: Math.max($this.position().left + $this.outerWidth(true) - $menu.outerWidth() + 5, 0)
+      top: $this.position().top + Math.min($(window).height() - $menu.outerHeight() - $this.offset().top, $this.outerHeight(true))
   
-  $(document).on "click.dropdown", ->
+  $(document).on "click.dropdown", (event) ->
     $(".dropdown").not($(event.target).parents()).children("ul").hide()
-  
-  setLayout(defaultLayout)
-  $("#deleteLayout").prop("disabled", defaultLayout not of customLayouts)
   
   $("#apiCategory").change (event) ->
     category = $("#apiCategory").val()
@@ -607,9 +696,15 @@ $(document).ready ->
     for apistring, api of Telemachus.api when apistring.match(category)
       $("#apiSelect").append($("<option>").attr("value", apistring).text(api.name))
   
-  $("#telemetry").on "click", "dt a", (event) ->
+  $("#telemetry form").submit (event) ->
+    event.preventDefault()
+    addTelemetry($("#apiSelect").val())
+  
+  $("#telemetry ul").on "click", "button.remove", (event) ->
     event.preventDefault()
     removeTelemetry($(this).parent())
+  
+  $("#telemetry ul").sortable({ handle: ".handle", containment: "#telemetry" })
   
   $(".alert").on "telemetryAlert", (event, message) ->
     $(".alert").text(message ? "")
@@ -618,6 +713,7 @@ $(document).ready ->
       $display = $this.siblings(".display")
       $this.css("marginTop", -($display.outerHeight() + $this.height()) / 2)
   
+  # Custom layout event handlers
   if window.localStorage?
     $("#saveLayout").click (event) ->
       event.preventDefault()
@@ -625,7 +721,7 @@ $(document).ready ->
       return if !name? or name == "" or (name of layouts and !window.confirm("That name is already in use. Are you sure you want to overwrite the existing layout?"))
       layouts[name] = customLayouts[name] =
         charts: ($(elem).text().trim() for elem in $(".chart h2"))
-        telemetry: ($(elem).data("api") for elem in $("#telemetry dt"))
+        telemetry: ($(elem).data("api") for elem in $("#telemetry li"))
       window.localStorage.setItem("telemachus.console.layouts", JSON.stringify(customLayouts))
       populateLayoutMenu()
       $("h1").text(name)
@@ -650,6 +746,30 @@ $(document).ready ->
   else
     $("#saveLayout").prop("disabled", true)
     $("#deleteLayout").prop("disabled", true)
+
+  $(window).resize ->
+    winHeight = Math.min($(window).height(), window.innerHeight ? 1e6)
+    $("#container").height(winHeight - ($("#container").position().top + $("body > footer").outerHeight(true)))
+  
+    for display in $(".display", "#charts")
+      $display= $(display)
+      $chart = $display.closest(".chart")
+      $display.height($chart.height() - $display.position().top - ($display.outerHeight() - $display.height()))
+      $alert = $display.siblings(".alert")
+      $alert.css("fontSize", $display.height() / 5).css("marginTop", -($display.outerHeight() + $alert.height()) / 2)
+  
+    $telemetry = $("#telemetry")
+    $telemetryList = $("ul", $telemetry)
+    $telemetryForm = $("form", $telemetry)
+    margins = $telemetryList.outerHeight(true) - $telemetryList.height()
+    $telemetryList.height($telemetryForm.position().top - $telemetryList.position().top - margins)
+  
+    $("form", $telemetry).width($telemetry.width())
+    $telemetrySelect = $("#apiSelect")
+    $telemetryAdd = $("form input", $telemetry)
+    buttonWidth = $telemetryAdd.outerWidth(true) + 5 # 5px for whitespace between controls
+    $telemetrySelect.width($telemetry.width() - buttonWidth - ($telemetrySelect.outerWidth() - $telemetrySelect.width()))
+  .resize()
   
   Telemachus.subscribeAlerts($(".alert"))
   
@@ -667,54 +787,34 @@ $(document).ready ->
       $("#ut").text(dateString(universalTime))
   , 1000
   
-  $("#telemetry form").submit (event) ->
-    event.preventDefault()
-    addTelemetry($("#apiSelect").val())
-
-  $(window).resize ->
-    winHeight = Math.min($(window).height(), window.innerHeight ? 1e6)
-    $("#container").height(winHeight - ($("#container").position().top + $("body > footer").outerHeight(true)))
-  
-    for display in $(".display", "#charts")
-      $display= $(display)
-      $chart = $display.closest(".chart")
-      $display.height($chart.height() - $display.position().top - 20)
-      $alert = $display.siblings(".alert")
-      $alert.css("fontSize", $display.height() / 5).css("marginTop", -($display.outerHeight() + $alert.height()) / 2)
-    
-    $(canvas).prop(width: $(canvas).width(), height: $(canvas).height()) for canvas in $("canvas")
-  
-    $telemetry = $("#telemetry")
-    $telemetryList = $("dl", $telemetry)
-    $telemetryForm = $("form", $telemetry)
-    margins = $telemetryList.outerHeight(true) - $telemetryList.height()
-    $telemetryList.height($telemetryForm.position().top - $telemetryList.position().top - margins)
-  
-    $("form", $telemetry).width($telemetry.width())
-    $telemetrySelect = $("#apiSelect")
-    $telemetryAdd = $("form input", $telemetry)
-    buttonWidth = $telemetryAdd.outerWidth(true) + 5 # 5px for whitespace between controls
-    $telemetrySelect.width($telemetry.width() - buttonWidth)
-      
-  .resize()
+  setLayout(defaultLayout)
+  $("#deleteLayout").prop("disabled", defaultLayout not of customLayouts)
 
 addTelemetry = (api) ->
-  if api? and api of Telemachus.api and $("#telemetry dd[data-api='#{api}']").length == 0
-    $("<dt>").data("api", api).text(Telemachus.api[api].name + " ")
-      .append($("<a>").attr(href: "#", title: "Remove")).appendTo("#telemetry dl")
-    $dd = $("<dd>").data("api", api).text("No Data").appendTo("#telemetry dl").on "telemetry", (event, data) ->
-      value = data[api]
-      $dd.text(Telemachus.format(value, api))
-    Telemachus.subscribe($dd, api)
+  if api? and api of Telemachus.api and $("#telemetry li[data-api='#{api}']").length == 0
+    $li = $("<li>").data("api", api)
+      .append($("<h3>").text(Telemachus.api[api].name))
+      .append($("<button>").attr(class: "remove"))
+      .append($("<img>").attr(class: "handle", src: "draghandle.png", alt: "Drag to reorder"))
+      .appendTo("#telemetry ul")
+    $data = $("<div>").attr(class: "telemetry-data").text("No Data").appendTo($li)
+    $li.on "telemetry", (event, data) ->
+        value = data[api]
+        $data.text(Telemachus.format(value, api))
+    Telemachus.subscribe($li, api)
+    $("#telemetry ul").sortable("refresh").disableSelection()
 
 removeTelemetry = (elem) ->
-  $elem = $(elem).next().addBack()
+  $elem = $(elem)
   Telemachus.unsubscribe($elem)
   $elem.remove()
+  $("#telemetry ul").sortable("refresh")
   
 resetChart = (elem) ->
   $display = $(".display", elem).empty()
   Telemachus.unsubscribe($display)
+  $display.data('chart')?.destroy()
+  $display.data('chart', null)
 
 setChart = (elem, chartName) ->
   resetChart(elem)
@@ -768,25 +868,23 @@ setChart = (elem, chartName) ->
             marker.bindPopup(data["v.name"] + " </br>Latitude: " + data["v.lat"] + "</br>Longitude: " + data["v.long"])
             marker.update()
   else
-    $canvas = $("<canvas>").attr(width: $display.width(), height: $display.height()).appendTo($display)
     apis = chart.series
     
     # Convert chart definition to a Chart
-    chart = new Chart($canvas, (Telemachus.api[e].name for e in apis when e of Telemachus.api), chart.yaxis)
+    chart = new Chart($display[0], (Telemachus.api[e].name for e in apis when e of Telemachus.api), chart.yaxis)
     
-    $display.on "telemetry", (event, data) ->
+    $display.data('chart', chart).on "telemetry", (event, data) ->
       t = data["t.universalTime"]
       missionTime = data["v.missionTime"]
       
-      chart.xaxis.min = t - 300
-      chart.xaxis.max = t
-      chart.xaxis.ticks = (x for x in [(t - missionTime % 60)...(t - 300)] by -60 when missionTime > 0 and (t - x - 0.01) <= missionTime).reverse()
+      chart.missionTimeOffset = (t - missionTime if missionTime > 0)
+      chart.x.domain([t - 300, t])
+      lastT = Math.min(chart.data[chart.data.length - 1]?[0] ? t, t)
+      chart.xaxis.tickValues(x for x in [(t - missionTime % 60)...(t - 360 - (t - lastT))] by -60 when missionTime > 0 and x >= (t - missionTime))
       
       sample = (data[e] for e in apis)
       sample[i] = e[1][0] for e, i in sample when $.isArray(e)
       chart.addSample(t, sample)
-      
-      chart.draw()
 
 reloadLayout = -> setLayout($("h1").text().trim())
 
@@ -795,14 +893,14 @@ setLayout = (name) ->
     window.localStorage.setItem("defaultLayout", name)
     $("h1").text(name)
     layout = layouts[name]
-    removeTelemetry(elem) for elem in $("#telemetry dl dt")
+    removeTelemetry(elem) for elem in $("#telemetry ul li")
     addTelemetry(telemetry) for telemetry in layout.telemetry
     setChart(elem, layout.charts[i]) for elem, i in $(".chart")
 
 # Utility functions
 orderOfMagnitude = (v) ->
-  return 0 if v == 0
-  Math.floor(Math.log(Math.abs(v)) / Math.LN10 + 1.0000000000000001)
+  return 0 if +v == 0
+  1 + Math.floor(1e-12 + Math.log(Math.abs(+v)) / Math.LN10)
 
 siUnit = (v, unit = "") ->
   return "0 #{unit}" if v == 0
@@ -821,24 +919,24 @@ siUnit = (v, unit = "") ->
 
 stripInsignificantZeros = (v) -> v.toString().replace(/((\.\d*?[1-9])|\.)0+($|e)/, '$2$3')
 
-hourMinSec = (t) ->
+hourMinSec = (t = 0) ->
   hour = (t / 3600) | 0
   hour = "0#{hour}" if hour < 10
   t %= 3600
   min = (t / 60) | 0
   min = "0#{min}" if min < 10
-  sec = (t % 60).toFixed()
+  sec = (t % 60 | 0).toFixed()
   sec = "0#{sec}" if sec < 10
   "#{hour}:#{min}:#{sec}"
   
-dateString = (t) ->
+dateString = (t = 0) ->
   year = ((t / (365 * 24 * 3600)) | 0) + 1
   t %= (365 * 24 * 3600)
   day = ((t / (24 * 3600)) | 0) + 1
   t %= (24 * 3600)
   "Year #{year}, Day #{day}, #{hourMinSec(t)} UT"
 
-missionTimeString = (t) ->
+missionTimeString = (t = 0) ->
   result = "T+"
   if t >= 365 * 24 * 3600
     result += (t / (365 * 24 * 3600) | 0) + ":"
@@ -848,7 +946,7 @@ missionTimeString = (t) ->
   t %= 24 * 3600
   result + hourMinSec(t) + " MET"
 
-durationString = (t) ->
+durationString = (t = 0) ->
   result = if t < 0 then "-" else ""
   t = Math.abs(t)
   if t >= 365 * 24 * 3600
