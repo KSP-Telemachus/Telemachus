@@ -913,24 +913,24 @@ siUnit = (v, unit = "") ->
 
 stripInsignificantZeros = (v) -> v.toString().replace(/((\.\d*?[1-9])|\.)0+($|e)/, '$2$3')
 
-hourMinSec = (t) ->
+hourMinSec = (t = 0) ->
   hour = (t / 3600) | 0
   hour = "0#{hour}" if hour < 10
   t %= 3600
   min = (t / 60) | 0
   min = "0#{min}" if min < 10
-  sec = (t % 60).toFixed()
+  sec = (t % 60 | 0).toFixed()
   sec = "0#{sec}" if sec < 10
   "#{hour}:#{min}:#{sec}"
   
-dateString = (t) ->
+dateString = (t = 0) ->
   year = ((t / (365 * 24 * 3600)) | 0) + 1
   t %= (365 * 24 * 3600)
   day = ((t / (24 * 3600)) | 0) + 1
   t %= (24 * 3600)
   "Year #{year}, Day #{day}, #{hourMinSec(t)} UT"
 
-missionTimeString = (t) ->
+missionTimeString = (t = 0) ->
   result = "T+"
   if t >= 365 * 24 * 3600
     result += (t / (365 * 24 * 3600) | 0) + ":"
@@ -940,7 +940,7 @@ missionTimeString = (t) ->
   t %= 24 * 3600
   result + hourMinSec(t) + " MET"
 
-durationString = (t) ->
+durationString = (t = 0) ->
   result = if t < 0 then "-" else ""
   t = Math.abs(t)
   if t >= 365 * 24 * 3600
