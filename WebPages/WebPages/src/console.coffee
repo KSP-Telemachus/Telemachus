@@ -407,12 +407,6 @@ class Chart
         .attr("class", "data")
         .attr("clip-path", "url(##{clipPathId})")
       .selectAll("path").data(@series).enter().append("svg:path")
-        .on "mouseover", (d, i) =>
-          @svg.selectAll(".data path").classed "inactive", (d, j) -> j != i
-          @svg.selectAll(".legend > tspan").classed "inactive", (d, j) -> j != i
-        .on "mouseout", =>
-          @svg.selectAll(".data path").classed "inactive", false
-          @svg.selectAll(".legend > tspan").classed "inactive", false
     
     # Add a legend if we have multiple series of data
     if @series.length > 1
@@ -423,11 +417,23 @@ class Chart
         .selectAll("tspan").data(@series).enter().append("svg:tspan")
           .attr("dx", (d, i) => @legendSpacing if i > 0)
           .on "mouseover", (d, i) =>
-            @svg.selectAll(".data path").classed "inactive", (d, j) -> j != i
-            @svg.selectAll(".legend > tspan").classed "inactive", (d, j) -> j != i
+            if @svg.select(".active").empty()
+              @svg.selectAll(".data path").classed "inactive", (d, j) -> j != i
+              @svg.selectAll(".legend > tspan").classed "inactive", (d, j) -> j != i
           .on "mouseout", =>
-            @svg.selectAll(".data path").classed "inactive", false
-            @svg.selectAll(".legend > tspan").classed "inactive", false
+            if @svg.select(".active").empty()
+              @svg.selectAll(".data path, .legend > tspan").classed "inactive", false
+          .on "click", (d, i) ->
+            if d3.select(@).classed "active"
+              rootGroup.selectAll(".data path, .legend > tspan")
+                .classed("inactive", false)
+                .classed("active", false)
+            else
+              rootGroup.selectAll(".data path").classed("inactive", (d, j) -> j != i)
+              rootGroup.selectAll(".legend > tspan")
+                .classed("inactive", (d, j) -> j != i)
+                .classed("active", (d, j) -> j == i)
+              
       
       tspan.append("svg:tspan").attr("class", "bullet").text("\u25fc ") # Unicode medium black square
       tspan.append("svg:tspan").attr("class", "title").text((d) -> d)

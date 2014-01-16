@@ -363,6 +363,7 @@ body > header .dropdown button {
 
 .chart .legend tspan {
   transition: opacity 0.5s;
+  cursor: pointer;
 }
 
 .chart .data path.inactive,

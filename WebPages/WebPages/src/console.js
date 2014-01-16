@@ -742,32 +742,38 @@
       g = rootGroup.append("svg:g").attr("class", "y axis");
       g.append("svg:text").attr("class", "label").attr("text-anchor", "middle").attr("x", -dataHeight / 2).attr("y", -(this.padding.left - 18)).attr("transform", "rotate(-90)").text(this.yaxis.label + ((this.yaxis.unit != null) || this.y.prefix.symbol !== '' ? " (" + this.y.prefix.symbol + this.yaxis.unit + ")" : ''));
       refreshYAxis.call(this);
-      rootGroup.append("svg:g").attr("class", "data").attr("clip-path", "url(#" + clipPathId + ")").selectAll("path").data(this.series).enter().append("svg:path").on("mouseover", function(d, i) {
-        _this.svg.selectAll(".data path").classed("inactive", function(d, j) {
-          return j !== i;
-        });
-        return _this.svg.selectAll(".legend > tspan").classed("inactive", function(d, j) {
-          return j !== i;
-        });
-      }).on("mouseout", function() {
-        _this.svg.selectAll(".data path").classed("inactive", false);
-        return _this.svg.selectAll(".legend > tspan").classed("inactive", false);
-      });
+      rootGroup.append("svg:g").attr("class", "data").attr("clip-path", "url(#" + clipPathId + ")").selectAll("path").data(this.series).enter().append("svg:path");
       if (this.series.length > 1) {
         tspan = rootGroup.append("svg:text").attr("class", "legend").attr("transform", "translate(" + (dataWidth / 2) + ", " + (dataHeight + 20) + ")").attr("text-anchor", "middle").selectAll("tspan").data(this.series).enter().append("svg:tspan").attr("dx", function(d, i) {
           if (i > 0) {
             return _this.legendSpacing;
           }
         }).on("mouseover", function(d, i) {
-          _this.svg.selectAll(".data path").classed("inactive", function(d, j) {
-            return j !== i;
-          });
-          return _this.svg.selectAll(".legend > tspan").classed("inactive", function(d, j) {
-            return j !== i;
-          });
+          if (_this.svg.select(".active").empty()) {
+            _this.svg.selectAll(".data path").classed("inactive", function(d, j) {
+              return j !== i;
+            });
+            return _this.svg.selectAll(".legend > tspan").classed("inactive", function(d, j) {
+              return j !== i;
+            });
+          }
         }).on("mouseout", function() {
-          _this.svg.selectAll(".data path").classed("inactive", false);
-          return _this.svg.selectAll(".legend > tspan").classed("inactive", false);
+          if (_this.svg.select(".active").empty()) {
+            return _this.svg.selectAll(".data path, .legend > tspan").classed("inactive", false);
+          }
+        }).on("click", function(d, i) {
+          if (d3.select(this).classed("active")) {
+            return rootGroup.selectAll(".data path, .legend > tspan").classed("inactive", false).classed("active", false);
+          } else {
+            rootGroup.selectAll(".data path").classed("inactive", function(d, j) {
+              return j !== i;
+            });
+            return rootGroup.selectAll(".legend > tspan").classed("inactive", function(d, j) {
+              return j !== i;
+            }).classed("active", function(d, j) {
+              return j === i;
+            });
+          }
         });
         tspan.append("svg:tspan").attr("class", "bullet").text("\u25fc ");
         tspan.append("svg:tspan").attr("class", "title").text(function(d) {
@@ -1386,6 +1392,9 @@
 
   hourMinSec = function(t) {
     var hour, min, sec;
+    if (t == null) {
+      t = 0;
+    }
     hour = (t / 3600) | 0;
     if (hour < 10) {
       hour = "0" + hour;
@@ -1395,7 +1404,7 @@
     if (min < 10) {
       min = "0" + min;
     }
-    sec = (t % 60).toFixed();
+    sec = (t % 60 | 0).toFixed();
     if (sec < 10) {
       sec = "0" + sec;
     }
@@ -1404,6 +1413,9 @@
 
   dateString = function(t) {
     var day, year;
+    if (t == null) {
+      t = 0;
+    }
     year = ((t / (365 * 24 * 3600)) | 0) + 1;
     t %= 365 * 24 * 3600;
     day = ((t / (24 * 3600)) | 0) + 1;
@@ -1413,6 +1425,9 @@
 
   missionTimeString = function(t) {
     var result;
+    if (t == null) {
+      t = 0;
+    }
     result = "T+";
     if (t >= 365 * 24 * 3600) {
       result += (t / (365 * 24 * 3600) | 0) + ":";
@@ -1430,6 +1445,9 @@
 
   durationString = function(t) {
     var result;
+    if (t == null) {
+      t = 0;
+    }
     result = t < 0 ? "-" : "";
     t = Math.abs(t);
     if (t >= 365 * 24 * 3600) {
