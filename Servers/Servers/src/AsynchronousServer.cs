@@ -304,7 +304,10 @@ namespace Servers
 
             private void tryShutdown()
             {
-                socket.Shutdown(SocketShutdown.Both);
+				try {
+                	socket.Shutdown(SocketShutdown.Both);
+				} catch(SocketException) {
+				}
                 socket.BeginDisconnect(false, new AsyncCallback(DisconnectCallback), this);
             }
 
