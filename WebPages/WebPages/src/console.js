@@ -1024,13 +1024,14 @@
       setChart($(this).closest(".chart"), $(this).text());
       return $(this).closest("ul").hide();
     });
-    $(document).on("click.dropdown", ".dropdown > a", function() {
+    $(document).on("click.dropdown", ".dropdown button", function() {
       var $menu, $this;
       $this = $(this);
+      console.log($this.width(), $this.height(), $this.outerWidth(true), $this.outerHeight(true));
       $menu = $this.next();
       return $menu.toggle().css({
-        left: Math.max($this.position().left + $this.width() - $menu.outerWidth(), 0),
-        top: $this.position().top + Math.min($(window).height() - $menu.outerHeight() - $this.offset().top, $this.height())
+        left: Math.max($this.position().left + $this.outerWidth(true) - $menu.outerWidth() + 5, 0),
+        top: $this.position().top + Math.min($(window).height() - $menu.outerHeight() - $this.offset().top, $this.outerHeight(true))
       });
     });
     $(document).on("click.dropdown", function(event) {
@@ -1054,9 +1055,13 @@
       event.preventDefault();
       return addTelemetry($("#apiSelect").val());
     });
-    $("#telemetry").on("click", "dt a", function(event) {
+    $("#telemetry ul").on("click", "button.remove", function(event) {
       event.preventDefault();
       return removeTelemetry($(this).parent());
+    });
+    $("#telemetry ul").sortable({
+      handle: ".handle",
+      containment: "#telemetry"
     });
     $(".alert").on("telemetryAlert", function(event, message) {
       var $display, $this;
@@ -1088,7 +1093,7 @@
           })(),
           telemetry: (function() {
             var _i, _len, _ref2, _results;
-            _ref2 = $("#telemetry dt");
+            _ref2 = $("#telemetry li");
             _results = [];
             for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
               elem = _ref2[_i];
@@ -1141,7 +1146,7 @@
         $alert.css("fontSize", $display.height() / 5).css("marginTop", -($display.outerHeight() + $alert.height()) / 2);
       }
       $telemetry = $("#telemetry");
-      $telemetryList = $("dl", $telemetry);
+      $telemetryList = $("ul", $telemetry);
       $telemetryForm = $("form", $telemetry);
       margins = $telemetryList.outerHeight(true) - $telemetryList.height();
       $telemetryList.height($telemetryForm.position().top - $telemetryList.position().top - margins);
@@ -1173,26 +1178,34 @@
   });
 
   addTelemetry = function(api) {
-    var $dd;
-    if ((api != null) && api in Telemachus.api && $("#telemetry dd[data-api='" + api + "']").length === 0) {
-      $("<dt>").data("api", api).text(Telemachus.api[api].name + " ").append($("<a>").attr({
-        href: "#",
-        title: "Remove"
-      })).appendTo("#telemetry dl");
-      $dd = $("<dd>").data("api", api).text("No Data").appendTo("#telemetry dl").on("telemetry", function(event, data) {
+    var $data, $li;
+    if ((api != null) && api in Telemachus.api && $("#telemetry li[data-api='" + api + "']").length === 0) {
+      $li = $("<li>").data("api", api).append($("<h3>").text(Telemachus.api[api].name)).append($("<button>").attr({
+        "class": "remove"
+      })).append($("<img>").attr({
+        "class": "handle",
+        src: "draghandle.png",
+        alt: "Drag to reorder"
+      })).appendTo("#telemetry ul");
+      $data = $("<div>").attr({
+        "class": "telemetry-data"
+      }).text("No Data").appendTo($li);
+      $li.on("telemetry", function(event, data) {
         var value;
         value = data[api];
-        return $dd.text(Telemachus.format(value, api));
+        return $data.text(Telemachus.format(value, api));
       });
-      return Telemachus.subscribe($dd, api);
+      Telemachus.subscribe($li, api);
+      return $("#telemetry ul").sortable("refresh").disableSelection();
     }
   };
 
   removeTelemetry = function(elem) {
     var $elem;
-    $elem = $(elem).next().addBack();
+    $elem = $(elem);
     Telemachus.unsubscribe($elem);
-    return $elem.remove();
+    $elem.remove();
+    return $("#telemetry ul").sortable("refresh");
   };
 
   resetChart = function(elem) {
@@ -1320,7 +1333,7 @@
       window.localStorage.setItem("defaultLayout", name);
       $("h1").text(name);
       layout = layouts[name];
-      _ref = $("#telemetry dl dt");
+      _ref = $("#telemetry ul li");
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         elem = _ref[_i];
         removeTelemetry(elem);

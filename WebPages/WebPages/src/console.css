@@ -25,23 +25,44 @@ body > footer button {
 
 h1 {
   display: inline;
+  font-size: 2em;
 }
 
 body > header nav {
   display: inline;
 }
 
-body > header nav > a {
+body > header .dropdown button {
   font-size: 2em;
 }
 
-.dropdown a {
-  text-decoration: none;
-  color: inherit;
+.dropdown button {
+  font-size: 1em;
+  background: transparent;
+  border: none;
+  margin: 5px 0 5px 0.5ex;
+  padding: 0;
+  cursor: pointer;
 }
 
-.dropdown > a:hover {
-  color: rgb(0, 128, 192);
+.dropdown button:focus {
+  outline: none;
+  border: none;
+}
+
+.dropdown button svg {
+  font-size: 1em;
+  width: 0.9em;
+  height: 0.75em;
+}
+
+.dropdown button path {
+  stroke: black;
+  stroke-width: 30px;
+}
+
+.dropdown button:hover path {
+  stroke: rgb(0,128,192)
 }
 
 .dropdown > ul {
@@ -65,6 +86,8 @@ body > header nav > a {
 }
 
 .dropdown li a {
+  text-decoration: none;
+  color: inherit;
   display: block;
   padding: 0.5ex 1em;
 }
@@ -118,44 +141,80 @@ body > header nav > a {
   margin-top: 0;
 }
 
-#telemetry dl {
+#telemetry ul {
   overflow: auto;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 
-#telemetry dt {
-  font-weight: bold;
-  margin: 0 0 0.5ex 0;
-  padding-top: 1ex;
+#telemetry li {
+  display: block;
   border-top: thin solid rgb(192,192,192);
+  border-bottom: thin solid rgb(192,192,192);
+  margin-bottom: -1px;
+  padding: 1ex 0;
   position: relative;
 }
 
-#telemetry dt a {
+#telemetry li:last-child {
+  border-bottom: thin solid rgb(192,192,192);
+}
+
+#telemetry h3 {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1em;
+  margin-bottom: 0.5ex;
+  margin-right: 1em;
+}
+
+#telemetry button.remove {
+  border: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
   position: absolute;
   right: 0;
   top: 0.5ex;
-  color: black;
-  text-decoration: none;
+  font-family: inherit;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-#telemetry dt a:hover {
+#telemetry button.remove:hover {
   color: #c00000;
 }
 
-#telemetry dt a:after {
+#telemetry button.remove:after {
+  font-weight: bold;
   content: '\00d7';
 }
 
-#telemetry dd {
-  color: rgb(0, 128, 0);
-  margin-left: 0;
-  margin: 0.5ex 0 0 0;
-  padding-bottom: 1ex;
-  font-family: "Lucida Console", Monaco, monospace;
+#telemetry .handle {
+  position: absolute;
+  right: 0;
+  bottom: 1ex;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
 }
 
-#telemetry dd:last-child {
-  border-bottom: thin solid rgb(192,192,192);
+#telemetry .telemetry-data {
+  color: rgb(0, 128, 0);
+  font-family: "Lucida Console", Monaco, monospace;
+  margin-right: 1em;
+}
+
+#telemetry .ui-sortable-helper {
+  background: white;
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
+}
+
+#telemetry .ui-sortable-helper .handle {
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
 }
 
 #telemetry form {
@@ -193,7 +252,7 @@ body > header nav > a {
   display: inline;
 }
 
-.chart header nav > a {
+.chart header .dropdown button {
   font-size: 1.5em;
 }
 

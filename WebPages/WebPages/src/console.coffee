@@ -673,12 +673,13 @@ $(document).ready ->
     $(this).closest("ul").hide()
   
   # Event handlers
-  $(document).on "click.dropdown", ".dropdown > a", ->
+  $(document).on "click.dropdown", ".dropdown button", ->
     $this = $(this)
+    console.log $this.width(), $this.height(), $this.outerWidth(true), $this.outerHeight(true)
     $menu = $this.next()
     $menu.toggle().css
-      left: Math.max($this.position().left + $this.width() - $menu.outerWidth(), 0)
-      top: $this.position().top + Math.min($(window).height() - $menu.outerHeight() - $this.offset().top, $this.height())
+      left: Math.max($this.position().left + $this.outerWidth(true) - $menu.outerWidth() + 5, 0)
+      top: $this.position().top + Math.min($(window).height() - $menu.outerHeight() - $this.offset().top, $this.outerHeight(true))
   
   $(document).on "click.dropdown", (event) ->
     $(".dropdown").not($(event.target).parents()).children("ul").hide()
@@ -693,9 +694,11 @@ $(document).ready ->
     event.preventDefault()
     addTelemetry($("#apiSelect").val())
   
-  $("#telemetry").on "click", "dt a", (event) ->
+  $("#telemetry ul").on "click", "button.remove", (event) ->
     event.preventDefault()
     removeTelemetry($(this).parent())
+  
+  $("#telemetry ul").sortable({ handle: ".handle", containment: "#telemetry" })
   
   $(".alert").on "telemetryAlert", (event, message) ->
     $(".alert").text(message ? "")
@@ -712,7 +715,7 @@ $(document).ready ->
       return if !name? or name == "" or (name of layouts and !window.confirm("That name is already in use. Are you sure you want to overwrite the existing layout?"))
       layouts[name] = customLayouts[name] =
         charts: ($(elem).text().trim() for elem in $(".chart h2"))
-        telemetry: ($(elem).data("api") for elem in $("#telemetry dt"))
+        telemetry: ($(elem).data("api") for elem in $("#telemetry li"))
       window.localStorage.setItem("telemachus.console.layouts", JSON.stringify(customLayouts))
       populateLayoutMenu()
       $("h1").text(name)
@@ -750,7 +753,7 @@ $(document).ready ->
       $alert.css("fontSize", $display.height() / 5).css("marginTop", -($display.outerHeight() + $alert.height()) / 2)
   
     $telemetry = $("#telemetry")
-    $telemetryList = $("dl", $telemetry)
+    $telemetryList = $("ul", $telemetry)
     $telemetryForm = $("form", $telemetry)
     margins = $telemetryList.outerHeight(true) - $telemetryList.height()
     $telemetryList.height($telemetryForm.position().top - $telemetryList.position().top - margins)
@@ -782,18 +785,24 @@ $(document).ready ->
   $("#deleteLayout").prop("disabled", defaultLayout not of customLayouts)
 
 addTelemetry = (api) ->
-  if api? and api of Telemachus.api and $("#telemetry dd[data-api='#{api}']").length == 0
-    $("<dt>").data("api", api).text(Telemachus.api[api].name + " ")
-      .append($("<a>").attr(href: "#", title: "Remove")).appendTo("#telemetry dl")
-    $dd = $("<dd>").data("api", api).text("No Data").appendTo("#telemetry dl").on "telemetry", (event, data) ->
-      value = data[api]
-      $dd.text(Telemachus.format(value, api))
-    Telemachus.subscribe($dd, api)
+  if api? and api of Telemachus.api and $("#telemetry li[data-api='#{api}']").length == 0
+    $li = $("<li>").data("api", api)
+      .append($("<h3>").text(Telemachus.api[api].name))
+      .append($("<button>").attr(class: "remove"))
+      .append($("<img>").attr(class: "handle", src: "draghandle.png", alt: "Drag to reorder"))
+      .appendTo("#telemetry ul")
+    $data = $("<div>").attr(class: "telemetry-data").text("No Data").appendTo($li)
+    $li.on "telemetry", (event, data) ->
+        value = data[api]
+        $data.text(Telemachus.format(value, api))
+    Telemachus.subscribe($li, api)
+    $("#telemetry ul").sortable("refresh").disableSelection()
 
 removeTelemetry = (elem) ->
-  $elem = $(elem).next().addBack()
+  $elem = $(elem)
   Telemachus.unsubscribe($elem)
   $elem.remove()
+  $("#telemetry ul").sortable("refresh")
   
 resetChart = (elem) ->
   $display = $(".display", elem).empty()
@@ -878,7 +887,7 @@ setLayout = (name) ->
     window.localStorage.setItem("defaultLayout", name)
     $("h1").text(name)
     layout = layouts[name]
-    removeTelemetry(elem) for elem in $("#telemetry dl dt")
+    removeTelemetry(elem) for elem in $("#telemetry ul li")
     addTelemetry(telemetry) for telemetry in layout.telemetry
     setChart(elem, layout.charts[i]) for elem, i in $(".chart")
 
