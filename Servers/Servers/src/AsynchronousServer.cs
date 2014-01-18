@@ -289,7 +289,7 @@ namespace Servers
                     }
                     else
                     {
-                        tryShutdown();
+                        OnConnectionEmptyRead(new ConnectionEventArgs(this));
                     }
                 }
                 catch (Exception e)
@@ -330,7 +330,7 @@ namespace Servers
                 }
             }
 
-            private void tryShutdown()
+            public void tryShutdown()
             {
                 try
                 {

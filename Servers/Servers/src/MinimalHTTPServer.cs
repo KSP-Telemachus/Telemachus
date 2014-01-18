@@ -76,7 +76,13 @@ namespace Servers
                 //Subscribe to connection events before before commencing.
                 e.clientConnection.ConnectionNotify += ConnectionNotify;
                 e.clientConnection.ConnectionRead += ConnectionRead;
+                e.clientConnection.ConnectionEmptyRead += ConnectionEmptyRead;
                 e.clientConnection.startConnection();
+            }
+
+            private void ConnectionEmptyRead(object sender, ConnectionEventArgs e)
+            {
+                e.clientConnection.tryShutdown();
             }
 
             private void ConnectionRead(object sender, ConnectionEventArgs e)
