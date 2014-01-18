@@ -45,7 +45,7 @@ namespace Telemachus
                     readConfiguration();
 
                     server = new Server(serverConfig);
-                    server.OnServerNotify += new Server.ServerNotify(serverOut);
+                    server.ServerNotify += ServerNotify;
                     server.addHTTPResponsibility(new ElseResponsibility());
                     ioPageResponsibility = new IOPageResponsibility();
                     server.addHTTPResponsibility(ioPageResponsibility);
@@ -122,9 +122,9 @@ namespace Telemachus
             }
         }
 
-        static private void serverOut(String message)
+        private static void ServerNotify(object sender, Servers.NotifyEventArgs e)
         {
-            PluginLogger.debug(message);
+            PluginLogger.debug(e.message);
         }
 
         #endregion

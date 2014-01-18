@@ -11,9 +11,17 @@ namespace Servers
     {
         public class Server
         {
-            public delegate void ServerNotify(String message);
+            public event EventHandler<NotifyEventArgs> ServerNotify;
 
-            public event ServerNotify OnServerNotify;
+            protected virtual void OnServerNotify(NotifyEventArgs e)
+            {
+                EventHandler<NotifyEventArgs> handler = ServerNotify;
+
+                if (handler != null)
+                {
+                    ServerNotify(this, e);
+                }
+            }
 
             AsynchronousServer.Server server = null;
             ServerConfiguration configuration = null;
@@ -43,8 +51,8 @@ namespace Servers
 
             public void startServing()
             {
-                server.OnConnection += new AsynchronousServer.Server.Connection(connection);
-                server.OnServerNotify += new AsynchronousServer.Server.ServerNotify(serverOut);
+                server.ConnectionReceived += ConnectionReceived;
+                server.ServerNotify += ServerNotify;
                 server.startListening();
             }
 
@@ -63,17 +71,17 @@ namespace Servers
                 requestChainOfResponsibility.Insert(0, responsibility);
             }
 
-            private void connection(AsynchronousServer.ClientConnection cc)
+            protected void ConnectionReceived(object sender, ConnectionEventArgs e)
             {
-                //Register events before commencing the connection.
-                cc.OnConnectionNotify += new AsynchronousServer.Server.ConnectionNotify(connectionOut);
-                cc.OnConnectionRead += new AsynchronousServer.Server.ConnectionRead(connectionRead);
-                cc.startConnection();
+                //Subscribe to connection events before before commencing.
+                e.clientConnection.ConnectionNotify += ConnectionNotify;
+                e.clientConnection.ConnectionRead += ConnectionRead;
+                e.clientConnection.startConnection();
             }
-            
-            private void connectionRead(AsynchronousServer.ClientConnection clientConnection)
+
+            private void ConnectionRead(object sender, ConnectionEventArgs e)
             {
-                ClientConnection cc = (ClientConnection)clientConnection;
+                ClientConnection cc = (ClientConnection)e.clientConnection;
 
                 try
                 {
@@ -109,12 +117,18 @@ namespace Servers
                 {
                     cc.Send(r);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    cc.Send(new ExceptionResponsePage(e.Message + " " + e.StackTrace));
+                    cc.Send(new ExceptionResponsePage(ex.Message + " " + ex.StackTrace));
                 }
             }
 
+            private void ConnectionNotify(object sender, ConnectionNotifyEventArgs e)
+            {
+                OnServerNotify(new NotifyEventArgs(e.message + "\n" + 
+                    "Client Connection: " + e.clientConnection.ToString()));
+            }
+            
             private void processRequest(AsynchronousServer.ClientConnection cc, HTTPRequest request)
             {
                 foreach (IHTTPRequestResponsibility responsibility in requestChainOfResponsibility)
@@ -123,22 +137,6 @@ namespace Servers
                     {
                         break;
                     }
-                }
-            }
-
-            private void serverOut(String message)
-            {
-                if (OnServerNotify != null)
-                {
-                    OnServerNotify(message);
-                }
-            }
-
-            private void connectionOut(AsynchronousServer.ClientConnection cc, String message)
-            {
-                if (OnServerNotify != null)
-                {
-                    OnServerNotify(message);
                 }
             } 
         }

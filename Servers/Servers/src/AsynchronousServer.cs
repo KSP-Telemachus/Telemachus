@@ -18,15 +18,41 @@ namespace Servers
                 return new ClientConnection(handler, server);
             };
 
-            public delegate void Connection(ClientConnection cc);
-            public delegate void ConnectionRead(ClientConnection cc);
-            public delegate void ConnectionNotify(ClientConnection cc, String message);
-            public delegate void ServerNotify(String message);
-            public delegate void ServerShutdown();
+            public event EventHandler<NotifyEventArgs> ServerNotify;
+            public event EventHandler<EventArgs> ServerShutdown;
 
-            public event ServerNotify OnServerNotify;
-            public event Connection OnConnection;
-            public event ServerShutdown OnShutdown;
+            protected virtual void OnServerNotify(NotifyEventArgs e)
+            {
+                EventHandler<NotifyEventArgs> handler = ServerNotify;
+
+                if(handler != null)
+                {
+                    ServerNotify(this, e);
+                }
+            }
+
+            protected virtual void OnServerShutdown(EventArgs e)
+            {
+                EventHandler<EventArgs> handler = ServerShutdown;
+
+                if (handler != null)
+                {
+                    ServerShutdown(this, e);
+                }
+            }
+
+            public event EventHandler<ConnectionEventArgs> ConnectionReceived;
+
+            protected virtual void OnConnectionReceived(ConnectionEventArgs e)
+            {
+                EventHandler<ConnectionEventArgs> handler = ConnectionReceived;
+
+                if (handler != null)
+                {
+                    ConnectionReceived(this, e);
+                }
+            }
+
 
             List<Socket> listeners = new List<Socket>();
             public ServerConfiguration configuration { get; set; }
@@ -59,7 +85,7 @@ namespace Servers
                 {
                     try
                     {
-                        serverOut("Trying user defined address.");
+                        OnServerNotify(new NotifyEventArgs("Trying user defined address."));
                         listener = buildNewListener();
                         tryBind(listener, configuration);
                         listeners.Add(listener);
@@ -82,7 +108,7 @@ namespace Servers
                         {
                             try
                             {
-                                serverOut("Trying internal addresses.");
+                                OnServerNotify(new NotifyEventArgs("Trying internal addresses."));
                                 configuration.ipAddresses.Insert(0, ip);
                                 listener = buildNewListener();
                                 tryBind(listener, configuration);
@@ -103,7 +129,7 @@ namespace Servers
                     //Try to bind to localhost.
                     try
                     {
-                        serverOut("Trying localhost.");
+                        OnServerNotify(new NotifyEventArgs("Trying localhost."));
                         configuration.ipAddresses.Insert(0, IPAddress.Parse(LOCALHOST));
                         listener = buildNewListener();
                         tryBind(listener, configuration);
@@ -122,7 +148,7 @@ namespace Servers
                 }
                 else
                 {
-                    serverOut("Waiting for a connection.");
+                    OnServerNotify(new NotifyEventArgs("Waiting for a connection."));
                 }
             }
 
@@ -133,18 +159,7 @@ namespace Servers
                     listener.Close();
                 }
 
-                if (OnShutdown != null)
-                {
-                    OnShutdown();
-                }
-            }
-
-            private void serverOut(String s)
-            {
-                if (OnServerNotify != null)
-                {
-                    OnServerNotify(s);
-                }
+                OnServerShutdown(new EventArgs());
             }
 
             private Socket buildNewListener()
@@ -172,41 +187,68 @@ namespace Servers
                         new AsyncCallback(AcceptCallback),
                         listener);
 
-                    if (OnConnection != null)
-                    {
-                        OnConnection(clientConnectionBuilder(handler, this));
-                    }
+                        OnConnectionReceived(new ConnectionEventArgs(clientConnectionBuilder(handler, this)));
                 }
                 catch (Exception e)
                 {
-                    serverOut(e.ToString());
+                    OnServerNotify(new NotifyEventArgs(e.ToString()));
                 }
             }
         }
 
         public class ClientConnection
         {
-            public event Server.ConnectionNotify OnConnectionNotify;
-            public event Server.ConnectionRead OnConnectionRead;
+            public event EventHandler<ConnectionNotifyEventArgs> ConnectionNotify;
+            public event EventHandler<ConnectionEventArgs> ConnectionRead;
+            public event EventHandler<ConnectionEventArgs> ConnectionEmptyRead;
+
+            protected virtual void OnConnectionNotify(ConnectionNotifyEventArgs e)
+            {
+                EventHandler<ConnectionNotifyEventArgs> handler = ConnectionNotify;
+
+                if (handler != null)
+                {
+                    ConnectionNotify(this, e);
+                }
+            }
+
+            protected virtual void OnConnectionRead(ConnectionEventArgs e)
+            {
+                EventHandler<ConnectionEventArgs> handler = ConnectionRead;
+
+                if (handler != null)
+                {
+                    ConnectionRead(this, e);
+                }
+            }
+
+            protected virtual void OnConnectionEmptyRead(ConnectionEventArgs e)
+            {
+                EventHandler<ConnectionEventArgs> handler = ConnectionEmptyRead;
+
+                if (handler != null)
+                {
+                    ConnectionEmptyRead(this, e);
+                }
+            }
 
             Socket socket;
             // Buffer size should be at least as big as the largest protocol verb
             public const int BUFFER_SIZE = 512;
-            public byte[] buffer { get; set; }
+            private byte[] buffer = new byte[BUFFER_SIZE];
             public StringBuilder progressiveMessage { get; set; }
 
             private Server server = null;
-            private Server.ServerShutdown shutdownCallback = null;
+            private EventHandler<EventArgs> shutdownCallback = null;
 
             public ClientConnection(Socket socket, Server server)
             {
                 progressiveMessage = new StringBuilder();
-                buffer = new byte[BUFFER_SIZE];
 
                 this.socket = socket;
                 this.server = server;
-                shutdownCallback = new Server.ServerShutdown(requestShutdown);
-                server.OnShutdown += shutdownCallback;
+                shutdownCallback = requestShutdown;
+                server.ServerShutdown += shutdownCallback;
             }
 
             public void startConnection()
@@ -218,14 +260,11 @@ namespace Servers
                 }
                 catch (Exception e)
                 {
-                    if (OnConnectionNotify != null)
-                    {
-                        OnConnectionNotify(this, e.ToString());
-                    }
+                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString(), this));
                 }
             }
 
-            private void requestShutdown()
+            private void requestShutdown(Object sender, EventArgs e)
             {
                 socket.Close();
             }
@@ -243,10 +282,7 @@ namespace Servers
                         progressiveMessage.Append(Encoding.ASCII.GetString(
                             buffer, 0, bytesRead));
 
-                        if (OnConnectionRead != null)
-                        {
-                            OnConnectionRead(this);
-                        }
+                        OnConnectionRead(new ConnectionEventArgs(this));
 
                         socket.BeginReceive(buffer, 0, ClientConnection.BUFFER_SIZE, 0,
                         new AsyncCallback(ReadCallback), this);
@@ -258,10 +294,7 @@ namespace Servers
                 }
                 catch (Exception e)
                 {
-                    if (OnConnectionNotify != null)
-                    {
-                        OnConnectionNotify(this, e.ToString());
-                    }
+                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString(), this));
 
                     tryShutdown();
                 }
@@ -281,10 +314,7 @@ namespace Servers
                 }
                 catch (Exception e)
                 {
-                    if (OnConnectionNotify != null)
-                    {
-                        OnConnectionNotify(this, e.ToString());
-                    }
+                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString(), this));
                 }
             }
 
@@ -296,10 +326,7 @@ namespace Servers
                 }
                 catch (Exception e)
                 {
-                    if (OnConnectionNotify != null)
-                    {
-                        OnConnectionNotify(this, e.ToString());
-                    }
+                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString(), this));
                 }
             }
 
@@ -324,14 +351,11 @@ namespace Servers
                 }
                 catch (Exception e)
                 {
-                    if (OnConnectionNotify != null)
-                    {
-                        OnConnectionNotify(this, e.ToString());
-                    }
+                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString(), this));
                 }
                 finally
                 {
-                    server.OnShutdown -= shutdownCallback;
+                    server.ServerShutdown -= shutdownCallback;
                     socket.Close();
                 }
             }
@@ -375,6 +399,37 @@ namespace Servers
             {
                 ipAddresses.Insert(0, IPAddress.Parse(ip));
             }
+        }
+    }
+
+    public class ConnectionEventArgs : EventArgs
+    {
+        public AsynchronousServer.ClientConnection clientConnection {get; set;}
+
+        public ConnectionEventArgs(AsynchronousServer.ClientConnection clientConnection)
+        {
+            this.clientConnection = clientConnection;
+        }
+    }
+
+    public class NotifyEventArgs : EventArgs
+    {
+        public String message {get; set;}
+
+        public NotifyEventArgs(String message)
+        {
+            this.message = message;
+        }
+    }
+
+    public class ConnectionNotifyEventArgs : ConnectionEventArgs
+    {
+        public String message {get; set;}
+
+        public ConnectionNotifyEventArgs(String message, 
+            AsynchronousServer.ClientConnection clientConnection) : base(clientConnection)
+        {
+            this.message = message;
         }
     }
 }
