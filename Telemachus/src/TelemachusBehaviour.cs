@@ -1,5 +1,5 @@
 ﻿using KSP.IO;
-using Servers.MinimalHTTPServer;
+using Servers.MinimalWebSocketServer;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -40,27 +40,27 @@ namespace Telemachus
             {
                 try
                 {
-                    PluginLogger.print("Telemachus data link starting");
+                    Servers.PluginLogger.print("Telemachus data link starting");
 
                     readConfiguration();
 
                     server = new Server(serverConfig);
                     server.ServerNotify += ServerNotify;
-                    server.addHTTPResponsibility(new ElseResponsibility());
+                    //server.addHTTPResponsibility(new ElseResponsibility());
                     ioPageResponsibility = new IOPageResponsibility();
-                    server.addHTTPResponsibility(ioPageResponsibility);
-                    dataLinkResponsibility = new DataLinkResponsibility(JSONFormatterProvider.Instance, serverConfig);
-                    server.addHTTPResponsibility(dataLinkResponsibility);
+                    //server.addHTTPResponsibility(ioPageResponsibility);
+                    //dataLinkResponsibility = new DataLinkResponsibility(JSONFormatterProvider.Instance, serverConfig);
+                    //server.addHTTPResponsibility(dataLinkResponsibility);
                     server.startServing();
-                 
-                    PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
+
+                    Servers.PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
                         + server.getIPsAsString() +
                         "). Try putting them into your web browser, some of them might not work.");
                 }
                 catch (Exception e)
                 {
-                    PluginLogger.print(e.Message);
-                    PluginLogger.print(e.StackTrace);
+                    Servers.PluginLogger.print(e.Message);
+                    Servers.PluginLogger.print(e.StackTrace);
                 }
             }
         }
@@ -84,7 +84,7 @@ namespace Telemachus
             }
             else
             {
-                PluginLogger.print("No port in configuration file.");
+                Servers.PluginLogger.print("No port in configuration file.");
             }
 
             String ip = config.GetValue<String>("IPADDRESS");
@@ -97,12 +97,12 @@ namespace Telemachus
                 }
                 catch
                 {
-                    PluginLogger.print("Invalid IP address in configuration file, falling back to find.");
+                    Servers.PluginLogger.print("Invalid IP address in configuration file, falling back to find.");
                 }
             }
             else
             {
-                PluginLogger.print("No IP address in configuration file.");
+                Servers.PluginLogger.print("No IP address in configuration file.");
             }
 
             serverConfig.maxRequestLength = 8000;
@@ -116,7 +116,7 @@ namespace Telemachus
         {
             if (server != null)
             {
-                PluginLogger.print("Telemachus data link shutting down.");
+                Servers.PluginLogger.print("Telemachus data link shutting down.");
                 server.stopServing();
                 server = null;
             }
@@ -124,7 +124,7 @@ namespace Telemachus
 
         private static void ServerNotify(object sender, Servers.NotifyEventArgs e)
         {
-            PluginLogger.debug(e.message);
+            Servers.PluginLogger.debug(e.message);
         }
 
         #endregion
@@ -218,7 +218,8 @@ namespace Telemachus
         List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
 
 
-        public KSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector, ServerConfiguration serverConfiguration)
+        public KSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector, 
+            Servers.AsynchronousServer.ServerConfiguration serverConfiguration)
         {
             APIHandlers.Add(new PausedDataLinkHandler(formatters));
             APIHandlers.Add(new FlyByWireDataLinkHandler(formatters));

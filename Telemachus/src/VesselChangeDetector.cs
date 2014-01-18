@@ -4,67 +4,70 @@ using System.Collections.Generic;
 using System.Text;
 using Telemachus;
 
-public class VesselChangeDetector
+namespace Telemachus
 {
-    #region Fields
+    public class VesselChangeDetector
+    {
+        #region Fields
 
-    Vessel previousVessel = null;
-    public delegate void VesselChange(Vessel vessel);
-    private event VesselChange vesselChangeEvent;
-    public static bool hasTelemachusPart = false;
+        Vessel previousVessel = null;
+        public delegate void VesselChange(Vessel vessel);
+        private event VesselChange vesselChangeEvent;
+        public static bool hasTelemachusPart = false;
 
-    #endregion
+        #endregion
 
-    #region Events
+        #region Events
 
-    public void update(Vessel vessel){
-
-        if (vessel != null)
+        public void update(Vessel vessel)
         {
-            updateHasTelemachusPart(vessel);
 
-            if (previousVessel != null)
+            if (vessel != null)
             {
-                if (vessel.id != previousVessel.id || vessel.parts.Count != previousVessel.parts.Count)
+                updateHasTelemachusPart(vessel);
+
+                if (previousVessel != null)
+                {
+                    if (vessel.id != previousVessel.id || vessel.parts.Count != previousVessel.parts.Count)
+                    {
+                        fireVesselChanged(vessel);
+                    }
+                }
+                else
                 {
                     fireVesselChanged(vessel);
                 }
             }
-            else
+
+            previousVessel = vessel;
+        }
+
+        public void suscribe(VesselChange vc)
+        {
+            vesselChangeEvent += vc;
+        }
+
+        private void fireVesselChanged(Vessel vessel)
+        {
+            if (vesselChangeEvent != null)
             {
-                fireVesselChanged(vessel);
+                vesselChangeEvent(vessel);
             }
         }
 
-        previousVessel = vessel;
-    }
-
-    public void suscribe(VesselChange vc)
-    {
-        vesselChangeEvent += vc;
-    }
-
-    private void fireVesselChanged(Vessel vessel)
-    {
-        if (vesselChangeEvent != null)
+        private void updateHasTelemachusPart(Vessel vessel)
         {
-            vesselChangeEvent(vessel);
+            try
+            {
+
+                hasTelemachusPart = vessel.parts.FindAll(p => p.Modules.Contains("TelemachusDataLink")).Count > 0;
+            }
+            catch (Exception e)
+            {
+                Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
+            }
         }
+
+        #endregion
     }
-
-    private void updateHasTelemachusPart(Vessel vessel)
-    {
-        try
-        {
-
-            hasTelemachusPart = vessel.parts.FindAll(p => p.Modules.Contains("TelemachusDataLink")).Count > 0;
-        }
-        catch(Exception e)
-        {
-            PluginLogger.debug(e.Message + " " + e.StackTrace);
-        }
-    }
-
-    #endregion
 }
-

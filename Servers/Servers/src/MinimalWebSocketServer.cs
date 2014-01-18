@@ -4,10 +4,11 @@ using System.Text;
 using System.Collections.Generic;
 using System.Collections;
 using System.Net.Sockets;
+using Servers.MinimalHTTPServer;
 
 namespace Servers
 {
-    namespace MinimalHTTPServer
+    namespace MinimalWebSocketServer
     {
         public class Server
         {
@@ -75,7 +76,7 @@ namespace Servers
             {
                 //Subscribe to connection events before before commencing.
                 e.clientConnection.ConnectionNotify += ConnectionNotify;
-                e.clientConnection.ConnectionRead += ConnectionRead;
+                e.clientConnection.ConnectionRead += ConnectionHTTPRead;
                 e.clientConnection.ConnectionEmptyRead += ConnectionEmptyRead;
                 e.clientConnection.startConnection();
             }
@@ -85,7 +86,7 @@ namespace Servers
                 e.clientConnection.tryShutdown();
             }
 
-            private void ConnectionRead(object sender, ConnectionEventArgs e)
+            private void ConnectionHTTPRead(object sender, ConnectionEventArgs e)
             {
                 ClientConnection cc = (ClientConnection)e.clientConnection;
 
@@ -97,28 +98,28 @@ namespace Servers
                         {
                             HTTPRequest request = new HTTPRequest();
                             request.parse(cc.progressiveMessage.ToString());
-                            processRequest(cc, request);
+                            PluginLogger.print(request.Data["Upgrade"].ToString());
+                            //processRequest(cc, request);
                         }
 
                         if (cc.progressiveMessage.Length > configuration.maxRequestLength)
                         {
-                            throw new RequestEntityTooLargeResponsePage();
-                        }
-                    }
-                    else if (cc.progressiveMessage.ToString().StartsWith(POST))
-                    {
-                        HTTPRequest request = new HTTPRequest();
 
-                        if (request.tryParse(cc.progressiveMessage.ToString()))
-                        {
-                            processRequest(cc, request);
+                            //TODO: Throw some JSON formatted string
+                            //throw new RequestEntityTooLargeResponsePage();
                         }
                     }
                     else
                     {
-                        throw new BadRequestResponsePage();
+                        //TODO: Throw some JSON formatted string
+                        //throw new BadRequestResponsePage();
                     }
                 }
+                catch
+                {
+                }
+                //TODO catch JSON formatted errors
+                /*
                 catch (HTTPResponse r)
                 {
                     cc.Send(r);
@@ -127,6 +128,7 @@ namespace Servers
                 {
                     cc.Send(new ExceptionResponsePage(ex.Message + " " + ex.StackTrace));
                 }
+                 * */
             }
 
             private void ConnectionNotify(object sender, ConnectionNotifyEventArgs e)
@@ -173,6 +175,11 @@ namespace Servers
             public int maxRequestLength { get; set; }
         }
 
+        public interface IHTTPRequestResponsibility
+        {
+            bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request);
+        }
+
         class FallBackRequestResponsibility : IHTTPRequestResponsibility
         {
             public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
@@ -180,11 +187,6 @@ namespace Servers
                 cc.Send(new PageNotFoundResponsePage().ToString());
                 return true;
             }
-        }
-
-        public interface IHTTPRequestResponsibility
-        {
-            bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request);
         }
     }
 }

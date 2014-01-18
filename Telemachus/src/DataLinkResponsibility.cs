@@ -39,7 +39,7 @@ namespace Telemachus
 
         #region Initialisation
 
-        public DataLinkResponsibility(FormatterProvider formatters, ServerConfiguration serverConfiguration)
+        public DataLinkResponsibility(FormatterProvider formatters, Servers.AsynchronousServer.ServerConfiguration serverConfiguration)
         {
             kspAPI = new KSPAPI(formatters, vesselChangeDetector, serverConfiguration);
         }
@@ -68,7 +68,7 @@ namespace Telemachus
                 }
                 catch (Exception e)
                 {
-                    PluginLogger.debug(e.Message + " "  + e.StackTrace);
+                    Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
                 }
 
                 if (request.requestType == Server.GET)
@@ -124,7 +124,7 @@ namespace Telemachus
             foreach (String arg in argsSplit)
             {
                 string refArg = arg;
-                PluginLogger.fine(refArg);
+                Servers.PluginLogger.fine(refArg);
                 parseParams(ref refArg, ref dataSources);
                 currentEntry = argumentParse(refArg, dataSources);
                 APIResults.Add(currentEntry.formatter.format(currentEntry.function(dataSources)));
@@ -161,7 +161,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                PluginLogger.debug(e.Message + " " + e.StackTrace);
+                Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
         }
 

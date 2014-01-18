@@ -40,12 +40,19 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\..\..\..\..\KSP\ksp-win-telemachus-dev\KSP_win\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\..\..\..\KSP\ksp-win-telemachus-dev\KSP_win\KSP_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\AsynchronousServer.cs" />
+    <Compile Include="src\MinimalWebSocketServer.cs" />
     <Compile Include="src\HTTPTransactions.cs" />
     <Compile Include="src\MinimalHTTPServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -54,6 +61,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="src\PluginLogger.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

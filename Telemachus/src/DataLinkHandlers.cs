@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
-using Servers.MinimalHTTPServer;
+using Servers.AsynchronousServer;
 using System.Threading;
 using System.Collections;
 using UnityEngine;
@@ -237,14 +237,14 @@ namespace Telemachus
 
             if (mechJebCore == null)
             {
-                PluginLogger.debug("No Mechjeb part installed.");
+                Servers.PluginLogger.debug("No Mechjeb part installed.");
                 return null;
             }
             else
             {
                 try
-                {   
-                    PluginLogger.debug("Mechjeb part installed, reflecting.");
+                {
+                    Servers.PluginLogger.debug("Mechjeb part installed, reflecting.");
                     Type mechJebCoreType = mechJebCore.GetType();
                     FieldInfo attitudeField = mechJebCoreType.GetField("attitude", BindingFlags.Public | BindingFlags.Instance);
                     attitude = attitudeField.GetValue(mechJebCore);
@@ -256,7 +256,7 @@ namespace Telemachus
                 }
                 catch (Exception e)
                 {
-                    PluginLogger.debug(e.Message + " " +  e.StackTrace);
+                    Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
                 }
 
                 return null;
@@ -297,7 +297,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                PluginLogger.debug(e.Message + " " + e.StackTrace);
+                Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
 
             return null;
@@ -1494,7 +1494,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                PluginLogger.debug(e.Message);
+                Servers.PluginLogger.debug(e.Message);
             }
         }
 
@@ -1523,7 +1523,7 @@ namespace Telemachus
                             partModules.TryGetValue(((ModuleEnviroSensor)module).sensorType, out list);
                             if (list == null)
                             {
-                                PluginLogger.debug(((ModuleEnviroSensor)module).sensorType);
+                                Servers.PluginLogger.debug(((ModuleEnviroSensor)module).sensorType);
                                 list = new List<ModuleEnviroSensor>();
                                 partModules[((ModuleEnviroSensor)module).sensorType] = list;
                                 
@@ -1536,7 +1536,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                PluginLogger.debug(e.Message + " " + e.StackTrace);
+                Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
         }
 
@@ -1684,7 +1684,7 @@ namespace Telemachus
 
         public override bool process(String API, out APIEntry result)
         {
-            throw new ExceptionResponsePage("Bad data link reference.");
+            throw new Servers.MinimalHTTPServer.ExceptionResponsePage("Bad data link reference.");
         }
 
         #endregion
@@ -1869,7 +1869,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                PluginLogger.debug(e.Message);
+                Servers.PluginLogger.debug(e.Message);
             }
         }
 

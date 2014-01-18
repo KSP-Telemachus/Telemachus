@@ -424,10 +424,11 @@ namespace Servers
 
     public class ConnectionNotifyEventArgs : ConnectionEventArgs
     {
-        public String message {get; set;}
+        public String message { get; set; }
 
-        public ConnectionNotifyEventArgs(String message, 
-            AsynchronousServer.ClientConnection clientConnection) : base(clientConnection)
+        public ConnectionNotifyEventArgs(String message,
+            AsynchronousServer.ClientConnection clientConnection)
+            : base(clientConnection)
         {
             this.message = message;
         }
