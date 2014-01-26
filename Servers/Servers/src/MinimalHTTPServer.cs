@@ -87,31 +87,39 @@ namespace Servers
 
             private void ConnectionRead(object sender, ConnectionEventArgs e)
             {
-                ClientConnection cc = (ClientConnection)e.clientConnection;
+                ClientConnection clientConnection = (ClientConnection)e.clientConnection;
 
+                String requestString = "";
+
+                foreach (ArraySegment<byte> byteMessage in clientConnection.progressiveMessage)
+                {
+                    requestString += Encoding.ASCII.GetString(byteMessage.Array, 0, byteMessage.Count);
+                }
+
+                Logger.debug("Request String:" + requestString);
                 try
                 {
-                    if (cc.progressiveMessage.ToString().StartsWith(GET))
+                    if (requestString.StartsWith(GET))
                     {
-                        if (cc.progressiveMessage.ToString().EndsWith(HEADER_END))
+                        if (requestString.EndsWith(HEADER_END))
                         {
                             HTTPRequest request = new HTTPRequest();
-                            request.parse(cc.progressiveMessage.ToString());
-                            processRequest(cc, request);
+                            request.parse(requestString);
+                            processRequest(clientConnection, request);
                         }
 
-                        if (cc.progressiveMessage.Length > configuration.maxRequestLength)
+                        if (requestString.Length > configuration.maxRequestLength)
                         {
                             throw new RequestEntityTooLargeResponsePage();
                         }
                     }
-                    else if (cc.progressiveMessage.ToString().StartsWith(POST))
+                    else if (requestString.StartsWith(POST))
                     {
                         HTTPRequest request = new HTTPRequest();
 
-                        if (request.tryParse(cc.progressiveMessage.ToString()))
+                        if (request.tryParse(requestString))
                         {
-                            processRequest(cc, request);
+                            processRequest(clientConnection, request);
                         }
                     }
                     else
@@ -121,11 +129,11 @@ namespace Servers
                 }
                 catch (HTTPResponse r)
                 {
-                    cc.Send(r);
+                    clientConnection.Send(r);
                 }
                 catch (Exception ex)
                 {
-                    cc.Send(new ExceptionResponsePage(ex.Message + " " + ex.StackTrace));
+                    clientConnection.Send(new ExceptionResponsePage(ex.Message + " " + ex.StackTrace));
                 }
             }
 
@@ -158,19 +166,45 @@ namespace Servers
             }
 
             public virtual int Send(HTTPResponse r)
-                {
-                    r.setAttribute("Server", configuration.name + " " +  configuration.version);
-                    byte[] toSend = r.ToBytes();
-                    Send(toSend);
-                    return toSend.Length;
-                }
+            {
+                r.setAttribute("Server", configuration.name + " " +  configuration.version);
+                byte[] toSend = r.ToBytes();
+                Send(toSend);
+                return toSend.Length;
+            }
         }
 
         public class ServerConfiguration : AsynchronousServer.ServerConfiguration
         {
+            private const int LARGEST_PROTOCOL_LENGTH = 4; 
+            
             public string name { get; set; }
             public string version { get; set; }
             public int maxRequestLength { get; set; }
+
+            public override int bufferSize
+            {
+                get
+                {
+                     return base.bufferSize;
+                }
+                set
+                {
+                    if (value >= LARGEST_PROTOCOL_LENGTH)
+                    {
+                        base.bufferSize = value;
+                    }
+                    else
+                    {
+                        throw new Exception("Server read buffer size is less than the length of the largest HTTP verb");
+                    }
+                }
+            }
+
+            public ServerConfiguration()
+            {
+                maxRequestLength = 8000;
+            }
         }
 
         class FallBackRequestResponsibility : IHTTPRequestResponsibility

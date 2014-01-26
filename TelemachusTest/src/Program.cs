@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace TelemachusTest
 {
@@ -27,8 +26,6 @@ namespace TelemachusTest
                 string text;
                 using (WebClient client = new WebClient())
                 {
-                    
-
                     timer.Start();
                     for (int i = 0; i < numberOfTests; i++)
                     {

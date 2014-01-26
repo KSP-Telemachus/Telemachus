@@ -1,5 +1,5 @@
 ﻿using KSP.IO;
-using Servers.MinimalWebSocketServer;
+using Servers.MinimalHTTPServer;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -40,27 +40,27 @@ namespace Telemachus
             {
                 try
                 {
-                    Servers.PluginLogger.print("Telemachus data link starting");
+                    PluginLogger.print("Telemachus data link starting");
 
                     readConfiguration();
 
                     server = new Server(serverConfig);
                     server.ServerNotify += ServerNotify;
-                    //server.addHTTPResponsibility(new ElseResponsibility());
+                    server.addHTTPResponsibility(new ElseResponsibility());
                     ioPageResponsibility = new IOPageResponsibility();
-                    //server.addHTTPResponsibility(ioPageResponsibility);
-                    //dataLinkResponsibility = new DataLinkResponsibility(JSONFormatterProvider.Instance, serverConfig);
-                    //server.addHTTPResponsibility(dataLinkResponsibility);
+                    server.addHTTPResponsibility(ioPageResponsibility);
+                    dataLinkResponsibility = new DataLinkResponsibility(JSONFormatterProvider.Instance, serverConfig);
+                    server.addHTTPResponsibility(dataLinkResponsibility);
                     server.startServing();
 
-                    Servers.PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
+                    PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
                         + server.getIPsAsString() +
                         "). Try putting them into your web browser, some of them might not work.");
                 }
                 catch (Exception e)
                 {
-                    Servers.PluginLogger.print(e.Message);
-                    Servers.PluginLogger.print(e.StackTrace);
+                    PluginLogger.print(e.Message);
+                    PluginLogger.print(e.StackTrace);
                 }
             }
         }
@@ -84,7 +84,7 @@ namespace Telemachus
             }
             else
             {
-                Servers.PluginLogger.print("No port in configuration file.");
+                PluginLogger.print("No port in configuration file.");
             }
 
             String ip = config.GetValue<String>("IPADDRESS");
@@ -97,12 +97,12 @@ namespace Telemachus
                 }
                 catch
                 {
-                    Servers.PluginLogger.print("Invalid IP address in configuration file, falling back to find.");
+                    PluginLogger.print("Invalid IP address in configuration file, falling back to find.");
                 }
             }
             else
             {
-                Servers.PluginLogger.print("No IP address in configuration file.");
+                PluginLogger.print("No IP address in configuration file.");
             }
 
             serverConfig.maxRequestLength = 8000;
@@ -116,7 +116,7 @@ namespace Telemachus
         {
             if (server != null)
             {
-                Servers.PluginLogger.print("Telemachus data link shutting down.");
+                PluginLogger.print("Telemachus data link shutting down.");
                 server.stopServing();
                 server = null;
             }
@@ -124,7 +124,7 @@ namespace Telemachus
 
         private static void ServerNotify(object sender, Servers.NotifyEventArgs e)
         {
-            Servers.PluginLogger.debug(e.message);
+            PluginLogger.debug(e.message);
         }
 
         #endregion

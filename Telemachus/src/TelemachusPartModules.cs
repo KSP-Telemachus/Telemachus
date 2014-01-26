@@ -26,7 +26,7 @@ namespace Telemachus
             }
             catch
             {
-                Servers.PluginLogger.print(
+                PluginLogger.print(
                     "Unable to open the data link. Please try to edit the Telemachus configuration file manually");
             }
         }

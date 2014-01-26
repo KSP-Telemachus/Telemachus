@@ -72,9 +72,9 @@ namespace Servers
             {
                 String[] lines = Regex.Split(input, NEW_LINE);
                 int i = parseHeader(lines) + 1;
-                for (; i < input.Length; i++)
+                for (; i < lines.Length - 2; i++)
                 {
-                    content += input[i];
+                    content += input.Substring(i);
                 }
             }
 
@@ -127,6 +127,11 @@ namespace Servers
                 {
                     return i;
                 }
+            }
+
+            public String getAttribute(String key)
+            {
+                return attributes[key];
             }
 
             public override string ToString()

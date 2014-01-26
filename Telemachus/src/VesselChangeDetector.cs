@@ -64,7 +64,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
+                PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
         }
 

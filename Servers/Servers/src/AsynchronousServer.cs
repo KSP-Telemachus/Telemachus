@@ -233,18 +233,18 @@ namespace Servers
             }
 
             Socket socket;
-            // Buffer size should be at least as big as the largest protocol verb
-            public const int BUFFER_SIZE = 512;
-            private byte[] buffer = new byte[BUFFER_SIZE];
-            public StringBuilder progressiveMessage { get; set; }
+            
+            public List<ArraySegment<byte>> progressiveMessage { get; set; }
+            private byte[] buffer = null;
 
             private Server server = null;
             private EventHandler<EventArgs> shutdownCallback = null;
 
             public ClientConnection(Socket socket, Server server)
             {
-                progressiveMessage = new StringBuilder();
-
+                buffer = new byte[server.configuration.bufferSize];
+                progressiveMessage = new List<ArraySegment<byte>>(1);
+ 
                 this.socket = socket;
                 this.server = server;
                 shutdownCallback = requestShutdown;
@@ -255,7 +255,7 @@ namespace Servers
             {
                 try
                 {
-                    socket.BeginReceive(buffer, 0, BUFFER_SIZE, 0,
+                    socket.BeginReceive(buffer, 0, server.configuration.bufferSize, 0,
                        new AsyncCallback(ReadCallback), this);
                 }
                 catch (Exception e)
@@ -279,12 +279,14 @@ namespace Servers
 
                     if (bytesRead > 0)
                     {
-                        progressiveMessage.Append(Encoding.ASCII.GetString(
-                            buffer, 0, bytesRead));
+                        Logger.debug(bytesRead.ToString());
 
+                        progressiveMessage.Add(new ArraySegment<byte>(buffer, 0, bytesRead));
+                        buffer = new byte[server.configuration.bufferSize];
+                        
                         OnConnectionRead(new ConnectionEventArgs(this));
 
-                        socket.BeginReceive(buffer, 0, ClientConnection.BUFFER_SIZE, 0,
+                        socket.BeginReceive(buffer, 0, server.configuration.bufferSize, 0,
                         new AsyncCallback(ReadCallback), this);
                     }
                     else
@@ -294,7 +296,8 @@ namespace Servers
                 }
                 catch (Exception e)
                 {
-                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString(), this));
+                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString() + "\n" +
+                    e.StackTrace, this));
 
                     tryShutdown();
                 }
@@ -365,6 +368,7 @@ namespace Servers
         {
             public int port { get; set; }
             public int backLog { get; set; }
+            public virtual int bufferSize { get; set; }
             public List<IPAddress> ipAddresses { get; set; }
 
             public ServerConfiguration()
@@ -372,6 +376,7 @@ namespace Servers
                 ipAddresses = new List<IPAddress>();
                 port = 8080;
                 backLog = 100;
+                bufferSize = 512;
             }
 
             public String getIPsAsString()

@@ -237,14 +237,14 @@ namespace Telemachus
 
             if (mechJebCore == null)
             {
-                Servers.PluginLogger.debug("No Mechjeb part installed.");
+                PluginLogger.debug("No Mechjeb part installed.");
                 return null;
             }
             else
             {
                 try
                 {
-                    Servers.PluginLogger.debug("Mechjeb part installed, reflecting.");
+                    PluginLogger.debug("Mechjeb part installed, reflecting.");
                     Type mechJebCoreType = mechJebCore.GetType();
                     FieldInfo attitudeField = mechJebCoreType.GetField("attitude", BindingFlags.Public | BindingFlags.Instance);
                     attitude = attitudeField.GetValue(mechJebCore);
@@ -256,7 +256,7 @@ namespace Telemachus
                 }
                 catch (Exception e)
                 {
-                    Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
+                    PluginLogger.debug(e.Message + " " + e.StackTrace);
                 }
 
                 return null;
@@ -297,7 +297,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
+                PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
 
             return null;
@@ -1494,7 +1494,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                Servers.PluginLogger.debug(e.Message);
+                PluginLogger.debug(e.Message);
             }
         }
 
@@ -1523,7 +1523,7 @@ namespace Telemachus
                             partModules.TryGetValue(((ModuleEnviroSensor)module).sensorType, out list);
                             if (list == null)
                             {
-                                Servers.PluginLogger.debug(((ModuleEnviroSensor)module).sensorType);
+                                PluginLogger.debug(((ModuleEnviroSensor)module).sensorType);
                                 list = new List<ModuleEnviroSensor>();
                                 partModules[((ModuleEnviroSensor)module).sensorType] = list;
                                 
@@ -1536,7 +1536,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
+                PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
         }
 
@@ -1869,7 +1869,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                Servers.PluginLogger.debug(e.Message);
+                PluginLogger.debug(e.Message);
             }
         }
 

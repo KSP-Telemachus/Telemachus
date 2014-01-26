@@ -68,7 +68,7 @@ namespace Telemachus
                 }
                 catch (Exception e)
                 {
-                    Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
+                    PluginLogger.debug(e.Message + " " + e.StackTrace);
                 }
 
                 if (request.requestType == Server.GET)
@@ -124,7 +124,7 @@ namespace Telemachus
             foreach (String arg in argsSplit)
             {
                 string refArg = arg;
-                Servers.PluginLogger.fine(refArg);
+                PluginLogger.fine(refArg);
                 parseParams(ref refArg, ref dataSources);
                 currentEntry = argumentParse(refArg, dataSources);
                 APIResults.Add(currentEntry.formatter.format(currentEntry.function(dataSources)));
@@ -161,7 +161,7 @@ namespace Telemachus
             }
             catch (Exception e)
             {
-                Servers.PluginLogger.debug(e.Message + " " + e.StackTrace);
+                PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
         }
 

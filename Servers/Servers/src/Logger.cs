@@ -1,30 +1,30 @@
 ﻿//Author: Richard Bunt
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
-using UnityEngine;
 
 namespace Servers
 {
-    public class PluginLogger
+    public class Logger
     {
         public static void debug(String s)
         {
 #if (DEBUG)
-            UnityEngine.Debug.Log("[Telemachus Debug] " +  s);
+            Console.WriteLine("[Server Debug] " + s);
 #endif
         }
 
         public static void fine(String s)
         {
 #if (DEBUG && FINE)
-            UnityEngine.Debug.Log("[Telemachus Fine]" + s);
+            Console.WriteLine("[Server Fine]" + s);
 #endif
         }
 
         public static void print(String s)
         {
-            UnityEngine.Debug.Log("[Telemachus] " + s);
+            Console.WriteLine("[Server] " + s);
         }
 
         public static string listToString(List<int> l)
@@ -39,14 +39,6 @@ namespace Servers
             ret += "]";
 
             return ret;
-        }
-
-        public static void printParts(List<Part> parts)
-        {
-            foreach (Part part in parts)
-            {
-                debug(part.partInfo.name);
-            }
         }
     }
 }
