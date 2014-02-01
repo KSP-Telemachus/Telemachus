@@ -84,19 +84,15 @@ namespace Servers
             
             private void processRequest(AsynchronousServer.ClientConnection cc, HTTPRequest request)
             {
-                foreach (IWebsSocketRequestResponsibility responsibility in requestChainOfResponsibility)
-                {
-                    if (responsibility.process(cc, request))
-                    {
-                        break;
-                    }
-                }
+               
             } 
         }
 
         public class ClientConnection : AsynchronousServer.ClientConnection
         {
             ServerConfiguration configuration = null;
+            HTTPRequest request = null;
+            WebSocketFrame frame = new WebSocketFrame();
 
             public ClientConnection(Socket socket, AsynchronousServer.Server server, 
                 ServerConfiguration configuration): base(socket, server)
@@ -106,148 +102,33 @@ namespace Servers
                 ConnectionRead += StatefulWebSocketHandShake;
             }
 
-            public enum OpCode
-            {
-                Continue = 0x0,
-                Text = 0x1,
-                Binary = 0x2,
-                Close = 0x8,
-                Ping = 0x9,
-                Pong = 0xA
-            }
-
             protected virtual void StatefulWebsocketHandler(object sender, ConnectionEventArgs e)
             {
                 ClientConnection clientConnection = (ClientConnection)e.clientConnection;
 
-                try
-                {
-                    byte[] b = clientConnection.progressiveMessage[0].Array.Take(2).ToArray<byte>();
-                    IEnumerable<byte> position = clientConnection.progressiveMessage[0].Array.Skip(2);
+                frame.parse(e.clientConnection.message);
 
-                    bool fin = (b[0] & 0x80) == 0x80;
-                    bool rsv1 = (b[0] & 0x40) == 0x40;
-                    bool rsv2 = (b[0] & 0x20) == 0x20;
-                    bool rsv3 = (b[0] & 0x10) == 0x10;
+                WebSocketFrame f = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes("message from socket server"));
 
-                    OpCode opCode = (OpCode)((b[0] & 0x8) 
-                        | (b[0] & 0x4) | (b[0] & 0x2) | (b[0] & 0x1));
-
-                    bool mask = (b[1] & 0x80) == 0x80;
-
-                    byte payload = (byte)((clientConnection.progressiveMessage[0].Array[1] & 0x40)
-                        | (b[1] & 0x20)
-                        | (b[1] & 0x10) | (b[1] & 0x8)
-                        | (b[1] & 0x4) | (b[1] & 0x2)
-                        | (b[1] & 0x1));
-
-                    ulong length = 0;
-
-                    switch (payload)
-                    {
-                        case 126:
-                            byte[] bytesUShort = position.Take(2).ToArray<byte>();
-                            if (bytesUShort != null)
-                            {
-                                length = BitConverter.ToUInt16(bytesUShort.Reverse().ToArray(), 0);
-                            }
-                            position = position.Skip(2);
-                            break;
-                        case 127:
-                            byte[] bytesULong = position.Take(8).ToArray<byte>();
-                            if (bytesULong != null)
-                            {
-                                length = BitConverter.ToUInt16(bytesULong.Reverse().ToArray(), 0);
-                            }
-                            position = position.Skip(8);
-                            break;
-                        default:
-                            length = payload;
-                            break;
-                    }
-                    
-                    byte[] maskKeys = null;
-                    if (mask)
-                    {
-                        maskKeys = position.Take(4).ToArray<byte>();
-                        position = position.Skip(4);
-                    }
-
-                    byte[] data = position.Take((int)length).ToArray<byte>();
-
-                    if (mask)
-                    {
-                        for (int i = 0; i < data.Length; ++i)
-                        {
-                            data[i] = (byte)(data[i] ^ maskKeys[i % 4]);
-                        }
-                    }
-
-                    ushort closeCode = 0;
-                    if (opCode == OpCode.Close && data.Length == 2)
-                    {
-                        closeCode = BitConverter.ToUInt16(((byte[])data.Clone()).Reverse().ToArray(), 0);
-                    }
-
-                    progressiveMessage.RemoveAt(0);
-
-                    Logger.debug("Message:" + Encoding.UTF8.GetString(data));
-                    Logger.debug("Payload length: " + length);
-                    Logger.debug("Mask: " + mask);
-                    Logger.debug("Fin: " + fin);
-                    Logger.debug("RSV1: " + rsv1);
-                    Logger.debug("RSV2: " + rsv2);
-                    Logger.debug("RSV3: " + rsv3);
-
-                }
-                catch (Exception ex)
-                {
-                    Logger.debug("Websocket Read failed: " + ex.ToString());
-                }
-
+                clientConnection.Send(f.AsFrame().Array);
             }
 
             protected virtual void StatefulWebSocketHandShake(object sender, ConnectionEventArgs e)
             {
                 ClientConnection clientConnection = (ClientConnection)e.clientConnection;
 
-
-                String requestString = "";
-
-                foreach (ArraySegment<byte> byteMessage in clientConnection.progressiveMessage)
-                {
-                    requestString += Encoding.ASCII.GetString(byteMessage.Array, 0, byteMessage.Count);
-                }
-
-                Logger.debug("Request String:" + requestString);
-
                 try
                 {
-                    if (requestString.StartsWith(Servers.MinimalHTTPServer.Server.GET))
+                    if (request == null)
                     {
-                        if (requestString.EndsWith(Servers.MinimalHTTPServer.Server.HEADER_END))
-                        {
-                            HTTPRequest request = new HTTPRequest();
-                            Logger.debug(e.clientConnection.progressiveMessage.ToString());
-                            request.parse(requestString);
-                            HTTPResponse response = new WebsocketUpgrade(request.getAttribute("Sec-WebSocket-Key"));
-                            Logger.debug(response.ToString());
-                            clientConnection.progressiveMessage.Clear();
-                            upgradeConnectionTorfc6455();
-
-                            clientConnection.Send(response.ToBytes());
-                        }
-
-                        if (clientConnection.progressiveMessage.Count > configuration.maxRequestLength)
-                        {
-                            Logger.debug("Request too long.");
-                            throw new RequestEntityTooLargeResponsePage();
-                        }
+                        request = new HTTPRequest();
                     }
-                    else
+
+                    if (request.tryParseAppend(e.clientConnection.message, 10000))
                     {
-                        Logger.debug("Bad websocket handshake.");
-                        throw new BadRequestResponsePage();
+                        upgradeConnectionTorfc6455();
+                        clientConnection.Send(new WebsocketUpgrade(request.getAttribute("Sec-WebSocket-Key")).ToBytes());
+                        request = null;
                     }
                 }
                 catch (HTTPResponse r)

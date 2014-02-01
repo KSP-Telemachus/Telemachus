@@ -9,7 +9,7 @@ namespace ServersTest
 {
     class MinimalWebServerTest
     {
-        public static int Main2(String[] args)
+        public static int Main1(String[] args)
         {
             Servers.MinimalHTTPServer.ServerConfiguration config = new Servers.MinimalHTTPServer.ServerConfiguration();
             Servers.MinimalHTTPServer.Server server = new Servers.MinimalHTTPServer.Server(config);

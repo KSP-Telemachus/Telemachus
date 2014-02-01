@@ -27,10 +27,6 @@ namespace Servers
             ServerConfiguration configuration = null;
             List<IHTTPRequestResponsibility> requestChainOfResponsibility = new List<IHTTPRequestResponsibility>();
 
-            public const String GET = "GET";
-            public const String POST = "POST";
-            public const String HEADER_END = "\r\n\r\n";
-
             public Server(ServerConfiguration configuration)
             {
                 this.configuration = configuration;
@@ -38,7 +34,7 @@ namespace Servers
                 server = new AsynchronousServer.Server(configuration,
                     (handler, s) =>
                 {
-                    return new ClientConnection(handler, s, configuration);
+                    return new ClientConnection(handler, this, configuration);
                 });
 
                 requestChainOfResponsibility.Add(new FallBackRequestResponsibility());
@@ -71,11 +67,15 @@ namespace Servers
                 requestChainOfResponsibility.Insert(0, responsibility);
             }
 
+            public AsynchronousServer.Server getServer()
+            {
+                return server;
+            }
+
             protected void ConnectionReceived(object sender, ConnectionEventArgs e)
             {
                 //Subscribe to connection events before before commencing.
                 e.clientConnection.ConnectionNotify += ConnectionNotify;
-                e.clientConnection.ConnectionRead += ConnectionRead;
                 e.clientConnection.ConnectionEmptyRead += ConnectionEmptyRead;
                 e.clientConnection.startConnection();
             }
@@ -85,65 +85,13 @@ namespace Servers
                 e.clientConnection.tryShutdown();
             }
 
-            private void ConnectionRead(object sender, ConnectionEventArgs e)
-            {
-                ClientConnection clientConnection = (ClientConnection)e.clientConnection;
-
-                String requestString = "";
-
-                foreach (ArraySegment<byte> byteMessage in clientConnection.progressiveMessage)
-                {
-                    requestString += Encoding.ASCII.GetString(byteMessage.Array, 0, byteMessage.Count);
-                }
-
-                Logger.debug("Request String:" + requestString);
-                try
-                {
-                    if (requestString.StartsWith(GET))
-                    {
-                        if (requestString.EndsWith(HEADER_END))
-                        {
-                            HTTPRequest request = new HTTPRequest();
-                            request.parse(requestString);
-                            processRequest(clientConnection, request);
-                        }
-
-                        if (requestString.Length > configuration.maxRequestLength)
-                        {
-                            throw new RequestEntityTooLargeResponsePage();
-                        }
-                    }
-                    else if (requestString.StartsWith(POST))
-                    {
-                        HTTPRequest request = new HTTPRequest();
-
-                        if (request.tryParse(requestString))
-                        {
-                            processRequest(clientConnection, request);
-                        }
-                    }
-                    else
-                    {
-                        throw new BadRequestResponsePage();
-                    }
-                }
-                catch (HTTPResponse r)
-                {
-                    clientConnection.Send(r);
-                }
-                catch (Exception ex)
-                {
-                    clientConnection.Send(new ExceptionResponsePage(ex.Message + " " + ex.StackTrace));
-                }
-            }
-
             private void ConnectionNotify(object sender, ConnectionNotifyEventArgs e)
             {
                 OnServerNotify(new NotifyEventArgs(e.message + "\n" + 
                     "Client Connection: " + e.clientConnection.ToString()));
             }
             
-            private void processRequest(AsynchronousServer.ClientConnection cc, HTTPRequest request)
+            public void processRequest(AsynchronousServer.ClientConnection cc, HTTPRequest request)
             {
                 foreach (IHTTPRequestResponsibility responsibility in requestChainOfResponsibility)
                 {
@@ -158,11 +106,43 @@ namespace Servers
         public class ClientConnection : AsynchronousServer.ClientConnection
         {
             ServerConfiguration configuration = null;
+            HTTPRequest request = null;
+            MinimalHTTPServer.Server server = null;
 
-            public ClientConnection(Socket socket, AsynchronousServer.Server server, 
-                ServerConfiguration configuration): base(socket, server)
+            public ClientConnection(Socket socket, MinimalHTTPServer.Server server, 
+                ServerConfiguration configuration): base(socket, server.getServer())
             {
                 this.configuration = configuration;
+                this.server = server;
+
+                ConnectionRead += StatefulConnectionRead;
+            }
+
+            protected void StatefulConnectionRead(object sender, ConnectionEventArgs e)
+            {
+                ClientConnection clientConnection = (ClientConnection)e.clientConnection;
+
+                try
+                {
+                    if (request == null)
+                    {
+                        request = new HTTPRequest();
+                    }
+
+                    if (request.tryParseAppend(e.clientConnection.message, configuration))
+                    {
+                        server.processRequest(clientConnection, request);
+                        request = null;
+                    }
+                }
+                catch (HTTPResponse r)
+                {
+                    clientConnection.Send(r);
+                }
+                catch (Exception ex)
+                {
+                    clientConnection.Send(new ExceptionResponsePage(ex.Message + " " + ex.StackTrace));
+                }
             }
 
             public virtual int Send(HTTPResponse r)

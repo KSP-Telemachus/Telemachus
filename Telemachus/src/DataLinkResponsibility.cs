@@ -52,11 +52,11 @@ namespace Telemachus
         {
             if (request.path.StartsWith(PAGE_PREFIX))
             {
-                if(request.requestType == Server.GET)
+                if (request.requestType == HTTPRequest.GET)
                 {
                     dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length * BITS_PER_BYTE);
                 }
-                else if (request.requestType == Server.POST)
+                else if (request.requestType == HTTPRequest.POST)
                 {
                     dataRates.addUpLinkPoint(System.DateTime.Now, request.content.Length * BITS_PER_BYTE);
                 }
@@ -71,7 +71,7 @@ namespace Telemachus
                     PluginLogger.debug(e.Message + " " + e.StackTrace);
                 }
 
-                if (request.requestType == Server.GET)
+                if (request.requestType == HTTPRequest.GET)
                 {
                     dataRates.addDownLinkPoint(
                         System.DateTime.Now,
@@ -81,7 +81,7 @@ namespace Telemachus
                                 dataSources)
                         )) * BITS_PER_BYTE);
                 }
-                else if (request.requestType == Server.POST)
+                else if (request.requestType == HTTPRequest.POST)
                 {
                     dataRates.addDownLinkPoint(
                         System.DateTime.Now,

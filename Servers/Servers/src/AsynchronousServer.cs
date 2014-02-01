@@ -234,7 +234,7 @@ namespace Servers
 
             Socket socket;
             
-            public List<ArraySegment<byte>> progressiveMessage { get; set; }
+            public ArraySegment<byte> message { get; set; }
             private byte[] buffer = null;
 
             private Server server = null;
@@ -242,11 +242,11 @@ namespace Servers
 
             public ClientConnection(Socket socket, Server server)
             {
-                buffer = new byte[server.configuration.bufferSize];
-                progressiveMessage = new List<ArraySegment<byte>>(1);
- 
                 this.socket = socket;
                 this.server = server;
+
+                buffer = new byte[server.configuration.bufferSize];
+
                 shutdownCallback = requestShutdown;
                 server.ServerShutdown += shutdownCallback;
             }
@@ -281,9 +281,8 @@ namespace Servers
                     {
                         Logger.debug(bytesRead.ToString());
 
-                        progressiveMessage.Add(new ArraySegment<byte>(buffer, 0, bytesRead));
+                        message = new ArraySegment<byte>(buffer, 0, bytesRead);
                         buffer = new byte[server.configuration.bufferSize];
-                        
                         OnConnectionRead(new ConnectionEventArgs(this));
 
                         socket.BeginReceive(buffer, 0, server.configuration.bufferSize, 0,

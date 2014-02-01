@@ -60,12 +60,65 @@ namespace Servers
 
         public class HTTPRequest : HTTPTransaction
         {
+            public const String GET = "GET";
+            public const String POST = "POST";
+            public const String HEADER_END = "\r\n\r\n";
+
             public String requestType { get; set; }
             public String path { get; set; }
+
+            private string progressiveRequestString = "";
 
             public HTTPRequest()
             {
 
+            }
+
+            public bool tryParseAppend(ArraySegment<byte> input, int maxRequestLength)
+            {
+                progressiveRequestString += Encoding.ASCII.GetString(input.Array, 0, input.Count);
+                
+                Logger.debug(progressiveRequestString);
+
+                if (progressiveRequestString.StartsWith(GET))
+                {
+                    if(progressiveRequestString.EndsWith(HEADER_END))
+                    {
+                        if (progressiveRequestString.Length > maxRequestLength)
+                        {
+                            throw new RequestEntityTooLargeResponsePage();
+                        }
+                    
+
+                        parse(progressiveRequestString);
+                        progressiveRequestString = "";
+
+                        return true;
+                    }
+
+                    return false;
+                }
+                else if (progressiveRequestString.StartsWith(POST))
+                {
+                    HTTPRequest request = new HTTPRequest();
+                    bool success = request.tryParse(progressiveRequestString);
+
+                    if (success)
+                    {
+                        progressiveRequestString = "";
+                    }
+
+                    return success;
+                }
+                else
+                {
+                    throw new BadRequestResponsePage();
+                }
+            }
+
+            public bool tryParseAppend(ArraySegment<byte> input, ServerConfiguration configuration)
+            {
+                return tryParseAppend(input, configuration.maxRequestLength);
             }
 
             public void parse(String input)
