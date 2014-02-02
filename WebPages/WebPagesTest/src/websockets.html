@@ -5,7 +5,7 @@
 <title>WebSocket Test</title>
 
 <script type="text/javascript">
-    var wsUri = "ws://192.168.1.64:8080/";
+    var wsUri = "ws://localhost:8085/server";
 
     var output;
 
@@ -22,7 +22,7 @@
 
     function onOpen(evt)
     {
-        writeToScreen("CONNECTED"); doSend("WebSocket rocks");
+        writeToScreen("CONNECTED"); doTest();
     }
 
     function onClose(evt)
@@ -32,7 +32,6 @@
     function onMessage(evt)
     {
         writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
-        websocket.close();
     }
 
     function onError(evt)
@@ -40,7 +39,40 @@
         writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
     }
 
-    function doSend(message) { writeToScreen("SENT: " + message); websocket.send(message); }
+    function doTest()
+    {
+
+        for (var i = 0; i < 2; i++)
+        {
+            doSend(payLoadGenerator(15));
+        }
+
+        doSend(payLoadGenerator(400));
+    }
+
+    function endOnNextMessage()
+    {
+        websocket.onmessage = function (evt) { onMessage(evt); websocket.close(); }
+    }
+
+    function payLoadGenerator(size)
+    {
+        var set = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        s = "";
+
+        for (i = 0; i < size; i++)
+        {
+            s += set.charAt(Math.floor(Math.random() * set.length));
+        }
+
+        return s;
+    }
+
+    function doSend(message)
+    {
+        writeToScreen("SENT: " + message);
+        websocket.send(message);
+    }
 
     function writeToScreen(message)
     {

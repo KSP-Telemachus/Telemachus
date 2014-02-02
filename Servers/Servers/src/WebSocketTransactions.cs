@@ -1,4 +1,4 @@
-﻿using Servers.MinimalHTTPServer;
+﻿using Servers.MinimalWebSocketServer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,14 +8,13 @@ using System.Text;
 
 namespace Servers
 {
-    public class WebsocketUpgrade : HTTPResponse
+    public class WebsocketUpgrade : Servers.MinimalHTTPServer.HTTPResponse
     {
         public const String WEB_SOCKET_KEY = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
         public WebsocketUpgrade(String key)
             : base("")
         {
-            
             String returnKey = key.Trim() + WEB_SOCKET_KEY;
             SHA1 sha = new SHA1CryptoServiceProvider();
             byte[] sha1 = sha.ComputeHash(Encoding.ASCII.GetBytes(returnKey));
@@ -45,160 +44,210 @@ namespace Servers
         Pong = 0xA
     }
 
-    public class WebSocketFrame
+    public class WebSocketHeader
     {
+        public const byte FINISH_MASK = 0x80;
+        public const byte RSV1_MASK = 0x40;
+        public const byte RSV2_MASK = 0x20;
+        public const byte RSV3_MASK = 0x10;
+        public const byte OP_CODE_MASK = 0x0F;
+        public const byte MASK_MASK = 0x80;
+        public const byte PAYLOAD_MASK = 0x7F;
+
         public byte fin { get; set; }
         public byte rsv1 { get; set; }
         public byte rsv2 { get; set; }
         public byte rsv3 { get; set; }
+        public OpCode opCode { get; set; }
+        public bool mask { get; set; }
+        public ulong length { get; set;}
+        public byte[] maskKeys = null;
+        public int position;
 
-        OpCode opCode { get; set; }
+        public void parse(List<byte> input, ServerConfiguration configuration)
+        {
+            byte[] b = null;
 
-        bool mask { get; set; }
+            getBytes(input, ref b, ref position, 2);
 
-        byte[] data = null;
+            fin = (byte)(b[0] & FINISH_MASK);
+            rsv1 = (byte)(b[0] & RSV1_MASK);
+            rsv2 = (byte)(b[0] & RSV2_MASK);
+            rsv3 = (byte)(b[0] & RSV3_MASK);
 
-        ulong length = 0;
-        
+            opCode = (OpCode)(b[0] & OP_CODE_MASK);
+
+            mask = (b[1] & MASK_MASK) == MASK_MASK;
+            byte payload = (byte)(b[1] & PAYLOAD_MASK);
+
+            byte[] bytesLength = null;
+            switch (payload)
+            {
+                case 126:
+                    getBytes(input, ref bytesLength, ref position, 2);
+                    length = BitConverter.ToUInt16(bytesLength.Reverse().ToArray<byte>(), 0);
+                    break;
+                case 127:
+                    getBytes(input, ref bytesLength, ref position, 8);
+                    bytesLength.Reverse();
+                    length = BitConverter.ToUInt64(bytesLength.Reverse().ToArray<byte>(), 0);
+                    break;
+                default:
+                    length = payload;
+                    break;
+            }
+
+            if(length > configuration.maxMessageSize)
+            {
+                throw new Servers.MinimalHTTPServer.RequestEntityTooLargeResponsePage();
+            }
+
+            if (mask)
+            {
+                getBytes(input, ref maskKeys, ref position, 4);
+            }
+        }
+
+        public void getBytes(List<byte> input, ref byte[] b, ref int position, int count)
+        {
+            if (position + count > input.Count)
+            {
+                position = 0;
+                throw new InsufficientDataToParseFrameException();
+            }
+            else
+            {
+                b = input.GetRange(position, count).ToArray<byte>();
+                position += count;
+            }
+        }
+    }
+
+    public class WebSocketFrame
+    {
+        public WebSocketHeader header {get; set; }
+
+        private byte[] data = null;
+        private ushort closeCode = 0;
 
         public WebSocketFrame()
         {
+            header = new WebSocketHeader();
+            header.fin = WebSocketHeader.FINISH_MASK;
+            header.rsv1 = 0;
+            header.rsv2 = 0;
+            header.rsv3 = 0;
         }
 
         public WebSocketFrame(byte[] data)
         {
-            fin = 0x80;
-            rsv1 = 0;
-            rsv2 = 0;
-            rsv3 = 0;
-
-            length = (ulong)data.Length;
+            header = new WebSocketHeader();
+            header.fin = WebSocketHeader.FINISH_MASK;
+            header.rsv1 = 0;
+            header.rsv2 = 0;
+            header.rsv3 = 0;
+            header.opCode = OpCode.Text;
+            header.length = (ulong)data.Length;
             this.data = data;
         }
 
-        public bool parse(ArraySegment<byte> input)
+        public int parse(List<byte> input, ServerConfiguration configuration)
         {
-            try
+            if (header == null)
             {
-                byte[] b = input.Array.Take(2).ToArray<byte>();
-                IEnumerable<byte> position = input.Array.Skip(2);
-
-                fin = (byte)(b[0] & 0x80);
-                rsv1 = (byte)(b[0] & 0x40);
-                rsv2 = (byte)(b[0] & 0x20);
-                rsv3 = (byte)(b[0] & 0x10);
-
-                opCode = (OpCode)((b[0] & 0x8)
-                    | (b[0] & 0x4) | (b[0] & 0x2) | (b[0] & 0x1));
-
-                mask = (b[1] & 0x80) == 0x80;
-
-                byte payload = (byte)((input.Array[1] & 0x40)
-                    | (b[1] & 0x20)
-                    | (b[1] & 0x10) | (b[1] & 0x8)
-                    | (b[1] & 0x4) | (b[1] & 0x2)
-                    | (b[1] & 0x1));
-
-                length = 0;
-
-                switch (payload)
-                {
-                    case 126:
-                        byte[] bytesUShort = position.Take(2).ToArray<byte>();
-                        if (bytesUShort != null)
-                        {
-                            length = BitConverter.ToUInt16(bytesUShort.Reverse().ToArray(), 0);
-                        }
-                        position = position.Skip(2);
-                        break;
-                    case 127:
-                        byte[] bytesULong = position.Take(8).ToArray<byte>();
-                        if (bytesULong != null)
-                        {
-                            length = BitConverter.ToUInt16(bytesULong.Reverse().ToArray(), 0);
-                        }
-                        position = position.Skip(8);
-                        break;
-                    default:
-                        length = payload;
-                        break;
-                }
-
-                byte[] maskKeys = null;
-                if (mask)
-                {
-                    maskKeys = position.Take(4).ToArray<byte>();
-                    position = position.Skip(4);
-                }
-
-                data = position.Take((int)length).ToArray<byte>();
-
-                if (mask)
-                {
-                    for (int i = 0; i < data.Length; ++i)
-                    {
-                        data[i] = (byte)(data[i] ^ maskKeys[i % 4]);
-                    }
-                }
-
-                ushort closeCode = 0;
-                if (opCode == OpCode.Close && data.Length == 2)
-                {
-                    closeCode = BitConverter.ToUInt16(((byte[])data.Clone()).Reverse().ToArray(), 0);
-                }
-
-                Logger.debug("Message:" + AsUTF8());
-                Logger.debug("Payload length: " + length);
-                Logger.debug("Mask: " + mask);
-                Logger.debug("Fin: " + fin);
-                Logger.debug("RSV1: " + rsv1);
-                Logger.debug("RSV2: " + rsv2);
-                Logger.debug("RSV3: " + rsv3);
-                Logger.debug("Op Code: " + opCode);
-            }
-            catch (Exception ex)
-            {
-                Logger.debug("Websocket Read failed: " + ex.ToString());
+                header = new WebSocketHeader();
             }
 
-            return true;
+            header.parse(input, configuration);
+
+            header.getBytes(input, ref data, ref header.position, (int)header.length);
+
+            if (header.mask)
+            {
+                for (int i = 0; i < data.Length; ++i)
+                {
+                    data[i] = (byte)(data[i] ^ header.maskKeys[i % 4]);
+                }
+            }
+
+            if (header.opCode == OpCode.Close && data.Length == 2)
+            {
+                closeCode = BitConverter.ToUInt16(((byte[])data.ToArray<byte>().Clone()).Reverse().ToArray(), 0);
+            }
+
+            Logger.debug(ToString());
+
+            return header.position;
         }
 
-        public String AsUTF8()
+        public String PayloadAsUTF8()
         {
-            return Encoding.UTF8.GetString(data);
+            return Encoding.UTF8.GetString(data.ToArray<byte>());
         }
 
-        public ArraySegment<byte> AsFrame()
+        public byte[] PayloadAsByte()
+        {
+            return data;
+        }
+
+        public byte[] AsBytes()
         {
             List<byte> frame = new List<byte>();
 
-            byte one = (byte)(fin | rsv1 | rsv2 | rsv3 | 0x1);
+            byte one = (byte)(header.fin | header.rsv1 | header.rsv2 | header.rsv3 | (byte)header.opCode);
             frame.Add(one);
 
-            if (length < 126)
+            if (header.length < 126)
             {
-                byte two = (byte)length;
+                byte two = (byte)header.length;
                 frame.Add(two);
             }
-            else if (length <= (ulong)Int16.MaxValue)
+            else if (header.length <= (ulong)Int16.MaxValue)
             {
                 byte two = 126;
                 frame.Add(two);
-                byte[] size = BitConverter.GetBytes((Int16)length);
-                frame.AddRange(size);
+                byte[] size = BitConverter.GetBytes((Int16)header.length);
+                frame.AddRange(size.Reverse<byte>());
             }
-            else if (length <= (ulong)Int32.MaxValue)
+            else if (header.length <= (ulong)Int32.MaxValue)
             {
                 byte two = 127;
                 frame.Add(two);
-                byte[] size = BitConverter.GetBytes((Int32)length);
-                frame.AddRange(size);
+                byte[] size = BitConverter.GetBytes((Int64)header.length);
+                frame.AddRange(size.Reverse<byte>());
             }
             
             frame.AddRange(data);
 
-            return new ArraySegment<byte>(frame.ToArray<byte>());
+            return frame.ToArray<byte>();
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine("Message: " + PayloadAsUTF8() + " ");
+            sb.AppendLine("Payload length: " + header.length + " ");
+            sb.AppendLine("Mask: " + header.mask + " ");
+            sb.AppendLine("Fin: " + header.fin + " ");
+            sb.AppendLine("RSV1: " + header.rsv1 + " ");
+            sb.AppendLine("RSV2: " + header.rsv2 + " ");
+            sb.AppendLine("RSV3: " + header.rsv3 + " ");
+            sb.AppendLine("Op Code: " + header.opCode + " ");
+
+            return sb.ToString();
+        }
+    }
+
+    public class WebSocketPingFrame : WebSocketFrame
+    {
+        public WebSocketPingFrame()
+        {
+            header.opCode = OpCode.Pong;
+        }
+    }
+
+    public class InsufficientDataToParseFrameException : Exception
+    {
     }
 }

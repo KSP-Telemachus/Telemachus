@@ -12,14 +12,25 @@ namespace Servers
         public class Server
         {
             public event EventHandler<NotifyEventArgs> ServerNotify;
+            public event EventHandler<HTTPRequestEventArgs> HTTPRequestArrived;
 
-            protected virtual void OnServerNotify(NotifyEventArgs e)
+            protected virtual void OnServerNotify(object sender, NotifyEventArgs e)
             {
                 EventHandler<NotifyEventArgs> handler = ServerNotify;
 
                 if (handler != null)
                 {
                     ServerNotify(this, e);
+                }
+            }
+
+            protected virtual void OnHTTPRequestArrived(object sender, HTTPRequestEventArgs e)
+            {
+                EventHandler<HTTPRequestEventArgs> handler = HTTPRequestArrived;
+
+                if (handler != null)
+                {
+                    HTTPRequestArrived(this, e);
                 }
             }
 
@@ -48,7 +59,7 @@ namespace Servers
             public void startServing()
             {
                 server.ConnectionReceived += ConnectionReceived;
-                server.ServerNotify += ServerNotify;
+                server.ServerNotify += OnServerNotify;
                 server.startListening();
             }
 
@@ -77,6 +88,8 @@ namespace Servers
                 //Subscribe to connection events before before commencing.
                 e.clientConnection.ConnectionNotify += ConnectionNotify;
                 e.clientConnection.ConnectionEmptyRead += ConnectionEmptyRead;
+                ((MinimalHTTPServer.ClientConnection)e.clientConnection).HTTPRequestArrived += OnHTTPRequestArrived;
+
                 e.clientConnection.startConnection();
             }
 
@@ -87,7 +100,7 @@ namespace Servers
 
             private void ConnectionNotify(object sender, ConnectionNotifyEventArgs e)
             {
-                OnServerNotify(new NotifyEventArgs(e.message + "\n" + 
+                OnServerNotify(this, new NotifyEventArgs(e.message + "\n" + 
                     "Client Connection: " + e.clientConnection.ToString()));
             }
             
@@ -105,6 +118,18 @@ namespace Servers
 
         public class ClientConnection : AsynchronousServer.ClientConnection
         {
+            public event EventHandler<HTTPRequestEventArgs> HTTPRequestArrived;
+
+            protected virtual void OnHTTPRequestArrived(HTTPRequestEventArgs e)
+            {
+                EventHandler<HTTPRequestEventArgs> handler = HTTPRequestArrived;
+
+                if (handler != null)
+                {
+                    HTTPRequestArrived(this, e);
+                }
+            }
+
             ServerConfiguration configuration = null;
             HTTPRequest request = null;
             MinimalHTTPServer.Server server = null;
@@ -131,7 +156,14 @@ namespace Servers
 
                     if (request.tryParseAppend(e.clientConnection.message, configuration))
                     {
-                        server.processRequest(clientConnection, request);
+                        HTTPRequestEventArgs eventArgs = new HTTPRequestEventArgs(this, request);
+                        OnHTTPRequestArrived(eventArgs);
+
+                        if (!eventArgs.cancel)
+                        {
+                            server.processRequest(clientConnection, request);
+                        }
+
                         request = null;
                     }
                 }
@@ -199,6 +231,20 @@ namespace Servers
         public interface IHTTPRequestResponsibility
         {
             bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request);
+        }
+
+        public class HTTPRequestEventArgs : EventArgs
+        {
+            public AsynchronousServer.ClientConnection clientConnection { get; set; }
+            public HTTPRequest request { get; set; }
+            public bool cancel { get; set; }
+
+            public HTTPRequestEventArgs(AsynchronousServer.ClientConnection clientConnection, HTTPRequest request)
+            {
+                this.clientConnection = clientConnection;
+                this.request = request;
+                cancel = false;
+            }
         }
     }
 }

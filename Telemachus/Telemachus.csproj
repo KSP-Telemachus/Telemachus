@@ -57,6 +57,7 @@
     <Compile Include="src\DataLinkResponsibility.cs" />
     <Compile Include="src\ElseResponsibility.cs" />
     <Compile Include="src\IOPageResponsibility.cs" />
+    <Compile Include="src\KSPWebSocketService.cs" />
     <Compile Include="src\PluginLogger.cs" />
     <Compile Include="src\TelemachusBehaviour.cs" />
     <Compile Include="src\TelemachusPartModules.cs" />

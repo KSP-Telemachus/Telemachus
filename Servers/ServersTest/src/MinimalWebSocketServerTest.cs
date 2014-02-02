@@ -1,33 +1,67 @@
-﻿using Servers.AsynchronousServer;
+﻿using Servers;
+using Servers.AsynchronousServer;
 using Servers.MinimalWebSocketServer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ServersTest
 {
-    class MinimalWebSocketServerTest
+    class MinimalWebSocketServerTest : ITest
     {
-        public static int Main(String[] args)
+        public void run()
         {
             Servers.MinimalWebSocketServer.ServerConfiguration config = new Servers.MinimalWebSocketServer.ServerConfiguration();
+            config.bufferSize = 100;
             Servers.MinimalWebSocketServer.Server server = new Servers.MinimalWebSocketServer.Server(config);
             server.ServerNotify += server_ServerNotify;
-
+            server.addWebSocketService("/server",new WebSocketEchoService());
             server.startServing();
 
             Console.Read();
             server.stopServing();
-            return 0;
         }
 
         static void server_ServerNotify(object sender, Servers.NotifyEventArgs e)
         {
             Console.WriteLine(e.message);
+        }
+    }
+
+    class WebSocketEchoService : IWebSocketService
+    {
+
+        public void OpCodePing(object sender, FrameEventArgs e)
+        {
+            
+        }
+
+        public void OpCodePong(object sender, FrameEventArgs e)
+        {
+            
+        }
+
+        public void OpCodeText(object sender, FrameEventArgs e)
+        {
+            WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes("Echo: " + e.frame.PayloadAsUTF8()));
+            e.clientConnection.Send(frame.AsBytes());
+        }
+
+        public void OpCodeBinary(object sender, FrameEventArgs frameEventArgs)
+        {
+            
+        }
+
+        public void OpCodeClose(object sender, FrameEventArgs frameEventArgs)
+        {
+            
+        }
+
+        public IWebSocketService buildService()
+        {
+            return new WebSocketEchoService();
         }
     }
 }

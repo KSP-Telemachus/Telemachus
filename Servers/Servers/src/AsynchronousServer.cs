@@ -232,7 +232,7 @@ namespace Servers
                 }
             }
 
-            Socket socket;
+            Socket socket = null;
             
             public ArraySegment<byte> message { get; set; }
             private byte[] buffer = null;
@@ -251,6 +251,11 @@ namespace Servers
                 server.ServerShutdown += shutdownCallback;
             }
 
+            ~ClientConnection()
+            {
+                Logger.debug("Cleaning up client connection.");
+            }
+
             public void startConnection()
             {
                 try
@@ -266,7 +271,10 @@ namespace Servers
 
             private void requestShutdown(Object sender, EventArgs e)
             {
-                socket.Close();
+                if(socket != null)
+                {
+                    socket.Close();
+                }
             }
 
             private void ReadCallback(IAsyncResult ar)
@@ -285,8 +293,11 @@ namespace Servers
                         buffer = new byte[server.configuration.bufferSize];
                         OnConnectionRead(new ConnectionEventArgs(this));
 
-                        socket.BeginReceive(buffer, 0, server.configuration.bufferSize, 0,
-                        new AsyncCallback(ReadCallback), this);
+                        if (socket != null)
+                        {
+                            socket.BeginReceive(buffer, 0, server.configuration.bufferSize, 0,
+                            new AsyncCallback(ReadCallback), this);
+                        }
                     }
                     else
                     {
@@ -309,14 +320,17 @@ namespace Servers
 
             public virtual void Send(byte[] byteData)
             {
-                try
+                if (socket != null)
                 {
-                    socket.BeginSend(byteData, 0, byteData.Length, 0,
-                        new AsyncCallback(SendCallback), socket);
-                }
-                catch (Exception e)
-                {
-                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString(), this));
+                    try
+                    {
+                        socket.BeginSend(byteData, 0, byteData.Length, 0,
+                            new AsyncCallback(SendCallback), socket);
+                    }
+                    catch (Exception e)
+                    {
+                        OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString(), this));
+                    }
                 }
             }
 
@@ -334,15 +348,22 @@ namespace Servers
 
             public void tryShutdown()
             {
-                try
+                if (socket != null)
                 {
-                    socket.Shutdown(SocketShutdown.Both);
-                }
-                catch(SocketException)
-                {
-                }
+                    try
+                    {
+                        socket.Shutdown(SocketShutdown.Both);
+                    }
+                    catch (SocketException)
+                    {
+                    }
+                    catch (Exception ex)
+                    {
+                        OnConnectionNotify(new ConnectionNotifyEventArgs(ex.ToString(), this));
+                    }
 
-                socket.BeginDisconnect(false, new AsyncCallback(DisconnectCallback), this);
+                    socket.BeginDisconnect(false, new AsyncCallback(DisconnectCallback), this);
+                }
             }
 
             private void DisconnectCallback(IAsyncResult ar)
@@ -360,6 +381,14 @@ namespace Servers
                     server.ServerShutdown -= shutdownCallback;
                     socket.Close();
                 }
+            }
+
+            public Socket stealSocket()
+            {
+                Socket temp = socket;
+                socket = null;
+                server.ServerShutdown -= shutdownCallback;
+                return temp;
             }
         }
 

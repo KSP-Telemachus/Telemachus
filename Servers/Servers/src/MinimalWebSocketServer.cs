@@ -6,6 +6,7 @@ using System.Collections;
 using System.Net.Sockets;
 using Servers.MinimalHTTPServer;
 using System.Linq;
+using System.IO;
 
 namespace Servers
 {
@@ -15,7 +16,7 @@ namespace Servers
         {
             public event EventHandler<NotifyEventArgs> ServerNotify;
 
-            protected virtual void OnServerNotify(NotifyEventArgs e)
+            protected virtual void OnServerNotify(object sender, NotifyEventArgs e)
             {
                 EventHandler<NotifyEventArgs> handler = ServerNotify;
 
@@ -27,7 +28,7 @@ namespace Servers
 
             AsynchronousServer.Server server = null;
             ServerConfiguration configuration = null;
-            List<IWebsSocketRequestResponsibility> requestChainOfResponsibility = new List<IWebsSocketRequestResponsibility>();
+            Dictionary<string, IWebSocketService> webSocketServices = new Dictionary<string, IWebSocketService>();
 
             public Server(ServerConfiguration configuration)
             {
@@ -36,10 +37,10 @@ namespace Servers
                 server = new AsynchronousServer.Server(configuration,
                     (handler, s) =>
                 {
-                    return new ClientConnection(handler, s, configuration);
+                    return new ClientConnection(handler, s, configuration, webSocketServices);
                 });
 
-                requestChainOfResponsibility.Add(new FallBackRequestResponsibility());
+                
             }
 
             ~Server()
@@ -50,7 +51,7 @@ namespace Servers
             public void startServing()
             {
                 server.ConnectionReceived += ConnectionReceived;
-                server.ServerNotify += ServerNotify;
+                server.ServerNotify += OnServerNotify;
                 server.startListening();
             }
 
@@ -59,14 +60,19 @@ namespace Servers
                 server.stopListening();
             }
 
+            public void subscribeToHTTPForStealing(MinimalHTTPServer.Server server)
+            {
+                server.HTTPRequestArrived += HTTPRequestArrived;
+            }
+
             public String getIPsAsString()
             {
                 return server.configuration.getIPsAsString();
             }
 
-            public void addHTTPResponsibility(IWebsSocketRequestResponsibility responsibility)
+            public void addWebSocketService(string prefix, IWebSocketService service)
             {
-                requestChainOfResponsibility.Insert(0, responsibility);
+                webSocketServices[prefix] = service;
             }
 
             protected void ConnectionReceived(object sender, ConnectionEventArgs e)
@@ -78,39 +84,154 @@ namespace Servers
 
             private void ConnectionNotify(object sender, ConnectionNotifyEventArgs e)
             {
-                OnServerNotify(new NotifyEventArgs(e.message + "\n" +
+                OnServerNotify(this, new NotifyEventArgs(e.message + "\n" +
                     "Client Connection: " + e.clientConnection.ToString()));
             }
-            
-            private void processRequest(AsynchronousServer.ClientConnection cc, HTTPRequest request)
+
+            protected void HTTPRequestArrived(object sender, HTTPRequestEventArgs e)
             {
-               
-            } 
+                if (isWebSocketRequest(e.request))
+                {
+                    e.cancel = true;
+
+                    ClientConnection upgradedClientConnection = new ClientConnection(e.clientConnection.stealSocket(), 
+                            server, this.configuration, webSocketServices, e.request);
+
+                    upgradedClientConnection.ConnectionNotify += ConnectionNotify;
+                    upgradedClientConnection.startConnectionWithHandShakeResponse();
+                }
+            }
+
+            public static bool isWebSocketRequest(HTTPRequest request)
+            {
+                try
+                {
+                    request.getAttribute("Upgrade").Equals("websocket");
+                    return true;
+                }
+                catch (KeyNotFoundException)
+                {
+                    return false;
+                }
+            }
         }
 
         public class ClientConnection : AsynchronousServer.ClientConnection
         {
             ServerConfiguration configuration = null;
             HTTPRequest request = null;
-            WebSocketFrame frame = new WebSocketFrame();
+            WebSocketFrame frame = null;
+            AsynchronousServer.Server server = null;
+            IWebSocketService service = null;
+            List<byte> data = null;
+            Dictionary<string, IWebSocketService> webSocketServices = null;
 
-            public ClientConnection(Socket socket, AsynchronousServer.Server server, 
-                ServerConfiguration configuration): base(socket, server)
+            public ClientConnection(Socket socket, AsynchronousServer.Server server,
+                ServerConfiguration configuration, Dictionary<string, IWebSocketService> webSocketServices)
+                : base(socket, server)
             {
                 this.configuration = configuration;
+                this.server = server;
+                this.webSocketServices = webSocketServices;
+
+                data = new List<byte>();
+                frame = new WebSocketFrame();
+                request = new HTTPRequest();
 
                 ConnectionRead += StatefulWebSocketHandShake;
+            }
+
+            public ClientConnection(Socket socket, AsynchronousServer.Server server,
+                ServerConfiguration configuration, Dictionary<string, IWebSocketService> webSocketServices,
+                HTTPRequest request)
+                : this(socket, server, configuration, webSocketServices)
+            {
+                this.request = request;
+            }
+
+            public void startConnectionWithHandShakeResponse()
+            {
+                upgradeConnectionTorfc6455();
+                base.startConnection();
             }
 
             protected virtual void StatefulWebsocketHandler(object sender, ConnectionEventArgs e)
             {
                 ClientConnection clientConnection = (ClientConnection)e.clientConnection;
 
-                frame.parse(e.clientConnection.message);
+                int oldSize = data.Count;
+                data.AddRange(clientConnection.message.Array);
+                data.RemoveRange(oldSize + clientConnection.message.Count, clientConnection.message.Array.Length - clientConnection.message.Count);
 
-                WebSocketFrame f = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes("message from socket server"));
+                try
+                {
+                    while (true)
+                    {
+                        int frameSize = frame.parse(data, configuration);
+                        data.RemoveRange(0, frameSize);
 
-                clientConnection.Send(f.AsFrame().Array);
+                        switch (frame.header.opCode)
+                        {
+                            case OpCode.Ping:
+                                OpCodePing(this, new FrameEventArgs(frame, e.clientConnection));
+                                break;
+                            case OpCode.Pong:
+                                OpCodePong(this, new FrameEventArgs(frame, e.clientConnection));
+                                break;
+                            case OpCode.Text:
+                                OpCodeText(this, new FrameEventArgs(frame, e.clientConnection));
+                                break;
+                            case OpCode.Binary:
+                                OpCodeBinary(this, new FrameEventArgs(frame, e.clientConnection));
+                                break;
+                            case OpCode.Close:
+                                OpCodeClose(this, new FrameEventArgs(frame, e.clientConnection));
+                                break;
+                            default:
+                                Default(this, new FrameEventArgs(frame, e.clientConnection));
+                                break;
+                        }
+
+                        frame = new WebSocketFrame();
+                    }
+                }
+                catch (InsufficientDataToParseFrameException)
+                {
+                    // exit this function and read more data.
+                }
+            }
+
+            private void OpCodePing(object sender, FrameEventArgs e)
+            {
+                e.clientConnection.Send((new WebSocketPingFrame()).AsBytes());
+                service.OpCodePing(this, e);
+                Logger.debug("ping received.");
+            }
+
+            private void OpCodePong(ClientConnection clientConnection, FrameEventArgs frameEventArgs)
+            {
+                service.OpCodePong(this, frameEventArgs);
+                Logger.debug("pong received.");
+            }
+
+            private void OpCodeText(object sender, FrameEventArgs frameEventArgs)
+            {
+                service.OpCodeText(this, frameEventArgs);
+            }
+
+            private void OpCodeBinary(object sender, FrameEventArgs frameEventArgs)
+            {
+                service.OpCodeBinary(sender, frameEventArgs);
+            }
+
+            private void OpCodeClose(object sender, FrameEventArgs frameEventArgs)
+            {
+               service.OpCodeClose(this, frameEventArgs);
+            }
+
+            private void Default(object sender, FrameEventArgs frameEventArgs)
+            {
+                
             }
 
             protected virtual void StatefulWebSocketHandShake(object sender, ConnectionEventArgs e)
@@ -119,16 +240,17 @@ namespace Servers
 
                 try
                 {
-                    if (request == null)
+                    if (request.tryParseAppend(e.clientConnection.message, configuration.maxRequestLength))
                     {
-                        request = new HTTPRequest();
-                    }
+                        if (MinimalWebSocketServer.Server.isWebSocketRequest(request))
+                        {
+                            if (!webSocketServices.ContainsKey(request.path))
+                            {
+                                throw new PageNotFoundResponsePage();
+                            }
 
-                    if (request.tryParseAppend(e.clientConnection.message, 10000))
-                    {
-                        upgradeConnectionTorfc6455();
-                        clientConnection.Send(new WebsocketUpgrade(request.getAttribute("Sec-WebSocket-Key")).ToBytes());
-                        request = null;
+                            upgradeConnectionTorfc6455();
+                        }
                     }
                 }
                 catch (HTTPResponse r)
@@ -145,8 +267,10 @@ namespace Servers
 
             private void upgradeConnectionTorfc6455()
             {
+                service = webSocketServices[request.path].buildService();
                 ConnectionRead -= StatefulWebSocketHandShake;
                 ConnectionRead += StatefulWebsocketHandler;
+                Send(new WebsocketUpgrade(request.getAttribute("Sec-WebSocket-Key")).ToBytes());
             }
 
             public virtual int Send(HTTPResponse r)
@@ -163,25 +287,35 @@ namespace Servers
             public string name { get; set; }
             public string version { get; set; }
             public int maxRequestLength { get; set; }
+            public ulong maxMessageSize { get; set; }
 
             public ServerConfiguration()
             {
                 maxRequestLength = 8000;
+                maxMessageSize = 4000;
             }
         }
+    }
 
-        public interface IWebsSocketRequestResponsibility
-        {
-            bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request);
-        }
+    public class FrameEventArgs
+    {
+        public WebSocketFrame frame { get; set; }
+        public Servers.AsynchronousServer.ClientConnection clientConnection { get; set; }
 
-        class FallBackRequestResponsibility : IWebsSocketRequestResponsibility
+        public FrameEventArgs(WebSocketFrame frame, Servers.AsynchronousServer.ClientConnection clientConnection)
         {
-            public bool process(AsynchronousServer.ClientConnection cc, HTTPRequest request)
-            {
-                cc.Send(new PageNotFoundResponsePage().ToString());
-                return true;
-            }
+            this.frame = frame;
+            this.clientConnection = clientConnection;
         }
+    }
+
+    public interface IWebSocketService
+    {
+        void OpCodePing(object sender, FrameEventArgs e);
+        void OpCodePong(object sender, FrameEventArgs e);
+        void OpCodeText(object sender, FrameEventArgs e);
+        void OpCodeBinary(object sender, FrameEventArgs frameEventArgs);
+        void OpCodeClose(object sender, FrameEventArgs frameEventArgs);
+        IWebSocketService buildService();
     }
 }

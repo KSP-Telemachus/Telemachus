@@ -7,9 +7,9 @@ using System.Text;
 
 namespace ServersTest
 {
-    class MinimalWebServerTest
+    class MinimalWebServerTest : ITest
     {
-        public static int Main1(String[] args)
+        public void run()
         {
             Servers.MinimalHTTPServer.ServerConfiguration config = new Servers.MinimalHTTPServer.ServerConfiguration();
             Servers.MinimalHTTPServer.Server server = new Servers.MinimalHTTPServer.Server(config);
@@ -18,10 +18,8 @@ namespace ServersTest
             server.addHTTPResponsibility(new RunningResponsibility());
 
             server.startServing();
-
             Console.Read();
             server.stopServing();
-            return 0;
         }
 
         static void server_ServerNotify(object sender, Servers.NotifyEventArgs e)

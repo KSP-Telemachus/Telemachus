@@ -45,12 +45,21 @@ namespace Telemachus
                     readConfiguration();
 
                     server = new Server(serverConfig);
-                    server.ServerNotify += ServerNotify;
+                    server.ServerNotify += HTTPServerNotify;
                     server.addHTTPResponsibility(new ElseResponsibility());
                     ioPageResponsibility = new IOPageResponsibility();
                     server.addHTTPResponsibility(ioPageResponsibility);
                     dataLinkResponsibility = new DataLinkResponsibility(JSONFormatterProvider.Instance, serverConfig);
                     server.addHTTPResponsibility(dataLinkResponsibility);
+
+                    Servers.MinimalWebSocketServer.ServerConfiguration webSocketconfig = new Servers.MinimalWebSocketServer.ServerConfiguration();
+                    webSocketconfig.bufferSize = 300;
+                    Servers.MinimalWebSocketServer.Server webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
+                    webSocketServer.ServerNotify += WebSocketServerNotify;
+                    webSocketServer.addWebSocketService("/server", new KSPWebSocketService());
+                    webSocketServer.subscribeToHTTPForStealing(server);
+
+
                     server.startServing();
 
                     PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
@@ -122,7 +131,12 @@ namespace Telemachus
             }
         }
 
-        private static void ServerNotify(object sender, Servers.NotifyEventArgs e)
+        private static void HTTPServerNotify(object sender, Servers.NotifyEventArgs e)
+        {
+            PluginLogger.debug(e.message);
+        }
+
+        private static void WebSocketServerNotify(object sender, Servers.NotifyEventArgs e)
         {
             PluginLogger.debug(e.message);
         }
