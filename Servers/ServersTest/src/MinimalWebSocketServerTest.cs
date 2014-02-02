@@ -1,4 +1,5 @@
-﻿using Servers;
+﻿//Author: Richard Bunt
+using Servers;
 using Servers.AsynchronousServer;
 using Servers.MinimalWebSocketServer;
 using System;

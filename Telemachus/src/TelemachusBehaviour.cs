@@ -1,4 +1,5 @@
-﻿using KSP.IO;
+﻿//Author: Richard Bunt
+using KSP.IO;
 using Servers.MinimalHTTPServer;
 using System;
 using System.Collections.Generic;

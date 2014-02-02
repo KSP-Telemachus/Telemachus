@@ -1,4 +1,5 @@
-﻿using Servers.MinimalWebSocketServer;
+﻿//Author: Richard Bunt
+using Servers.MinimalWebSocketServer;
 using System;
 using System.Collections.Generic;
 using System.IO;

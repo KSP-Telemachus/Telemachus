@@ -1,4 +1,5 @@
-﻿using Servers.AsynchronousServer;
+﻿//Author: Richard Bunt
+using Servers.AsynchronousServer;
 using Servers.MinimalHTTPServer;
 using System;
 using System.Collections.Generic;
