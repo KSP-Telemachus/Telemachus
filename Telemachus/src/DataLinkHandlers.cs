@@ -1168,7 +1168,7 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.atmDensity; },
                 "v.atmosphericDensity", "Atmospheric Density", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return dataSources.vessel.longitude; },
+                dataSources => { return dataSources.vessel.longitude > 180 ? dataSources.vessel.longitude - 360.0 : dataSources.vessel.longitude; },
                 "v.long", "Longitude", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.latitude; },
