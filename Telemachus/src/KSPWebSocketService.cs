@@ -9,25 +9,10 @@ namespace Telemachus
 {
     class KSPWebSocketService : IWebSocketService
     {
-        public void OpCodePing(object sender, FrameEventArgs e)
-        {
-
-        }
-
-        public void OpCodePong(object sender, FrameEventArgs e)
-        {
-
-        }
-
         public void OpCodeText(object sender, FrameEventArgs e)
         {
             WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes("Echo: " + e.frame.PayloadAsUTF8()));
             e.clientConnection.Send(frame.AsBytes());
-        }
-
-        public void OpCodeBinary(object sender, FrameEventArgs frameEventArgs)
-        {
-
         }
 
         public void OpCodeClose(object sender, FrameEventArgs frameEventArgs)
@@ -39,5 +24,24 @@ namespace Telemachus
         {
             return new KSPWebSocketService();
         }
+
+        #region Unused Callbacks
+
+        public void OpCodePing(object sender, FrameEventArgs e)
+        {
+
+        }
+
+        public void OpCodePong(object sender, FrameEventArgs e)
+        {
+
+        }
+
+        public void OpCodeBinary(object sender, FrameEventArgs frameEventArgs)
+        {
+
+        }
+
+        #endregion
     }
 }
