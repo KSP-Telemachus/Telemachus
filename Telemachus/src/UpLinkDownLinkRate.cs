@@ -9,7 +9,7 @@ namespace Telemachus
     {
         #region Fields
 
-        private static TimeSpan TIME_SPAN_5_SECONDS = new TimeSpan(0,0,5);
+        private static TimeSpan TIME_SPAN_5_SECONDS = new TimeSpan(0, 0, 5);
         private static DateTime TIME_ARBITRARY = System.DateTime.Now;
 
         private int averageSize = 0;
@@ -69,7 +69,7 @@ namespace Telemachus
 
         private double average(LinkedList<KeyValuePair<DateTime, int>> rate)
         {
-            lock(rate)
+            lock (rate)
             {
                 if (rate.Count > 1)
                 {

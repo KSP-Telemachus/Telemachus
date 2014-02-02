@@ -39,7 +39,7 @@ namespace Telemachus
         {
             if (TelemachusBehaviour.instance == null)
             {
-                TelemachusBehaviour.instance = GameObject.Find("TelemachusBehaviour") 
+                TelemachusBehaviour.instance = GameObject.Find("TelemachusBehaviour")
                     ?? new GameObject("TelemachusBehaviour", typeof(TelemachusBehaviour));
             }
 
@@ -57,17 +57,17 @@ namespace Telemachus
         {
             if (animSwitch == TelemachusPowerDrain.activeToggle)
             {
-                if(status.Equals("Locked"))
+                if (status.Equals("Locked"))
                 {
                     Toggle();
                 }
             }
-            
-            foreach(BaseEvent theEvent in Events)
+
+            foreach (BaseEvent theEvent in Events)
             {
                 theEvent.guiActive = false;
             }
-                
+
             base.OnUpdate();
         }
 
@@ -90,7 +90,7 @@ namespace Telemachus
 
         [KSPField]
         public float powerConsumptionIncrease = 0.02f;
-        
+
         [KSPField]
         public float powerConsumptionBase = 0.02f;
 
@@ -116,7 +116,7 @@ namespace Telemachus
             }
             else
             {
-                
+
                 activeToggle = true;
             }
         }
@@ -186,14 +186,14 @@ namespace Telemachus
             int index = 1;
             powerConsumption = powerConsumptionBase;
 
-            while(bitRate > 1000)
+            while (bitRate > 1000)
             {
                 bitRate = bitRate / 1000;
                 index++;
                 powerConsumption += powerConsumptionIncrease;
             }
 
-            if(index >= dataUnits.Length)
+            if (index >= dataUnits.Length)
             {
                 index = 0;
             }

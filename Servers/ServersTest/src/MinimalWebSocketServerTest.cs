@@ -18,7 +18,7 @@ namespace ServersTest
             config.bufferSize = 100;
             Servers.MinimalWebSocketServer.Server server = new Servers.MinimalWebSocketServer.Server(config);
             server.ServerNotify += server_ServerNotify;
-            server.addWebSocketService("/server",new WebSocketEchoService());
+            server.addWebSocketService("/server", new WebSocketEchoService());
             server.startServing();
 
             Console.Read();
@@ -36,12 +36,12 @@ namespace ServersTest
 
         public void OpCodePing(object sender, FrameEventArgs e)
         {
-            
+
         }
 
         public void OpCodePong(object sender, FrameEventArgs e)
         {
-            
+
         }
 
         public void OpCodeText(object sender, FrameEventArgs e)
@@ -52,12 +52,12 @@ namespace ServersTest
 
         public void OpCodeBinary(object sender, FrameEventArgs frameEventArgs)
         {
-            
+
         }
 
         public void OpCodeClose(object sender, FrameEventArgs frameEventArgs)
         {
-            
+
         }
 
         public IWebSocketService buildService()

@@ -7,16 +7,16 @@ using System.Text;
 
 namespace Telemachus
 {
-    class KSPWebSocketService: IWebSocketService
+    class KSPWebSocketService : IWebSocketService
     {
         public void OpCodePing(object sender, FrameEventArgs e)
         {
-            
+
         }
 
         public void OpCodePong(object sender, FrameEventArgs e)
         {
-            
+
         }
 
         public void OpCodeText(object sender, FrameEventArgs e)
@@ -27,12 +27,12 @@ namespace Telemachus
 
         public void OpCodeBinary(object sender, FrameEventArgs frameEventArgs)
         {
-            
+
         }
 
         public void OpCodeClose(object sender, FrameEventArgs frameEventArgs)
         {
-            
+
         }
 
         public IWebSocketService buildService()

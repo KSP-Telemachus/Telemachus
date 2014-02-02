@@ -53,7 +53,6 @@ namespace Servers
                 }
             }
 
-
             List<Socket> listeners = new List<Socket>();
             public ServerConfiguration configuration { get; set; }
 

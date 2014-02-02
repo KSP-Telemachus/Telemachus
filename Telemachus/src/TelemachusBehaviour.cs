@@ -115,7 +115,7 @@ namespace Telemachus
             }
 
             serverConfig.maxRequestLength = 8000;
-            
+
             serverConfig.version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             serverConfig.name = "Telemachus";
             serverConfig.backLog = 1000;
@@ -232,7 +232,7 @@ namespace Telemachus
         List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
 
 
-        public KSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector, 
+        public KSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector,
             Servers.AsynchronousServer.ServerConfiguration serverConfiguration)
         {
             APIHandlers.Add(new PausedDataLinkHandler(formatters));

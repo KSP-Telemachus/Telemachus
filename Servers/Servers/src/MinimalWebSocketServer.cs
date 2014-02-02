@@ -36,11 +36,9 @@ namespace Servers
 
                 server = new AsynchronousServer.Server(configuration,
                     (handler, s) =>
-                {
-                    return new ClientConnection(handler, s, configuration, webSocketServices);
-                });
-
-                
+                    {
+                        return new ClientConnection(handler, s, configuration, webSocketServices);
+                    });
             }
 
             ~Server()
@@ -94,7 +92,7 @@ namespace Servers
                 {
                     e.cancel = true;
 
-                    ClientConnection upgradedClientConnection = new ClientConnection(e.clientConnection.stealSocket(), 
+                    ClientConnection upgradedClientConnection = new ClientConnection(e.clientConnection.stealSocket(),
                             server, this.configuration, webSocketServices, e.request);
 
                     upgradedClientConnection.ConnectionNotify += ConnectionNotify;
@@ -226,12 +224,12 @@ namespace Servers
 
             private void OpCodeClose(object sender, FrameEventArgs frameEventArgs)
             {
-               service.OpCodeClose(this, frameEventArgs);
+                service.OpCodeClose(this, frameEventArgs);
             }
 
             private void Default(object sender, FrameEventArgs frameEventArgs)
             {
-                
+
             }
 
             protected virtual void StatefulWebSocketHandShake(object sender, ConnectionEventArgs e)
@@ -275,7 +273,7 @@ namespace Servers
 
             public virtual int Send(HTTPResponse r)
             {
-                r.setAttribute("Server", configuration.name + " " +  configuration.version);
+                r.setAttribute("Server", configuration.name + " " + configuration.version);
                 byte[] toSend = r.ToBytes();
                 Send(toSend);
                 return toSend.Length;

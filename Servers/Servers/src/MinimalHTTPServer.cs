@@ -44,9 +44,9 @@ namespace Servers
 
                 server = new AsynchronousServer.Server(configuration,
                     (handler, s) =>
-                {
-                    return new ClientConnection(handler, this, configuration);
-                });
+                    {
+                        return new ClientConnection(handler, this, configuration);
+                    });
 
                 requestChainOfResponsibility.Add(new FallBackRequestResponsibility());
             }
@@ -100,10 +100,10 @@ namespace Servers
 
             private void ConnectionNotify(object sender, ConnectionNotifyEventArgs e)
             {
-                OnServerNotify(this, new NotifyEventArgs(e.message + "\n" + 
+                OnServerNotify(this, new NotifyEventArgs(e.message + "\n" +
                     "Client Connection: " + e.clientConnection.ToString()));
             }
-            
+
             public void processRequest(AsynchronousServer.ClientConnection cc, HTTPRequest request)
             {
                 foreach (IHTTPRequestResponsibility responsibility in requestChainOfResponsibility)
@@ -113,7 +113,7 @@ namespace Servers
                         break;
                     }
                 }
-            } 
+            }
         }
 
         public class ClientConnection : AsynchronousServer.ClientConnection
@@ -134,8 +134,9 @@ namespace Servers
             HTTPRequest request = null;
             MinimalHTTPServer.Server server = null;
 
-            public ClientConnection(Socket socket, MinimalHTTPServer.Server server, 
-                ServerConfiguration configuration): base(socket, server.getServer())
+            public ClientConnection(Socket socket, MinimalHTTPServer.Server server,
+                ServerConfiguration configuration)
+                : base(socket, server.getServer())
             {
                 this.configuration = configuration;
                 this.server = server;
@@ -179,7 +180,7 @@ namespace Servers
 
             public virtual int Send(HTTPResponse r)
             {
-                r.setAttribute("Server", configuration.name + " " +  configuration.version);
+                r.setAttribute("Server", configuration.name + " " + configuration.version);
                 byte[] toSend = r.ToBytes();
                 Send(toSend);
                 return toSend.Length;
@@ -188,8 +189,8 @@ namespace Servers
 
         public class ServerConfiguration : AsynchronousServer.ServerConfiguration
         {
-            private const int LARGEST_PROTOCOL_LENGTH = 4; 
-            
+            private const int LARGEST_PROTOCOL_LENGTH = 4;
+
             public string name { get; set; }
             public string version { get; set; }
             public int maxRequestLength { get; set; }
@@ -198,7 +199,7 @@ namespace Servers
             {
                 get
                 {
-                     return base.bufferSize;
+                    return base.bufferSize;
                 }
                 set
                 {

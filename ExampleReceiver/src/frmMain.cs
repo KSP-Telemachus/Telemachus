@@ -39,7 +39,5 @@ namespace ExampleReceiver
                 Console.WriteLine(d.Message);
             }
         }
-
-
     }
 }

@@ -24,7 +24,7 @@ namespace Servers
             responseType = "Switching Protocols";
             responseCode = "101";
             attributes.Add("Upgrade", "websocket");
-            
+
             attributes.Remove("Content-Length");
             attributes.Remove("Content-Type");
             attributes.Remove("Date");
@@ -61,7 +61,7 @@ namespace Servers
         public byte rsv3 { get; set; }
         public OpCode opCode { get; set; }
         public bool mask { get; set; }
-        public ulong length { get; set;}
+        public ulong length { get; set; }
         public byte[] maskKeys = null;
         public int position;
 
@@ -98,7 +98,7 @@ namespace Servers
                     break;
             }
 
-            if(length > configuration.maxMessageSize)
+            if (length > configuration.maxMessageSize)
             {
                 throw new Servers.MinimalHTTPServer.RequestEntityTooLargeResponsePage();
             }
@@ -126,7 +126,7 @@ namespace Servers
 
     public class WebSocketFrame
     {
-        public WebSocketHeader header {get; set; }
+        public WebSocketHeader header { get; set; }
 
         private byte[] data = null;
         private ushort closeCode = 0;
@@ -217,7 +217,7 @@ namespace Servers
                 byte[] size = BitConverter.GetBytes((Int64)header.length);
                 frame.AddRange(size.Reverse<byte>());
             }
-            
+
             frame.AddRange(data);
 
             return frame.ToArray<byte>();

@@ -1,4 +1,5 @@
-﻿using Servers;
+﻿//Author: Richard Bunt
+using Servers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

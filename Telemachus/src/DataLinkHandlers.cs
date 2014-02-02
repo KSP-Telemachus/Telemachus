@@ -14,7 +14,8 @@ namespace Telemachus
     {
         #region Initialisation
 
-        public MechJebDataLinkHandler(FormatterProvider formatters) : base(formatters)
+        public MechJebDataLinkHandler(FormatterProvider formatters)
+            : base(formatters)
         {
             registerAPI(new ActionAPIEntry(
                 dataSources =>
@@ -92,7 +93,7 @@ namespace Telemachus
                 dataSources =>
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                        (x) => { return (FlightGlobals.fetch.VesselTarget != null ? reflectAttitudeTo(dataSources, Vector3d.forward, "TARGET") : false);}),
+                        (x) => { return (FlightGlobals.fetch.VesselTarget != null ? reflectAttitudeTo(dataSources, Vector3d.forward, "TARGET") : false); }),
                         UnityEngine.SendMessageOptions.DontRequireReceiver); return predictFailure(dataSources.vessel);
                 },
                "mj.targetplus", "Target Plus", formatters.Default));
@@ -147,7 +148,7 @@ namespace Telemachus
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                         (x) => { return surface(dataSources); }),
-                        UnityEngine.SendMessageOptions.DontRequireReceiver); 
+                        UnityEngine.SendMessageOptions.DontRequireReceiver);
                     return predictFailure(dataSources.vessel);
                 },
                "mj.surface", "Surface [float heading, float pitch]", formatters.Default));
@@ -161,7 +162,7 @@ namespace Telemachus
                             return reflectAttitudeTo(dataSources, double.Parse(dataSources.args[0]),
                                 double.Parse(dataSources.args[1]), double.Parse(dataSources.args[2])
                                 );
-                        }), UnityEngine.SendMessageOptions.DontRequireReceiver); 
+                        }), UnityEngine.SendMessageOptions.DontRequireReceiver);
                     return predictFailure(dataSources.vessel);
                 },
                "mj.surface2", "Surface [double heading, double pitch, double roll]", formatters.Default));
@@ -184,7 +185,7 @@ namespace Telemachus
             if (attitudeType != null)
             {
                 MethodInfo methodInfo = attitudeType.GetMethod("attitudeDeactivate");
-                methodInfo.Invoke(attitude, new object [] {});
+                methodInfo.Invoke(attitude, new object[] { });
                 return true;
             }
 
@@ -196,12 +197,12 @@ namespace Telemachus
             object attitude = null;
 
             Type attitudeType = getAttitudeType(dataSources, ref attitude);
-            if(attitudeType != null)
+            if (attitudeType != null)
             {
                 Type attitudeReferenceType = attitude.GetType().GetProperty("attitudeReference",
                     BindingFlags.Public | BindingFlags.Instance).GetValue(attitude, null).GetType();
-            
-            
+
+
                 MethodInfo methodInfo = attitudeType.GetMethod("attitudeTo", new[] { typeof(Vector3d), 
                             attitudeReferenceType, typeof(object) });
 
@@ -223,7 +224,7 @@ namespace Telemachus
                 MethodInfo methodInfo = attitudeType.GetMethod("attitudeTo", new[] { typeof(double),
                     typeof(double),typeof(double), typeof(object) });
 
-                methodInfo.Invoke(attitude, new object[] { heading, pitch , roll, this });
+                methodInfo.Invoke(attitude, new object[] { heading, pitch, roll, this });
 
                 return true;
             }
@@ -302,7 +303,7 @@ namespace Telemachus
 
             return null;
         }
-  
+
         #endregion
 
         #region DataLinkHandler
@@ -331,7 +332,7 @@ namespace Telemachus
             : base(formatters)
         {
             registerAPI(new ActionAPIEntry(
-                dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); iyaw = true ; return 0; },
+                dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); iyaw = true; return 0; },
                 "v.setYaw", "Yaw [float yaw]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
@@ -347,17 +348,18 @@ namespace Telemachus
                 "v.setFbW", "Set Fly by Wire On or Off [bool state]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
-                dataSources => {
+                dataSources =>
+                {
 
                     pitch = checkFlightStateParameters(float.Parse(dataSources.args[0]));
                     yaw = checkFlightStateParameters(float.Parse(dataSources.args[1]));
-                    
+
                     roll = checkFlightStateParameters(float.Parse(dataSources.args[2]));
                     x = checkFlightStateParameters(float.Parse(dataSources.args[3]));
                     y = checkFlightStateParameters(float.Parse(dataSources.args[4]));
                     z = checkFlightStateParameters(float.Parse(dataSources.args[5]));
 
-                    return 0; 
+                    return 0;
                 },
                 "v.setPitchYawRollXYZ", "Set pitch, yaw, roll, X, Y and Z [float pitch, yaw, roll, x, y, z]", formatters.Default));
         }
@@ -392,7 +394,7 @@ namespace Telemachus
 
         private float checkFlightStateParameters(float f)
         {
-            if(float.IsNaN(f))
+            if (float.IsNaN(f))
             {
                 f = 0;
             }
@@ -420,8 +422,10 @@ namespace Telemachus
             : base(formatters)
         {
             registerAPI(new ActionAPIEntry(
-                dataSources => { TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                 (x) => { Staging.ActivateNextStage(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
+                dataSources =>
+                {
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
+                        (x) => { Staging.ActivateNextStage(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
                     return predictFailure(dataSources.vessel);
                 }, "f.stage", "Stage", formatters.Default));
 
@@ -430,7 +434,7 @@ namespace Telemachus
                {
                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                        (x) => { setThrottle(x); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
-                       return predictFailure(dataSources.vessel);
+                   return predictFailure(dataSources.vessel);
                },
                 "f.setThrottle", "Set Throttle [float magnitude]", formatters.Default));
 
@@ -439,7 +443,7 @@ namespace Telemachus
                {
                    float t = FlightInputHandler.state.mainThrottle;
                    return t;
-                },
+               },
                 "f.throttle", "Throttle", formatters.Default, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new ActionAPIEntry(
@@ -447,7 +451,7 @@ namespace Telemachus
                {
                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                        (x) => { throttleUp(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
-                       return predictFailure(dataSources.vessel);
+                   return predictFailure(dataSources.vessel);
                },
                 "f.throttleUp", "Throttle Up", formatters.Default));
 
@@ -456,7 +460,7 @@ namespace Telemachus
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                         (x) => { throttleZero(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
-                        return predictFailure(dataSources.vessel);
+                    return predictFailure(dataSources.vessel);
                 },
                 "f.throttleZero", "Throttle Zero", formatters.Default));
 
@@ -465,7 +469,7 @@ namespace Telemachus
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                         (x) => { throttleFull(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
-                        return predictFailure(dataSources.vessel);
+                    return predictFailure(dataSources.vessel);
                 },
                 "f.throttleFull", "Throttle Full", formatters.Default));
 
@@ -474,7 +478,7 @@ namespace Telemachus
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                         (x) => { throttleDown(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
-                        return predictFailure(dataSources.vessel);
+                    return predictFailure(dataSources.vessel);
                 },
                 "f.throttleDown", "Throttle Down", formatters.Default));
 
@@ -577,7 +581,7 @@ namespace Telemachus
         #endregion
 
         #region DataLinkHandler
-        
+
         protected override int pausedHandler()
         {
             return PausedDataLinkHandler.partPaused();
@@ -641,13 +645,13 @@ namespace Telemachus
                 dataSources =>
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                        (x) => { TimeWarp.SetRate(int.Parse(x.args[0]),false); return 0d; }),
+                        (x) => { TimeWarp.SetRate(int.Parse(x.args[0]), false); return 0d; }),
                         UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
                 },
                 "t.timeWarp", "Time Warp [int rate]", formatters.Default));
-			registerAPI(new PlotableAPIEntry(
-				dataSources => { return Planetarium.GetUniversalTime(); },
-				"t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return Planetarium.GetUniversalTime(); },
+                "t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.DATE));
         }
 
         #endregion
@@ -661,7 +665,8 @@ namespace Telemachus
             : base(formatters)
         {
             registerAPI(new PlotableAPIEntry(
-                dataSources => {
+                dataSources =>
+                {
                     return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetName() : "No Target Selected.";
                 },
                 "tar.name", "Target Name", formatters.String, APIEntry.UnitType.STRING));
@@ -673,11 +678,11 @@ namespace Telemachus
                 },
                 "tar.type", "Target Type", formatters.String, APIEntry.UnitType.STRING));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? Vector3.Distance(FlightGlobals.fetch.VesselTarget.GetTransform().position, dataSources.vessel.GetTransform().position)  : 0; },
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? Vector3.Distance(FlightGlobals.fetch.VesselTarget.GetTransform().position, dataSources.vessel.GetTransform().position) : 0; },
                 "tar.distance", "Target Distance", formatters.Default, APIEntry.UnitType.DISTANCE));
 
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? (FlightGlobals.fetch.VesselTarget.GetOrbit().GetVel() - dataSources.vessel.orbit.GetVel()).magnitude : 0;},
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? (FlightGlobals.fetch.VesselTarget.GetOrbit().GetVel() - dataSources.vessel.orbit.GetVel()).magnitude : 0; },
                 "tar.o.relativeVelocity", "Target Relative Velocity", formatters.Default, APIEntry.UnitType.VELOCITY));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().vel.magnitude : 0; },
@@ -719,18 +724,19 @@ namespace Telemachus
                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().LAN : 0; },
                "tar.o.lan", "Target Longitude of Ascending Node", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
-				dataSources => {
-					if (FlightGlobals.fetch.VesselTarget == null) { return 0; }
-					Orbit orbit = FlightGlobals.fetch.VesselTarget.GetOrbit();
-					return orbit.getObtAtUT(0) / orbit.period * (2.0 * Math.PI);
-				},
+                dataSources =>
+                {
+                    if (FlightGlobals.fetch.VesselTarget == null) { return 0; }
+                    Orbit orbit = FlightGlobals.fetch.VesselTarget.GetOrbit();
+                    return orbit.getObtAtUT(0) / orbit.period * (2.0 * Math.PI);
+                },
                "tar.o.maae", "Target Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
-			registerAPI(new PlotableAPIEntry(
-				dataSources => { return FlightGlobals.fetch.VesselTarget != null ? Planetarium.GetUniversalTime() - FlightGlobals.fetch.VesselTarget.GetOrbit().ObT : 0; },
-				"tar.o.timeOfPeriapsisPassage", "Target Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
-			registerAPI(new PlotableAPIEntry(
-				dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI) : double.NaN; },
-				"tar.o.trueAnomaly", "Target True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? Planetarium.GetUniversalTime() - FlightGlobals.fetch.VesselTarget.GetOrbit().ObT : 0; },
+                "tar.o.timeOfPeriapsisPassage", "Target Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI) : double.NaN; },
+                "tar.o.trueAnomaly", "Target True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().referenceBody.name : ""; },
                "tar.o.orbitingBody", "Target Orbiting Body", formatters.String, APIEntry.UnitType.STRING));
@@ -740,7 +746,7 @@ namespace Telemachus
 
         #region DataLinkHandler
 
-       
+
 
         public override bool process(String API, out APIEntry result)
         {
@@ -893,15 +899,19 @@ namespace Telemachus
     {
         #region Initialisation
 
-         public MapViewDataLinkHandler(FormatterProvider formatters)
+        public MapViewDataLinkHandler(FormatterProvider formatters)
             : base(formatters)
         {
             registerAPI(new ActionAPIEntry(
                 dataSources =>
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
-                        (x) => { if (MapView.MapIsEnabled) 
-                        { MapView.ExitMapView(); } else { MapView.EnterMapView(); } return 0d; }),
+                        (x) =>
+                        {
+                            if (MapView.MapIsEnabled)
+                            { MapView.ExitMapView(); }
+                            else { MapView.EnterMapView(); } return 0d;
+                        }),
                         UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
                 },
                 "m.toggleMapView", " Toggle Map View", formatters.Default));
@@ -912,7 +922,7 @@ namespace Telemachus
                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources,
                        (x) =>
                        {
-                            MapView.EnterMapView(); return 0d;
+                           MapView.EnterMapView(); return 0d;
                        }),
                        UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
                },
@@ -986,48 +996,56 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.meanAnomalyAtEpoch; },
                "b.o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
-			registerAPI(new PlotableAPIEntry(
-				dataSources => { return Planetarium.GetUniversalTime() - FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.ObT; },
-				"b.o.timeOfPeriapsisPassage", "Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
-			registerAPI(new PlotableAPIEntry(
-				dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI); },
-				"b.o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
-			registerAPI(new PlotableAPIEntry(
-				dataSources => {
-					CelestialBody body = FlightGlobals.Bodies[int.Parse(dataSources.args[0])];
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return Planetarium.GetUniversalTime() - FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.ObT; },
+                "b.o.timeOfPeriapsisPassage", "Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI); },
+                "b.o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+                dataSources =>
+                {
+                    CelestialBody body = FlightGlobals.Bodies[int.Parse(dataSources.args[0])];
 
-					// Find a common reference body between vessel and body
-					List<CelestialBody> parentBodies = new List<CelestialBody>();
-					CelestialBody parentBody = dataSources.vessel.mainBody;
-					while(true) {
-						if (parentBody == body) {
-							return double.NaN;
-						}
-						parentBodies.Add(parentBody);
-						if (parentBody == Planetarium.fetch.Sun) {
-							break;
-						} else {
-							parentBody = parentBody.referenceBody;
-						}
-					}
+                    // Find a common reference body between vessel and body
+                    List<CelestialBody> parentBodies = new List<CelestialBody>();
+                    CelestialBody parentBody = dataSources.vessel.mainBody;
+                    while (true)
+                    {
+                        if (parentBody == body)
+                        {
+                            return double.NaN;
+                        }
+                        parentBodies.Add(parentBody);
+                        if (parentBody == Planetarium.fetch.Sun)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            parentBody = parentBody.referenceBody;
+                        }
+                    }
 
-					while (!parentBodies.Contains(body.referenceBody)) {
-						body = body.referenceBody;
-					}
+                    while (!parentBodies.Contains(body.referenceBody))
+                    {
+                        body = body.referenceBody;
+                    }
 
-					Orbit orbit = dataSources.vessel.orbit;
-					while (orbit.referenceBody != body.referenceBody) {
-						orbit = orbit.referenceBody.orbit;
-					}
+                    Orbit orbit = dataSources.vessel.orbit;
+                    while (orbit.referenceBody != body.referenceBody)
+                    {
+                        orbit = orbit.referenceBody.orbit;
+                    }
 
-					// Calculate the phase angle
-					double ut = Planetarium.GetUniversalTime();
-					Vector3d vesselPos = orbit.getRelativePositionAtUT(ut);
-					Vector3d bodyPos = body.orbit.getRelativePositionAtUT(ut);
-					double phaseAngle = (Math.Atan2(bodyPos.y, bodyPos.x) - Math.Atan2(vesselPos.y, vesselPos.x)) * (180.0 / Math.PI);
-					return (phaseAngle < 0) ? phaseAngle + 360 : phaseAngle;
-				},
-				"b.o.phaseAngle", "Phase Angle", formatters.Default, APIEntry.UnitType.DEG));
+                    // Calculate the phase angle
+                    double ut = Planetarium.GetUniversalTime();
+                    Vector3d vesselPos = orbit.getRelativePositionAtUT(ut);
+                    Vector3d bodyPos = body.orbit.getRelativePositionAtUT(ut);
+                    double phaseAngle = (Math.Atan2(bodyPos.y, bodyPos.x) - Math.Atan2(vesselPos.y, vesselPos.x)) * (180.0 / Math.PI);
+                    return (phaseAngle < 0) ? phaseAngle + 360 : phaseAngle;
+                },
+                "b.o.phaseAngle", "Phase Angle", formatters.Default, APIEntry.UnitType.DEG));
         }
 
         #endregion
@@ -1041,7 +1059,8 @@ namespace Telemachus
             : base(formatters)
         {
             registerAPI(new PlotableAPIEntry(
-                dataSources => {
+                dataSources =>
+                {
                     Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
                     return result.eulerAngles.y;
                 },
@@ -1053,7 +1072,7 @@ namespace Telemachus
                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
                    return (result.eulerAngles.x > 180) ? (360.0 - result.eulerAngles.x) : -result.eulerAngles.x;
                },
-               "n.pitch", "Pitch",formatters.Default, APIEntry.UnitType.DEG));
+               "n.pitch", "Pitch", formatters.Default, APIEntry.UnitType.DEG));
 
             registerAPI(new PlotableAPIEntry(
                dataSources =>
@@ -1101,12 +1120,12 @@ namespace Telemachus
 
             CoM = v.findWorldCenterOfMass();
             up = (CoM - v.mainBody.position).normalized;
-            
-            north = Vector3d.Exclude(up, (v.mainBody.position + v.mainBody.transform.up * 
+
+            north = Vector3d.Exclude(up, (v.mainBody.position + v.mainBody.transform.up *
                 (float)v.mainBody.Radius) - CoM).normalized;
 
             rotationSurface = Quaternion.LookRotation(north, up);
-            return Quaternion.Inverse(Quaternion.Euler(90, 0, 0) * 
+            return Quaternion.Inverse(Quaternion.Euler(90, 0, 0) *
                 Quaternion.Inverse(v.GetTransform().rotation) * rotationSurface);
         }
 
@@ -1129,7 +1148,7 @@ namespace Telemachus
             : base(formatters)
         {
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return dataSources.vessel.altitude; }, 
+                dataSources => { return dataSources.vessel.altitude; },
                 "v.altitude", "Altitude", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.heightFromTerrain; },
@@ -1182,28 +1201,34 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.referenceBody.name; },
                 "v.body", "Body Name", formatters.String, APIEntry.UnitType.STRING));
-			registerAPI(new PlotableAPIEntry(
-				dataSources => {
-					if (dataSources.vessel.mainBody == Planetarium.fetch.Sun) {
-						return double.NaN;
-					} else {
-						double ut = Planetarium.GetUniversalTime();
-						CelestialBody body = dataSources.vessel.mainBody;
-						Vector3d bodyPrograde = body.orbit.getOrbitalVelocityAtUT(ut);
-						Vector3d bodyNormal = body.orbit.GetOrbitNormal();
-						Vector3d vesselPos = dataSources.vessel.orbit.getRelativePositionAtUT(ut);
-						Vector3d vesselPosInPlane = Vector3d.Exclude(bodyNormal, vesselPos); // Project the vessel position into the body's orbital plane
-						double angle = Vector3d.Angle(vesselPosInPlane, bodyPrograde);
-						if (Vector3d.Dot(Vector3d.Cross(vesselPosInPlane, bodyPrograde), bodyNormal) < 0) { // Correct for angles > 180 degrees
-							angle = 360 - angle;
-						}
-						if (dataSources.vessel.orbit.GetOrbitNormal().z < 0) { // Check for retrograde orbit
-							angle = 360 - angle;
-						}
-						return angle;
-					}
-				},
-				"v.angleToPrograde", "Angle to Prograde", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+                dataSources =>
+                {
+                    if (dataSources.vessel.mainBody == Planetarium.fetch.Sun)
+                    {
+                        return double.NaN;
+                    }
+                    else
+                    {
+                        double ut = Planetarium.GetUniversalTime();
+                        CelestialBody body = dataSources.vessel.mainBody;
+                        Vector3d bodyPrograde = body.orbit.getOrbitalVelocityAtUT(ut);
+                        Vector3d bodyNormal = body.orbit.GetOrbitNormal();
+                        Vector3d vesselPos = dataSources.vessel.orbit.getRelativePositionAtUT(ut);
+                        Vector3d vesselPosInPlane = Vector3d.Exclude(bodyNormal, vesselPos); // Project the vessel position into the body's orbital plane
+                        double angle = Vector3d.Angle(vesselPosInPlane, bodyPrograde);
+                        if (Vector3d.Dot(Vector3d.Cross(vesselPosInPlane, bodyPrograde), bodyNormal) < 0)
+                        { // Correct for angles > 180 degrees
+                            angle = 360 - angle;
+                        }
+                        if (dataSources.vessel.orbit.GetOrbitNormal().z < 0)
+                        { // Check for retrograde orbit
+                            angle = 360 - angle;
+                        }
+                        return angle;
+                    }
+                },
+                "v.angleToPrograde", "Angle to Prograde", formatters.Default, APIEntry.UnitType.DEG));
         }
 
         #endregion
@@ -1256,17 +1281,18 @@ namespace Telemachus
                dataSources => { return dataSources.vessel.orbit.LAN; },
                "o.lan", "Longitude of Ascending Node", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
-				dataSources => {
-					Orbit orbit = dataSources.vessel.orbit;
-					return orbit.getObtAtUT(0) / orbit.period * (2.0 * Math.PI);
-				},
+                dataSources =>
+                {
+                    Orbit orbit = dataSources.vessel.orbit;
+                    return orbit.getObtAtUT(0) / orbit.period * (2.0 * Math.PI);
+                },
                "o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
-			registerAPI(new PlotableAPIEntry(
-				dataSources => { return Planetarium.GetUniversalTime() - dataSources.vessel.orbit.ObT; },
-				"o.timeOfPeriapsisPassage", "Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
-			registerAPI(new PlotableAPIEntry(
-				dataSources => { return dataSources.vessel.orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI); },
-				"o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return Planetarium.GetUniversalTime() - dataSources.vessel.orbit.ObT; },
+                "o.timeOfPeriapsisPassage", "Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI); },
+                "o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
         }
 
         #endregion
@@ -1282,13 +1308,14 @@ namespace Telemachus
 
         #region Initialisation
 
-        public SensorDataLinkHandler(VesselChangeDetector vesselChangeDetector, FormatterProvider formatters) : base(formatters)
+        public SensorDataLinkHandler(VesselChangeDetector vesselChangeDetector, FormatterProvider formatters)
+            : base(formatters)
         {
             vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
 
             registerAPI(new PlotableAPIEntry(
                dataSources => { return getsSensorValues(dataSources); },
-               "s.sensor", "Sensor Information [string sensor type]", formatters.SensorModuleList, 
+               "s.sensor", "Sensor Information [string sensor type]", formatters.SensorModuleList,
                APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                dataSources => { dataSources.args.Add("TEMP"); return getsSensorValues(dataSources); },
@@ -1323,7 +1350,7 @@ namespace Telemachus
 
         private void vesselChanged(Vessel vessel)
         {
-            
+
         }
 
         #endregion
@@ -1341,12 +1368,13 @@ namespace Telemachus
 
         #region Initialisation
 
-        public ResourceDataLinkHandler(VesselChangeDetector vesselChangeDetector, FormatterProvider formatters) : base(formatters)
+        public ResourceDataLinkHandler(VesselChangeDetector vesselChangeDetector, FormatterProvider formatters)
+            : base(formatters)
         {
             vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
-                "r.resource", "Resource Information [string resource type]", 
+                "r.resource", "Resource Information [string resource type]",
                 formatters.ResourceList, APIEntry.UnitType.UNITLESS));
 
             vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
@@ -1475,7 +1503,7 @@ namespace Telemachus
                 {
                     if (part.Resources.Count > 0)
                     {
-                        
+
                         foreach (PartResource partResource in part.Resources)
                         {
                             List<PartResource> list = null;
@@ -1484,7 +1512,7 @@ namespace Telemachus
                             {
                                 list = new List<PartResource>();
                                 partModules[partResource.resourceName] = list;
-                                
+
                             }
 
                             list.Add(partResource);
@@ -1526,7 +1554,7 @@ namespace Telemachus
                                 PluginLogger.debug(((ModuleEnviroSensor)module).sensorType);
                                 list = new List<ModuleEnviroSensor>();
                                 partModules[((ModuleEnviroSensor)module).sensorType] = list;
-                                
+
                             }
 
                             list.Add((ModuleEnviroSensor)module);
@@ -1610,8 +1638,9 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources =>
                 {
-                    List<APIEntry> APIList = new List<APIEntry>(); 
-                    kspAPI.getAPIList(ref APIList); return APIList;},
+                    List<APIEntry> APIList = new List<APIEntry>();
+                    kspAPI.getAPIList(ref APIList); return APIList;
+                },
                 "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new APIEntry(
@@ -1632,7 +1661,7 @@ namespace Telemachus
                 dataSources =>
                 {
                     List<APIEntry> APIList = new List<APIEntry>();
-                    foreach(string apiRequest in dataSources.args)
+                    foreach (string apiRequest in dataSources.args)
                     {
                         kspAPI.getAPIEntry(apiRequest, ref APIList);
                     }
@@ -1640,7 +1669,7 @@ namespace Telemachus
                     return APIList;
                 },
                 "a.apiSubSet",
-                "Subset of the API Listing [string api1, string api2, ... , string apiN]", 
+                "Subset of the API Listing [string api1, string api2, ... , string apiN]",
                 formatters.APIEntry, APIEntry.UnitType.STRING));
 
             registerAPI(new PlotableAPIEntry(
@@ -1655,7 +1684,8 @@ namespace Telemachus
     {
         #region Initialisation
 
-        public CompoundDataLinkHandler(List<DataLinkHandler> APIHandlers, FormatterProvider formatters) : base(formatters)
+        public CompoundDataLinkHandler(List<DataLinkHandler> APIHandlers, FormatterProvider formatters)
+            : base(formatters)
         {
             foreach (DataLinkHandler dlh in APIHandlers)
             {
@@ -1672,7 +1702,7 @@ namespace Telemachus
     public class DefaultDataLinkHandler : DataLinkHandler
     {
         #region Initialisation
-        
+
         public DefaultDataLinkHandler(FormatterProvider formatters)
             : base(formatters)
         {
@@ -1751,11 +1781,11 @@ namespace Telemachus
                 }
                 else
                 {
-                   result =  nullAPI;
+                    result = nullAPI;
                 }
 
                 return true;
-            } 
+            }
         }
 
         public void appendAPIList(ref List<APIEntry> APIList)
@@ -1783,7 +1813,7 @@ namespace Telemachus
     {
         #region Enumeration
 
-		public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME, STRING, TEMP, PRES, GRAV, ACC, DENSITY, DYNAMICPRESSURE, G, DATE };
+        public enum UnitType { UNITLESS, VELOCITY, DEG, DISTANCE, TIME, STRING, TEMP, PRES, GRAV, ACC, DENSITY, DYNAMICPRESSURE, G, DATE };
 
         #endregion
 
@@ -1794,13 +1824,13 @@ namespace Telemachus
         public string name { get; set; }
         public UnitType units { get; set; }
         public bool plotable { get; set; }
-        public DataSourceResultFormatter formatter { get; set;}
+        public DataSourceResultFormatter formatter { get; set; }
 
         #endregion
 
         #region Initialisation
 
-        public APIEntry(DataLinkHandler.APIDelegate function, string APIString, 
+        public APIEntry(DataLinkHandler.APIDelegate function, string APIString,
             string name, DataSourceResultFormatter formatter, UnitType units)
         {
             this.function = function;
@@ -1817,7 +1847,7 @@ namespace Telemachus
     {
         #region Initialisation
 
-        public ActionAPIEntry(DataLinkHandler.APIDelegate function, 
+        public ActionAPIEntry(DataLinkHandler.APIDelegate function,
             string APIString, string name, DataSourceResultFormatter formatter)
             : base(function, APIString, name, formatter, APIEntry.UnitType.UNITLESS)
         {
@@ -1852,7 +1882,7 @@ namespace Telemachus
         #region Initialisation
 
         public DelayedAPIEntry(DataSources dataSources, DataLinkHandler.APIDelegate function)
-            :base(function, "", "", null, UnitType.UNITLESS)
+            : base(function, "", "", null, UnitType.UNITLESS)
         {
             this.dataSources = dataSources;
         }

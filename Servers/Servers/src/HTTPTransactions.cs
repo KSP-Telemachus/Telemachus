@@ -77,18 +77,18 @@ namespace Servers
             public bool tryParseAppend(ArraySegment<byte> input, int maxRequestLength)
             {
                 progressiveRequestString += Encoding.ASCII.GetString(input.Array, 0, input.Count);
-                
+
                 Logger.debug(progressiveRequestString);
 
                 if (progressiveRequestString.StartsWith(GET))
                 {
-                    if(progressiveRequestString.EndsWith(HEADER_END))
+                    if (progressiveRequestString.EndsWith(HEADER_END))
                     {
                         if (progressiveRequestString.Length > maxRequestLength)
                         {
                             throw new RequestEntityTooLargeResponsePage();
                         }
-                    
+
 
                         parse(progressiveRequestString);
                         progressiveRequestString = "";
@@ -135,7 +135,7 @@ namespace Servers
             {
                 String[] lines = Regex.Split(input, NEW_LINE);
                 int i = parseHeader(lines) + 1;
-                
+
                 if (i == 0)
                 {
                     return false;
@@ -246,7 +246,8 @@ namespace Servers
                     "application/font-sfnt", Base64ContentReader);
             }
 
-            public HTTPResponse(ByteReader br, TextReader tr, String fileName) : this()
+            public HTTPResponse(ByteReader br, TextReader tr, String fileName)
+                : this()
             {
                 KeyValuePair<string, ContentReader> reader = contentTypes[
                    fileName.Substring(fileName.LastIndexOf('.')).ToLower()];
@@ -255,7 +256,8 @@ namespace Servers
                 reader.Value(br, tr, fileName, ref attributes, this);
             }
 
-            public HTTPResponse(String content) : this()
+            public HTTPResponse(String content)
+                : this()
             {
                 attributes.Add("Content-Type", "text/html");
                 this.content = content;
@@ -312,12 +314,14 @@ namespace Servers
 
         public class OKResponsePage : HTTPResponse
         {
-            public OKResponsePage(String content) : base(content)
+            public OKResponsePage(String content)
+                : base(content)
             {
                 commonOK();
             }
 
-            public OKResponsePage(ByteReader br, TextReader tr, String fileName) : base (br, tr, fileName)
+            public OKResponsePage(ByteReader br, TextReader tr, String fileName)
+                : base(br, tr, fileName)
             {
                 commonOK();
             }

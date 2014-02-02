@@ -22,7 +22,7 @@ namespace Telemachus
         #endregion
 
         #region Fields
-        
+
         DataSources dataSources = new DataSources();
         KSPAPI kspAPI = null;
         VesselChangeDetector vesselChangeDetector = new VesselChangeDetector();
@@ -90,7 +90,7 @@ namespace Telemachus
                                 dataSources)
                         )) * BITS_PER_BYTE);
                 }
-                
+
                 return true;
             }
 
@@ -110,7 +110,7 @@ namespace Telemachus
         {
             kspAPI.getAPIEntry(APIString, ref APIList);
         }
-            
+
         #endregion
 
         #region Parse URL
@@ -118,7 +118,7 @@ namespace Telemachus
         private String argumentsParse(String args, DataSources dataSources)
         {
             APIEntry currentEntry = null;
-            List<string> APIResults = new List<string>(); 
+            List<string> APIResults = new List<string>();
             String[] argsSplit = args.Split(ARGUMENTS_DELIMETER);
 
             foreach (String arg in argsSplit)
@@ -147,7 +147,7 @@ namespace Telemachus
             {
                 if (arg.Contains("["))
                 {
-                    
+
                     String[] argsSplit = arg.Split('[');
                     argsSplit[1] = argsSplit[1].Substring(0, argsSplit[1].Length - 1);
                     arg = argsSplit[0];

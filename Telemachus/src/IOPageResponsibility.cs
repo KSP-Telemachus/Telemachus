@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Text;
 using Servers.MinimalHTTPServer;
 
-
-
 namespace Telemachus
 {
     class IOPageResponsibility : IHTTPRequestResponsibility
@@ -20,7 +18,7 @@ namespace Telemachus
 
         #region Delegates
 
-        static OKResponsePage.ByteReader KSPByteReader = fileName => 
+        static OKResponsePage.ByteReader KSPByteReader = fileName =>
         {
 
 #if (KSPIO)
@@ -49,9 +47,9 @@ namespace Telemachus
             return content;
         };
 
-        static OKResponsePage.TextReader KSPTextReader = fileName => 
+        static OKResponsePage.TextReader KSPTextReader = fileName =>
         {
-            
+
             if (fileName.Length > 0)
             {
 #if (KSPIO)
@@ -80,9 +78,9 @@ namespace Telemachus
             if (request.path.StartsWith(PAGE_PREFIX))
             {
                 try
-                {   
+                {
                     OKResponsePage page = new OKResponsePage(
-                            KSPByteReader, KSPTextReader, 
+                            KSPByteReader, KSPTextReader,
                             request.path.Substring(PAGE_PREFIX.Length));
                     ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(page);
 

@@ -11,7 +11,7 @@ namespace ServersTest
     class SocketStealingTest : ITest
     {
         public void run()
-        { 
+        {
             // configure http server but do not start running yet
             Servers.MinimalHTTPServer.ServerConfiguration config = new Servers.MinimalHTTPServer.ServerConfiguration();
             Servers.MinimalHTTPServer.Server server = new Servers.MinimalHTTPServer.Server(config);
@@ -26,7 +26,7 @@ namespace ServersTest
             webSocketServer.ServerNotify += server_ServerNotify;
             webSocketServer.addWebSocketService("/server", new WebSocketEchoService());
             webSocketServer.subscribeToHTTPForStealing(server);
-            
+
             // start the HTTP server
             server.startServing();
             Console.Read();
