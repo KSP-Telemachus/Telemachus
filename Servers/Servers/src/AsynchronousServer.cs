@@ -402,7 +402,7 @@ namespace Servers
             public ServerConfiguration()
             {
                 ipAddresses = new List<IPAddress>();
-                port = 8080;
+                port = 8085;
                 backLog = 100;
                 bufferSize = 512;
             }
