@@ -57,8 +57,6 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="src\altitude.html" />
-    <Content Include="src\apoapsis-periapsis.html" />
     <Content Include="src\config.xml" />
     <Content Include="src\console.css" />
     <Content Include="src\console.html" />
@@ -67,21 +65,15 @@
     <Content Include="src\d-pad.html" />
     <Content Include="src\marker-icon.png" />
     <Content Include="src\density.html" />
-    <Content Include="src\dynamic-pressure.html" />
-    <Content Include="src\electricity.html" />
     <Content Include="src\flight-control.html" />
-    <Content Include="src\fuel-oxidizer.html" />
     <Content Include="src\g-force.html" />
     <Content Include="src\gravity.html" />
-    <Content Include="src\inclination-aop.html" />
     <Content Include="src\information.css" />
     <Content Include="src\information.html" />
     <Content Include="src\jKSPWAPICore.css" />
     <Content Include="src\jKSPWAPICore.js" />
     <Content Include="src\jKSPWAPIGraph.css" />
     <Content Include="src\jKSPWAPIGraph.js" />
-    <Content Include="src\jKSPWAPITable.css" />
-    <Content Include="src\jKSPWAPITable.js" />
     <Content Include="src\jquery-1.9.1.min.js" />
     <Content Include="src\layers.png" />
     <Content Include="src\leafletksp.css" />
@@ -96,11 +88,8 @@
     <Content Include="src\pressure.html" />
     <Content Include="src\smart-ass.html" />
     <Content Include="src\speech.html" />
-    <Content Include="src\surface.html" />
     <Content Include="src\temperature.html" />
-    <Content Include="src\time-apoapsis-periapsis.html" />
     <Content Include="src\touchball-pyr.html" />
-    <Content Include="src\velocity.html" />
     <Content Include="src\zoom-in.png" />
     <Content Include="src\zoom-out.png" />
     <Content Include="Web.config" />
