@@ -9,41 +9,29 @@ namespace TelemachusTest
 {
     class Program
     {
-        static void Main(string[] args)
+        static Dictionary<string, ITest> tests = new Dictionary<string, ITest>();
+
+        public static int Main(String[] args)
         {
-            time(10000);
+            buildTests();
+
+            foreach (string s in args)
+            {
+                tests[s].run();
+            }
+
+            Console.Read();
+            return 0;
         }
 
-        static private void time(int numberOfTests)
+        private static void buildTests()
         {
-            Console.WriteLine("Starting time test: " + numberOfTests);
-            Stopwatch timer = new Stopwatch();
-            try
-            {
-                string address = string.Format(
-                "http://127.0.0.1:8085/telemachus/datalink?alt={0}",
-                Uri.EscapeDataString("v.altitude"));
-                string text;
-                using (WebClient client = new WebClient())
-                {
-                    timer.Start();
-                    for (int i = 0; i < numberOfTests; i++)
-                    {
-                        text = client.DownloadString(address);
-                    }
-                    timer.Stop();
-                }
-
-                Console.WriteLine("Average request time: " + timer.ElapsedMilliseconds / ((double)(numberOfTests)) + " milliseconds.");
-            }
-            catch (Exception d)
-            {
-                Console.WriteLine(d.Message);
-            }
-            finally
-            {
-                Console.ReadLine();
-            }
+            tests["HTTPTimeTest"] = new HTTPTimeTest(500);
         }
+    }
+
+    public interface ITest
+    {
+        void run();
     }
 }

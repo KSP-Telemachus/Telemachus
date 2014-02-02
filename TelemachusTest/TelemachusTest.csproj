@@ -41,11 +41,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\TelemachusWebServerTest.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Servers\ServersTest\ServersTest.csproj">
+      <Project>{def5477e-ce26-45df-8316-f762d7f417c0}</Project>
+      <Name>ServersTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Servers\Servers\Servers.csproj">
+      <Project>{57e9f7c0-db25-4b6d-aa53-c44d95b47468}</Project>
+      <Name>Servers</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

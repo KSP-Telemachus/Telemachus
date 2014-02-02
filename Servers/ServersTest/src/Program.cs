@@ -30,7 +30,7 @@ namespace ServersTest
         }
     }
 
-    interface ITest
+    public interface ITest
     {
         void run();
     }
