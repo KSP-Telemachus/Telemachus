@@ -56,9 +56,8 @@ namespace Telemachus
                     webSocketconfig.bufferSize = 300;
                     Servers.MinimalWebSocketServer.Server webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
                     webSocketServer.ServerNotify += WebSocketServerNotify;
-                    webSocketServer.addWebSocketService("/server", new KSPWebSocketService());
+                    webSocketServer.addWebSocketService("/datalink", new KSPWebSocketService());
                     webSocketServer.subscribeToHTTPForStealing(server);
-
 
                     server.startServing();
 
