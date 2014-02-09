@@ -18,7 +18,7 @@ namespace Telemachus
 
         private Regex matchJSONAttributes = new Regex(@"[\{|,\s+]""([^:]*)"":([^:]*)[,|\}]", RegexOptions.Compiled);
 
-        private static Timer streamTimer = new Timer();
+        private Timer streamTimer = new Timer();
 
         private int streamRate = 500;
         List<string> subscriptions = new List<string>();
@@ -34,46 +34,52 @@ namespace Telemachus
             streamTimer.Enabled = true;
         }
 
+        public KSPWebSocketService(IKSPAPI kspAPI, DataSources dataSources)
+        {
+            this.kspAPI = kspAPI;
+            this.dataSources = dataSources;
+        }
+
         private void streamData(object sender, ElapsedEventArgs e)
         {
             streamTimer.Interval = streamRate;
 
             if (toRun.Count + subscriptions.Count > 0)
             {
-                List<string> entries = new List<string>();
-
-                APIEntry entry = null;
-
-                lock (subscriptionLock)
-                {
-                    toRun.AddRange(subscriptions);
-
-                    foreach (string s in toRun)
-                    {
-                        kspAPI.process(s.Substring(1, s.Length - 2), out entry);
-                        entry.formatter.setVarName(entry.APIString);
-                        entries.Add(entry.formatter.format(entry.function(dataSources)));
-                    }
-
-                    toRun.Clear();
-                }
-
                 try
                 {
-                    WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes(entry.formatter.pack(entries)));
-                    clientConnection.Send(frame.AsBytes());
+                    List<string> entries = new List<string>();
+
+                    APIEntry entry = null;
+
+                    lock (subscriptionLock)
+                    {
+                        toRun.AddRange(subscriptions);
+
+                        foreach (string s in toRun)
+                        {
+                            kspAPI.process(s.Substring(1, s.Length - 2), out entry);
+                            if (entry != null)
+                            {
+                                entry.formatter.setVarName(entry.APIString);
+                                entries.Add(entry.formatter.format(entry.function(dataSources)));
+                            }
+                        }
+
+                        toRun.Clear();
+                    }
+
+                    if (entry != null)
+                    {
+                        WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes(entry.formatter.pack(entries)));
+                        clientConnection.Send(frame.AsBytes());
+                    }
                 }
                 catch(Exception ex)
                 {
-                    Logger.debug(ex.Message); 
+                    Logger.debug(ex.ToString()); 
                 }
             }
-        }
-
-        public KSPWebSocketService(IKSPAPI kspAPI, DataSources dataSources)
-        {
-            this.kspAPI = kspAPI;
-            this.dataSources = dataSources;
         }
 
         public void OpCodeText(object sender, FrameEventArgs e)
@@ -104,7 +110,22 @@ namespace Telemachus
 
         private void rate(string p)
         {
-            streamRate = int.Parse(p);
+            int proposedRate = 0;
+
+            try
+            {
+                proposedRate = int.Parse(p);
+           
+                if(proposedRate > 0)
+                {
+                    streamRate = proposedRate;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.debug(ex.ToString());
+            }
         }
 
         private string[] splitString(string p)
