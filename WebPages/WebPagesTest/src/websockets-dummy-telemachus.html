@@ -42,13 +42,17 @@
 
     function doTest()
     {
-        doSend("{\"+\":[\"d.unitless\",\"d.string\"], \"rate\":300, \"run\":[\"d.run\"]}")
+        doSend("{\"+\":[\"d.unitless\",\"d.string\"], \"rate\":300, \"run\":[\"d.run\"]}");
 
         setTimeout(function () { doSend("{\"-\":[\"d.unitless\"]}") }, 5000);
 
         setTimeout(function () { doSend("{\"run\":[\"d.rrun\"]}") }, 10000);
 
         setTimeout(function () { doSend("{\"rate\":1000}") }, 15000);
+
+        //doSend("{}");
+
+        //doSend("{\"+\":[\"d.unitless\",\"d.string\"], \"rate\":300, \"run\":[\"d.run\"]}");
     }
 
     function doSend(message)
