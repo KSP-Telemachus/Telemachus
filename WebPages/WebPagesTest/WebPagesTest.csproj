@@ -58,7 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="src\BebasNeue-webfont.svg" />
-    <Content Include="src\websockets-telemachus.html" />
+    <Content Include="src\websockets-dummy-telemachus.html" />
     <Content Include="src\web-fonts.css" />
     <Content Include="src\web-fonts.html" />
     <Content Include="src\images.html" />
@@ -69,6 +69,7 @@
     <Content Include="src\test.svg" />
     <Content Include="src\websockets-echo.html" />
     <Content Include="Web.config" />
+    <Content Include="src\websockets-telemachus.html" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -16,7 +16,7 @@ namespace Telemachus
         private DataSources dataSources = null;
         private Servers.AsynchronousServer.ClientConnection clientConnection = null;
 
-        private Regex matchJSONAttributes = new Regex(@"[\{|,\s+]""([^:]*)"":([^:]*)[,|\}]", RegexOptions.Compiled);
+        private Regex matchJSONAttributes = new Regex(@"[\{|,\s+]""([^:]*)"":([^:]*)[,|\}]");
 
         private Timer streamTimer = new Timer();
 
