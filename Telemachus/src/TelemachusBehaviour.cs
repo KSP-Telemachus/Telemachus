@@ -50,14 +50,18 @@ namespace Telemachus
                     server.addHTTPResponsibility(new ElseResponsibility());
                     ioPageResponsibility = new IOPageResponsibility();
                     server.addHTTPResponsibility(ioPageResponsibility);
-                    dataLinkResponsibility = new DataLinkResponsibility(JSONFormatterProvider.Instance, serverConfig);
+
+                    DataSources dataSources = new DataSources();
+                    VesselChangeDetector vesselChangeDetector = new VesselChangeDetector();
+                    IKSPAPI kspAPI = new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig);
+                    dataLinkResponsibility = new DataLinkResponsibility(serverConfig, kspAPI, vesselChangeDetector, dataSources);
                     server.addHTTPResponsibility(dataLinkResponsibility);
 
                     Servers.MinimalWebSocketServer.ServerConfiguration webSocketconfig = new Servers.MinimalWebSocketServer.ServerConfiguration();
                     webSocketconfig.bufferSize = 300;
                     Servers.MinimalWebSocketServer.Server webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
                     webSocketServer.ServerNotify += WebSocketServerNotify;
-                    webSocketServer.addWebSocketService("/datalink", new KSPWebSocketService());
+                    webSocketServer.addWebSocketService("/datalink", new KSPWebSocketService(kspAPI, dataSources));
                     webSocketServer.subscribeToHTTPForStealing(server);
 
                     server.startServing();
@@ -229,9 +233,6 @@ namespace Telemachus
 
     public class KSPAPI : IKSPAPI
     {
-        List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
-
-
         public KSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector,
             Servers.AsynchronousServer.ServerConfiguration serverConfiguration)
         {
@@ -258,6 +259,11 @@ namespace Telemachus
 
             APIHandlers.Add(new DefaultDataLinkHandler(formatters));
         }
+    }
+
+    public abstract class IKSPAPI
+    {
+        protected List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
 
         public void getAPIList(ref List<APIEntry> APIList)
         {
@@ -296,12 +302,5 @@ namespace Telemachus
 
             apiEntry = result;
         }
-    }
-
-    public interface IKSPAPI
-    {
-        void getAPIEntry(string APIString, ref List<APIEntry> APIList);
-        void getAPIList(ref List<APIEntry> APIList);
-        void process(String API, out APIEntry apiEntry);
     }
 }

@@ -29,7 +29,7 @@ namespace ServersTest
         }
     }
 
-    class DiskLessTestResponse : HTTPResponse
+    public class DiskLessTestResponse : HTTPResponse
     {
         public DiskLessTestResponse()
         {
@@ -49,7 +49,7 @@ namespace ServersTest
         }
     }
 
-    class RunningResponsibility : IHTTPRequestResponsibility
+    public class RunningResponsibility : IHTTPRequestResponsibility
     {
         public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
@@ -69,7 +69,7 @@ namespace ServersTest
         }
     }
 
-    class ElseResponsibility : IHTTPRequestResponsibility
+    public class ElseResponsibility : IHTTPRequestResponsibility
     {
         public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {

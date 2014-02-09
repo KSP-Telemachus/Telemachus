@@ -265,7 +265,7 @@ namespace Servers
 
             private void upgradeConnectionTorfc6455()
             {
-                service = webSocketServices[request.path].buildService();
+                service = webSocketServices[request.path].buildService(this);
                 ConnectionRead -= StatefulWebSocketHandShake;
                 ConnectionRead += StatefulWebsocketHandler;
                 Send(new WebsocketUpgrade(request.getAttribute("Sec-WebSocket-Key")).ToBytes());
@@ -314,6 +314,6 @@ namespace Servers
         void OpCodeText(object sender, FrameEventArgs e);
         void OpCodeBinary(object sender, FrameEventArgs frameEventArgs);
         void OpCodeClose(object sender, FrameEventArgs frameEventArgs);
-        IWebSocketService buildService();
+        IWebSocketService buildService(Servers.AsynchronousServer.ClientConnection clientConnection);
     }
 }

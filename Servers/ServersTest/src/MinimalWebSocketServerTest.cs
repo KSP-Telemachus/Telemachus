@@ -60,7 +60,7 @@ namespace ServersTest
 
         }
 
-        public IWebSocketService buildService()
+        public IWebSocketService buildService(Servers.AsynchronousServer.ClientConnection clientConnection)
         {
             return new WebSocketEchoService();
         }

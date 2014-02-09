@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<meta charset="utf-8" />
+<html>
+<head>
+<title>WebSocket Test</title>
+
+<script type="text/javascript">
+    var wsUri = "ws://localhost:8085/server";
+
+    var output;
+
+    function init()
+    {
+        output = document.getElementById("output"); testWebSocket();
+    }
+
+    function testWebSocket()
+    {
+        websocket = new WebSocket(wsUri); websocket.onopen = function (evt) { onOpen(evt) };
+        websocket.onclose = function (evt) { onClose(evt) }; websocket.onmessage = function (evt) { onMessage(evt) }; websocket.onerror = function (evt) { onError(evt) };
+    }
+
+    function onOpen(evt)
+    {
+        writeToScreen("CONNECTED"); doTest();
+    }
+
+    function onClose(evt)
+    {
+        writeToScreen("DISCONNECTED");
+    }
+    function onMessage(evt)
+    {
+        writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
+    }
+
+    function onError(evt)
+    {
+        writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+    }
+
+    function doTest()
+    {
+
+        for (var i = 0; i < 2; i++)
+        {
+            doSend(payLoadGenerator(15));
+        }
+
+        doSend(payLoadGenerator(400));
+    }
+
+    function endOnNextMessage()
+    {
+        websocket.onmessage = function (evt) { onMessage(evt); websocket.close(); }
+    }
+
+    function payLoadGenerator(size)
+    {
+        var set = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        s = "";
+
+        for (i = 0; i < size; i++)
+        {
+            s += set.charAt(Math.floor(Math.random() * set.length));
+        }
+
+        return s;
+    }
+
+    function doSend(message)
+    {
+        writeToScreen("SENT: " + message);
+        websocket.send(message);
+    }
+
+    function writeToScreen(message)
+    {
+        var pre = document.createElement("p");
+        pre.style.wordWrap = "break-word"; pre.innerHTML = message; output.appendChild(pre);
+    }
+
+    window.addEventListener("load", init, false);
+
+</script>
+</head>
+<body>
+<h2>WebSocket Test</h2>
+<div id="output">
+</div>
+</body>
+</html>

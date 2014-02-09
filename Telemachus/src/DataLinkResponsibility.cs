@@ -23,9 +23,9 @@ namespace Telemachus
 
         #region Fields
 
-        DataSources dataSources = new DataSources();
-        KSPAPI kspAPI = null;
-        VesselChangeDetector vesselChangeDetector = new VesselChangeDetector();
+        DataSources dataSources = null;
+        IKSPAPI kspAPI = null;
+        VesselChangeDetector vesselChangeDetector = null;
 
         #endregion
 
@@ -39,9 +39,12 @@ namespace Telemachus
 
         #region Initialisation
 
-        public DataLinkResponsibility(FormatterProvider formatters, Servers.AsynchronousServer.ServerConfiguration serverConfiguration)
+        public DataLinkResponsibility(Servers.AsynchronousServer.ServerConfiguration serverConfiguration, IKSPAPI kspAPI,
+            VesselChangeDetector vesselChangeDetector, DataSources dataSources)
         {
-            kspAPI = new KSPAPI(formatters, vesselChangeDetector, serverConfiguration);
+            this.dataSources = dataSources;
+            this.kspAPI = kspAPI;
+            this.vesselChangeDetector = vesselChangeDetector;
         }
 
         #endregion
@@ -147,7 +150,6 @@ namespace Telemachus
             {
                 if (arg.Contains("["))
                 {
-
                     String[] argsSplit = arg.Split('[');
                     argsSplit[1] = argsSplit[1].Substring(0, argsSplit[1].Length - 1);
                     arg = argsSplit[0];
