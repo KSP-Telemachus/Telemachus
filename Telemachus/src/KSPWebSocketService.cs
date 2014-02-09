@@ -63,9 +63,9 @@ namespace Telemachus
                     WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes(entry.formatter.pack(entries)));
                     clientConnection.Send(frame.AsBytes());
                 }
-                catch
+                catch(Exception ex)
                 {
-                    close();
+                    Logger.debug(ex.Message); 
                 }
             }
         }
@@ -84,8 +84,6 @@ namespace Telemachus
 
             foreach (Match m in mc)
             {
-                Logger.print("attribute name: " + m.Groups[1].ToString() + " value:" +  m.Groups[2].ToString());
-
                 switch (m.Groups[1].ToString())
                 {
                     case "+":
@@ -111,7 +109,7 @@ namespace Telemachus
 
         private string[] splitString(string p)
         {
-            return p.Substring(1,p.Length-2).Split(',');
+            return p.Substring(1, p.Length - 2).Split(',');
         }
 
         private void run(string p)
@@ -126,7 +124,7 @@ namespace Telemachus
         {
             string[] toRemove = splitString(p);
 
-            lock(subscriptionLock)
+            lock (subscriptionLock)
             {
                 foreach (string item in toRemove)
                 {
@@ -137,7 +135,7 @@ namespace Telemachus
 
         private void subscribe(string p)
         {
-            lock(subscriptionLock)
+            lock (subscriptionLock)
             {
                 subscriptions.AddRange(splitString(p));
             }
@@ -151,6 +149,7 @@ namespace Telemachus
         private void close()
         {
             streamTimer.Stop();
+            clientConnection.tryShutdown();
         }
 
         public IWebSocketService buildService(Servers.AsynchronousServer.ClientConnection clientConnection)

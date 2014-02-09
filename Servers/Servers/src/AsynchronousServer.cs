@@ -305,9 +305,7 @@ namespace Servers
                 }
                 catch (Exception e)
                 {
-                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString() + "\n" +
-                    e.StackTrace, this));
-
+                    Logger.debug(e.ToString() + "\n" + e.StackTrace);
                     tryShutdown();
                 }
             }
@@ -326,9 +324,10 @@ namespace Servers
                         socket.BeginSend(byteData, 0, byteData.Length, 0,
                             new AsyncCallback(SendCallback), socket);
                     }
-                    catch (Exception e)
+                    catch (Exception ex)
                     {
                         // Let the original caller decide how to handle the error.
+                        Logger.debug(ex.Message); 
                         throw;
                     }
                 }
@@ -354,15 +353,23 @@ namespace Servers
                     {
                         socket.Shutdown(SocketShutdown.Both);
                     }
-                    catch (SocketException)
+                    catch (SocketException ex)
                     {
+                        Logger.debug(ex.Message); 
                     }
                     catch (Exception ex)
                     {
-                        OnConnectionNotify(new ConnectionNotifyEventArgs(ex.ToString(), this));
+                        Logger.debug(ex.Message);
                     }
 
-                    socket.BeginDisconnect(false, new AsyncCallback(DisconnectCallback), this);
+                    try
+                    {
+                        socket.BeginDisconnect(false, new AsyncCallback(DisconnectCallback), this);
+                    }
+                    catch(Exception ex)
+                    {
+                        Logger.debug(ex.Message); 
+                    }
                 }
             }
 

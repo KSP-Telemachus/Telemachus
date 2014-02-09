@@ -4,6 +4,7 @@
 <head>
 <title>WebSocket Test</title>
 
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 <script type="text/javascript">
     var wsUri = "ws://localhost:8085/server";
 
@@ -22,43 +23,43 @@
 
     function onOpen(evt)
     {
-        writeToScreen("CONNECTED"); doTest();
+        writeToScreen("CONNECTED", "#status"); doTest();
     }
 
     function onClose(evt)
     {
-        writeToScreen("DISCONNECTED");
+        writeToScreen("DISCONNECTED", "#status");
     }
     function onMessage(evt)
     {
-        writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
+        writeToScreen(evt.data, "#receive");
     }
 
     function onError(evt)
     {
-        writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+        writeToScreen(evt.data, "#status");
     }
 
     function doTest()
     {
-        doSend("{\"+\":[\"d.unitless\",\"d.string\"], \"-\":[\"d.unitless\"], \"rate\":300, \"run\":[\"d.run\"]}")
-    }
+        doSend("{\"+\":[\"d.unitless\",\"d.string\"], \"rate\":300, \"run\":[\"d.run\"]}")
 
-    function endOnNextMessage()
-    {
-        websocket.onmessage = function (evt) { onMessage(evt); websocket.close(); }
+        setTimeout(function () { doSend("{\"-\":[\"d.unitless\"]}") }, 5000);
+
+        setTimeout(function () { doSend("{\"run\":[\"d.run\"]}") }, 10000);
+
+        setTimeout(function () { doSend("{\"rate\":1000}") }, 15000);
     }
 
     function doSend(message)
     {
-        writeToScreen("SENT: " + message);
+        writeToScreen("SENT: " + message, "#send");
         websocket.send(message);
     }
 
-    function writeToScreen(message)
+    function writeToScreen(message, theDiv)
     {
-        var pre = document.createElement("p");
-        pre.style.wordWrap = "break-word"; pre.innerHTML = message; output.appendChild(pre);
+        $(theDiv).text(message);
     }
 
     window.addEventListener("load", init, false);
@@ -67,7 +68,11 @@
 </head>
 <body>
 <h2>WebSocket Test</h2>
-<div id="output">
+<div id="send">
+</div>
+<div id="receive">
+</div>
+<div id="status">
 </div>
 </body>
 </html>
