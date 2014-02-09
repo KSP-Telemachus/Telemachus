@@ -328,7 +328,8 @@ namespace Servers
                     }
                     catch (Exception e)
                     {
-                        OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString(), this));
+                        // Let the original caller decide how to handle the error.
+                        throw;
                     }
                 }
             }
