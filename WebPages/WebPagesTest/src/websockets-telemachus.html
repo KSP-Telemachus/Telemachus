@@ -41,31 +41,12 @@
 
     function doTest()
     {
-
-        for (var i = 0; i < 2; i++)
-        {
-            doSend(payLoadGenerator(15));
-        }
-
-        doSend(payLoadGenerator(400));
+        doSend("{\"+\":[\"d.unitless\",\"d.string\"], \"-\":[\"d.unitless\"], \"rate\":300, \"run\":[\"d.run\"]}")
     }
 
     function endOnNextMessage()
     {
         websocket.onmessage = function (evt) { onMessage(evt); websocket.close(); }
-    }
-
-    function payLoadGenerator(size)
-    {
-        var set = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        s = "";
-
-        for (i = 0; i < size; i++)
-        {
-            s += set.charAt(Math.floor(Math.random() * set.length));
-        }
-
-        return s;
     }
 
     function doSend(message)
