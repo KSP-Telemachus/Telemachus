@@ -12,6 +12,8 @@ namespace Telemachus
 {
     public class KSPWebSocketService : IWebSocketService
     {
+        private int MAX_STREAM_RATE = 0;
+
         private IKSPAPI kspAPI = null;
         private DataSources dataSources = null;
         private Servers.AsynchronousServer.ClientConnection clientConnection = null;
@@ -21,8 +23,8 @@ namespace Telemachus
         private Timer streamTimer = new Timer();
 
         private int streamRate = 500;
-        List<string> subscriptions = new List<string>();
-        List<string> toRun = new List<string>();
+        HashSet<string> subscriptions = new HashSet<string>();
+        HashSet<string> toRun = new HashSet<string>();
         readonly private System.Object subscriptionLock = new System.Object();
 
         public KSPWebSocketService(IKSPAPI kspAPI, DataSources dataSources, Servers.AsynchronousServer.ClientConnection clientConnection)
@@ -54,7 +56,7 @@ namespace Telemachus
 
                     lock (subscriptionLock)
                     {
-                        toRun.AddRange(subscriptions);
+                        toRun.UnionWith(subscriptions);
 
                         foreach (string s in toRun)
                         {
@@ -115,8 +117,8 @@ namespace Telemachus
             try
             {
                 proposedRate = int.Parse(p);
-           
-                if(proposedRate > 0)
+
+                if (proposedRate >= MAX_STREAM_RATE)
                 {
                     streamRate = proposedRate;
                 }
@@ -137,7 +139,7 @@ namespace Telemachus
         {
             lock (subscriptionLock)
             {
-                toRun.AddRange(splitString(p));
+                toRun.UnionWith(splitString(p));
             }
         }
 
@@ -158,7 +160,7 @@ namespace Telemachus
         {
             lock (subscriptionLock)
             {
-                subscriptions.AddRange(splitString(p));
+                subscriptions.UnionWith(splitString(p));
             }
         }
 
