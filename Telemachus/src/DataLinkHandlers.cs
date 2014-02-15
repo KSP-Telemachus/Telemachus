@@ -1317,8 +1317,6 @@ namespace Telemachus
         public SensorDataLinkHandler(VesselChangeDetector vesselChangeDetector, FormatterProvider formatters)
             : base(formatters)
         {
-            vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
-
             registerAPI(new PlotableAPIEntry(
                dataSources => { return getsSensorValues(dataSources); },
                "s.sensor", "Sensor Information [string sensor type]", formatters.SensorModuleList,
@@ -1351,15 +1349,6 @@ namespace Telemachus
         }
 
         #endregion
-
-        #region VesselChangeDetector
-
-        private void vesselChanged(Vessel vessel)
-        {
-
-        }
-
-        #endregion
     }
 
 
@@ -1377,13 +1366,11 @@ namespace Telemachus
         public ResourceDataLinkHandler(VesselChangeDetector vesselChangeDetector, FormatterProvider formatters)
             : base(formatters)
         {
-            vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
                 "r.resource", "Resource Information [string resource type]",
                 formatters.ResourceList, APIEntry.UnitType.UNITLESS));
 
-            vesselChangeDetector.suscribe(new VesselChangeDetector.VesselChange(vesselChanged));
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
                 "r.resourceCurrent", "Resource Information [string resource type]",
@@ -1402,15 +1389,6 @@ namespace Telemachus
         protected List<PartResource> getsResourceValues(DataSources datasources)
         {
             return resourceCache.get(datasources);
-        }
-
-        #endregion
-
-        #region VesselChangeDetector
-
-        private void vesselChanged(Vessel vessel)
-        {
-
         }
 
         #endregion

@@ -24,7 +24,9 @@ namespace Servers
 
         public static void print(String s)
         {
+#if (DEBUG)
             Console.WriteLine("[Server] " + s);
+#endif
         }
 
         public static string listToString(List<int> l)

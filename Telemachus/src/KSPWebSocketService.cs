@@ -46,6 +46,8 @@ namespace Telemachus
         {
             streamTimer.Interval = streamRate;
 
+            dataSources.vessel = FlightGlobals.ActiveVessel;
+
             if (toRun.Count + subscriptions.Count > 0)
             {
                 try

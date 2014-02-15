@@ -25,7 +25,6 @@ namespace Telemachus
 
         DataSources dataSources = null;
         IKSPAPI kspAPI = null;
-        VesselChangeDetector vesselChangeDetector = null;
 
         #endregion
 
@@ -40,11 +39,10 @@ namespace Telemachus
         #region Initialisation
 
         public DataLinkResponsibility(Servers.AsynchronousServer.ServerConfiguration serverConfiguration, IKSPAPI kspAPI,
-            VesselChangeDetector vesselChangeDetector, DataSources dataSources)
+            DataSources dataSources)
         {
             this.dataSources = dataSources;
             this.kspAPI = kspAPI;
-            this.vesselChangeDetector = vesselChangeDetector;
         }
 
         #endregion
@@ -67,7 +65,6 @@ namespace Telemachus
                 try
                 {
                     dataSources.vessel = FlightGlobals.ActiveVessel;
-                    vesselChangeDetector.update(FlightGlobals.ActiveVessel);
                 }
                 catch (Exception e)
                 {

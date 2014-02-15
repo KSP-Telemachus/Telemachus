@@ -54,7 +54,7 @@ namespace Telemachus
                     DataSources dataSources = new DataSources();
                     VesselChangeDetector vesselChangeDetector = new VesselChangeDetector();
                     IKSPAPI kspAPI = new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig);
-                    dataLinkResponsibility = new DataLinkResponsibility(serverConfig, kspAPI, vesselChangeDetector, dataSources);
+                    dataLinkResponsibility = new DataLinkResponsibility(serverConfig, kspAPI, dataSources);
                     server.addHTTPResponsibility(dataLinkResponsibility);
 
                     Servers.MinimalWebSocketServer.ServerConfiguration webSocketconfig = new Servers.MinimalWebSocketServer.ServerConfiguration();
@@ -142,7 +142,7 @@ namespace Telemachus
 
         private static void WebSocketServerNotify(object sender, Servers.NotifyEventArgs e)
         {
-            PluginLogger.debug(e.message);
+            PluginLogger.print(e.message);
         }
 
         #endregion
