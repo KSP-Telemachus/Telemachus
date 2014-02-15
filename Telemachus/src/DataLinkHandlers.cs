@@ -955,6 +955,9 @@ namespace Telemachus
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].name; },
                 "b.name", "Body Name", formatters.String, APIEntry.UnitType.STRING));
             registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].gravParameter; },
+                "b.o.gravParameter", "Body Gravitational Parameter", formatters.Default, APIEntry.UnitType.GRAV));
+            registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.GetRelativeVel().magnitude; },
                 "b.o.relativeVelocity", "Relative Velocity", formatters.Default, APIEntry.UnitType.VELOCITY));
             registerAPI(new PlotableAPIEntry(
@@ -1262,6 +1265,9 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.eccentricity; },
                 "o.eccentricity", "Eccentricity", formatters.Default, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.orbit.epoch; },
+                "o.epoch", "Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.period; },
                 "o.period", "Orbital Period", formatters.Default, APIEntry.UnitType.TIME));
