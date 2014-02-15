@@ -64,7 +64,7 @@ namespace Telemachus
 
                 try
                 {
-                    dataSources.vessel = FlightGlobals.ActiveVessel;
+                    dataSources.vessel = kspAPI.getVessel();
                 }
                 catch (Exception e)
                 {

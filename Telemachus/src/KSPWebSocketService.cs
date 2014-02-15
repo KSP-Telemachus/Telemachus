@@ -46,7 +46,7 @@ namespace Telemachus
         {
             streamTimer.Interval = streamRate;
 
-            dataSources.vessel = FlightGlobals.ActiveVessel;
+            dataSources.vessel = kspAPI.getVessel();
 
             if (toRun.Count + subscriptions.Count > 0)
             {

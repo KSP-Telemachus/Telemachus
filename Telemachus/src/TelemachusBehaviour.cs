@@ -264,6 +264,11 @@ namespace Telemachus
 
             APIHandlers.Add(new DefaultDataLinkHandler(formatters));
         }
+
+        public override Vessel getVessel()
+        {
+            return FlightGlobals.ActiveVessel;
+        }
     }
 
     public abstract class IKSPAPI
@@ -307,5 +312,7 @@ namespace Telemachus
 
             apiEntry = result;
         }
+
+        abstract public Vessel getVessel();
     }
 }

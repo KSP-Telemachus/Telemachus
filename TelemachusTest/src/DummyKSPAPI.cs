@@ -13,6 +13,11 @@ namespace TelemachusTest
         {
             APIHandlers.Add(new DummyHandler(formatters));
         }
+
+        public override Vessel getVessel()
+        {
+            return null;
+        }
     }
 
     public class DummyHandler : DataLinkHandler
