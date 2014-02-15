@@ -78,8 +78,6 @@ namespace Servers
             {
                 progressiveRequestString += Encoding.ASCII.GetString(input.Array, 0, input.Count);
 
-                Logger.debug(progressiveRequestString);
-
                 if (progressiveRequestString.StartsWith(GET))
                 {
                     if (progressiveRequestString.EndsWith(HEADER_END))

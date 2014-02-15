@@ -252,7 +252,7 @@ namespace Servers
 
             ~ClientConnection()
             {
-                Logger.debug("Cleaning up client connection.");
+                OnConnectionNotify(new ConnectionNotifyEventArgs("Cleaning up client connection.", this));
             }
 
             public void startConnection()
@@ -291,7 +291,7 @@ namespace Servers
 
                     if (bytesRead > 0)
                     {
-                        Logger.debug(bytesRead.ToString());
+                        OnConnectionNotify(new ConnectionNotifyEventArgs(bytesRead.ToString(), this));
 
                         message = new ArraySegment<byte>(buffer, 0, bytesRead);
                         buffer = new byte[server.configuration.bufferSize];
@@ -310,7 +310,7 @@ namespace Servers
                 }
                 catch (Exception e)
                 {
-                    Logger.debug(e.ToString() + "\n" + e.StackTrace);
+                    OnConnectionNotify(new ConnectionNotifyEventArgs(e.ToString() + "\n" + e.StackTrace, this));
                     tryShutdown();
                 }
             }
@@ -332,7 +332,7 @@ namespace Servers
                     catch (Exception ex)
                     {
                         // Let the original caller decide how to handle the error.
-                        Logger.debug(ex.Message); 
+                        OnConnectionNotify(new ConnectionNotifyEventArgs(ex.Message, this)); 
                         throw;
                     }
                 }
@@ -360,11 +360,11 @@ namespace Servers
                     }
                     catch (SocketException ex)
                     {
-                        Logger.debug(ex.Message); 
+                        OnConnectionNotify(new ConnectionNotifyEventArgs(ex.Message, this)); 
                     }
                     catch (Exception ex)
                     {
-                        Logger.debug(ex.Message);
+                        OnConnectionNotify(new ConnectionNotifyEventArgs(ex.Message, this));
                     }
 
                     try
@@ -373,7 +373,7 @@ namespace Servers
                     }
                     catch(Exception ex)
                     {
-                        Logger.debug(ex.Message); 
+                        OnConnectionNotify(new ConnectionNotifyEventArgs(ex.Message, this)); 
                     }
                 }
             }

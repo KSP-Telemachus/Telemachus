@@ -176,8 +176,6 @@ namespace Servers
                 closeCode = BitConverter.ToUInt16(((byte[])data.ToArray<byte>().Clone()).Reverse().ToArray(), 0);
             }
 
-            Logger.debug(ToString());
-
             return header.position;
         }
 

@@ -84,9 +84,9 @@ namespace Telemachus
                         clientConnection.Send(frame.AsBytes());
                     }
                 }
-                catch(Exception ex)
+                catch(Exception)
                 {
-                    Logger.debug(ex.ToString()); 
+
                 }
             }
         }
@@ -131,9 +131,9 @@ namespace Telemachus
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Logger.debug(ex.ToString());
+
             }
         }
 

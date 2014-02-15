@@ -203,13 +203,13 @@ namespace Servers
             {
                 e.clientConnection.Send((new WebSocketPingFrame()).AsBytes());
                 service.OpCodePing(this, e);
-                Logger.debug("ping received.");
+                OnConnectionNotify(new ConnectionNotifyEventArgs("ping received.", this));
             }
 
             private void OpCodePong(ClientConnection clientConnection, FrameEventArgs frameEventArgs)
             {
                 service.OpCodePong(this, frameEventArgs);
-                Logger.debug("pong received.");
+                OnConnectionNotify(new ConnectionNotifyEventArgs("pong received.", this));
             }
 
             private void OpCodeText(object sender, FrameEventArgs frameEventArgs)
@@ -254,12 +254,12 @@ namespace Servers
                 catch (HTTPResponse r)
                 {
                     clientConnection.Send(r);
-                    Logger.debug(r.ToString());
+                    OnConnectionNotify(new ConnectionNotifyEventArgs(r.ToString(), this));
                 }
                 catch (Exception ex)
                 {
                     clientConnection.Send(new ExceptionResponsePage(ex.Message + " " + ex.StackTrace));
-                    Logger.debug(ex.Message + ex.StackTrace);
+                    OnConnectionNotify(new ConnectionNotifyEventArgs(ex.Message + ex.StackTrace, this));
                 }
             }
 
