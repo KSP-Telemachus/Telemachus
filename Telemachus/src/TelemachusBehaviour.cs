@@ -20,6 +20,7 @@ namespace Telemachus
         #region Data Link
 
         private static Server server = null;
+        private static Servers.MinimalWebSocketServer.Server webSocketServer = null;
         private static PluginConfiguration config = PluginConfiguration.CreateForType<TelemachusBehaviour>();
         private static ServerConfiguration serverConfig = new ServerConfiguration();
         private static DataLinkResponsibility dataLinkResponsibility = null;
@@ -60,7 +61,7 @@ namespace Telemachus
 
                     Servers.MinimalWebSocketServer.ServerConfiguration webSocketconfig = new Servers.MinimalWebSocketServer.ServerConfiguration();
                     webSocketconfig.bufferSize = 300;
-                    Servers.MinimalWebSocketServer.Server webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
+                    webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
                     webSocketServer.ServerNotify += WebSocketServerNotify;
                     webSocketServer.addWebSocketService("/datalink", new KSPWebSocketService(kspAPI, dataSources));
                     webSocketServer.subscribeToHTTPForStealing(server);
@@ -133,6 +134,8 @@ namespace Telemachus
                 PluginLogger.print("Telemachus data link shutting down.");
                 server.stopServing();
                 server = null;
+                webSocketServer.stopServing();
+                webSocketServer = null;
             }
         }
 
