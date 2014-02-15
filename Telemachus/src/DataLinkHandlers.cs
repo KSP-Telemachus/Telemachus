@@ -321,7 +321,6 @@ namespace Telemachus
         #region Fields
 
         static float yaw = 0, pitch = 0, roll = 0, x = 0, y = 0, z = 0;
-        static bool iyaw = false, ipitch = false, iroll = false;
         static int on_attitude = 0;
 
         #endregion
@@ -332,15 +331,15 @@ namespace Telemachus
             : base(formatters)
         {
             registerAPI(new ActionAPIEntry(
-                dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); iyaw = true; return 0; },
+                dataSources => { yaw = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
                 "v.setYaw", "Yaw [float yaw]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
-                dataSources => { pitch = checkFlightStateParameters(float.Parse(dataSources.args[0])); ipitch = true; return 0; },
+                dataSources => { pitch = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
                 "v.setPitch", "Pitch [float pitch]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
-                dataSources => { roll = checkFlightStateParameters(float.Parse(dataSources.args[0])); iroll = true; return 0; },
+                dataSources => { roll = checkFlightStateParameters(float.Parse(dataSources.args[0])); return 0; },
                 "v.setRoll", "Roll [float roll]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(

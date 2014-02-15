@@ -68,8 +68,6 @@
     <Content Include="src\information.html" />
     <Content Include="src\jKSPWAPICore.css" />
     <Content Include="src\jKSPWAPICore.js" />
-    <Content Include="src\jKSPWAPIGraph.css" />
-    <Content Include="src\jKSPWAPIGraph.js" />
     <Content Include="src\jquery-1.9.1.min.js" />
     <Content Include="src\layers.png" />
     <Content Include="src\leafletksp.css" />
