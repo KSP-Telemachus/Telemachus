@@ -171,6 +171,11 @@ namespace Telemachus
             close();
         }
 
+        public void Shutdown(EventArgs e)
+        {
+            close();
+        }
+
         private void close()
         {
             streamTimer.Stop();

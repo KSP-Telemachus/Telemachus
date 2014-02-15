@@ -64,5 +64,10 @@ namespace ServersTest
         {
             return new WebSocketEchoService();
         }
+
+        public void Shutdown(EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

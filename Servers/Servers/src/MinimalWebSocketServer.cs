@@ -263,6 +263,13 @@ namespace Servers
                 }
             }
 
+            protected override void OnShutdown(EventArgs e)
+            {
+                base.OnShutdown(e);
+
+                service.Shutdown(e);
+            }
+
             private void upgradeConnectionTorfc6455()
             {
                 service = webSocketServices[request.path].buildService(this);
@@ -314,6 +321,7 @@ namespace Servers
         void OpCodeText(object sender, FrameEventArgs e);
         void OpCodeBinary(object sender, FrameEventArgs frameEventArgs);
         void OpCodeClose(object sender, FrameEventArgs frameEventArgs);
+        void Shutdown(EventArgs e);
         IWebSocketService buildService(Servers.AsynchronousServer.ClientConnection clientConnection);
     }
 }

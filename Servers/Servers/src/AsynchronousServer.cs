@@ -270,7 +270,12 @@ namespace Servers
 
             private void requestShutdown(Object sender, EventArgs e)
             {
-                if(socket != null)
+                OnShutdown(e);
+            }
+
+            protected virtual void OnShutdown(EventArgs e)
+            {
+                if (socket != null)
                 {
                     socket.Close();
                 }
