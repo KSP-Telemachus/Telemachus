@@ -61,13 +61,9 @@
     <Content Include="src\console.css" />
     <Content Include="src\console.html" />
     <Content Include="src\console.js" />
-    <Content Include="src\orbital-target.html" />
     <Content Include="src\d-pad.html" />
     <Content Include="src\marker-icon.png" />
-    <Content Include="src\density.html" />
     <Content Include="src\flight-control.html" />
-    <Content Include="src\g-force.html" />
-    <Content Include="src\gravity.html" />
     <Content Include="src\information.css" />
     <Content Include="src\information.html" />
     <Content Include="src\jKSPWAPICore.css" />
@@ -84,11 +80,8 @@
     <Content Include="src\markers-anomaly.png" />
     <Content Include="src\markers-shadow.png" />
     <Content Include="src\markers-spacecenter.png" />
-    <Content Include="src\orbital.html" />
-    <Content Include="src\pressure.html" />
     <Content Include="src\smart-ass.html" />
     <Content Include="src\speech.html" />
-    <Content Include="src\temperature.html" />
     <Content Include="src\touchball-pyr.html" />
     <Content Include="src\zoom-in.png" />
     <Content Include="src\zoom-out.png" />
