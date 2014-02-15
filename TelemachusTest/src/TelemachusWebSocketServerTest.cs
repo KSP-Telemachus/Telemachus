@@ -31,7 +31,7 @@ namespace TelemachusTest
             VesselChangeDetector vesselChangeDetector = new VesselChangeDetector();
             IKSPAPI kspAPI = new DummyKSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, config);
 
-            webSocketServer.addWebSocketService("/server", new KSPWebSocketService(kspAPI, dataSources));
+            webSocketServer.addWebSocketService("/server", new KSPWebSocketService(kspAPI));
             webSocketServer.subscribeToHTTPForStealing(server);
 
             // start the HTTP server

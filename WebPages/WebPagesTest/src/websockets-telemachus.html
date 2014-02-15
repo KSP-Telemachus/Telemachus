@@ -42,8 +42,11 @@
 
     function doTest()
     {
-        doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":60}")
-        //setTimeout(function () { doSend("{\"run\":[\"f.setThrottle[0.5]\"]}") }, 5000);
+        //doSend("{\"+\":[\"b.name[0]\"]}")
+        doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":100}")
+        //doSend("{\"+\":[\"o.inclination\"], \"run\":[\"f.setThrottle[0.7]\"]}");
+        //setTimeout(function () { doSend("{\"+\":[\"b.name[0]\"]}") }, 7000);
+        //setTimeout(function () { doSend("{\"-\":[\"b.name[0]\"]}") }, 8000);
     }
 
     function doSend(message)

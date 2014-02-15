@@ -23,7 +23,7 @@ namespace Telemachus
 
         #region Fields
 
-        DataSources dataSources = null;
+        //DataSources dataSources = null;
         IKSPAPI kspAPI = null;
 
         #endregion
@@ -38,10 +38,8 @@ namespace Telemachus
 
         #region Initialisation
 
-        public DataLinkResponsibility(Servers.AsynchronousServer.ServerConfiguration serverConfiguration, IKSPAPI kspAPI,
-            DataSources dataSources)
+        public DataLinkResponsibility(Servers.AsynchronousServer.ServerConfiguration serverConfiguration, IKSPAPI kspAPI)
         {
-            this.dataSources = dataSources;
             this.kspAPI = kspAPI;
         }
 
@@ -51,6 +49,8 @@ namespace Telemachus
 
         public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
         {
+            DataSources dataSources = new DataSources();
+
             if (request.path.StartsWith(PAGE_PREFIX))
             {
                 if (request.requestType == HTTPRequest.GET)
@@ -125,7 +125,7 @@ namespace Telemachus
             {
                 string refArg = arg;
                 PluginLogger.fine(refArg);
-                parseParams(ref refArg, ref dataSources);
+                kspAPI.parseParams(ref refArg, ref dataSources);
                 currentEntry = argumentParse(refArg, dataSources);
                 APIResults.Add(currentEntry.formatter.format(currentEntry.function(dataSources)));
 
@@ -139,30 +139,7 @@ namespace Telemachus
             return currentEntry.formatter.pack(APIResults);
         }
 
-        private void parseParams(ref String arg, ref DataSources dataSources)
-        {
-            dataSources.args.Clear();
-
-            try
-            {
-                if (arg.Contains("["))
-                {
-                    String[] argsSplit = arg.Split('[');
-                    argsSplit[1] = argsSplit[1].Substring(0, argsSplit[1].Length - 1);
-                    arg = argsSplit[0];
-                    String[] paramSplit = argsSplit[1].Split(',');
-
-                    for (int i = 0; i < paramSplit.Length; i++)
-                    {
-                        dataSources.args.Add(paramSplit[i]);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                PluginLogger.debug(e.Message + " " + e.StackTrace);
-            }
-        }
+        
 
         private APIEntry argumentParse(String args, DataSources dataSources)
         {
@@ -186,5 +163,14 @@ namespace Telemachus
         public List<String> args = new List<String>();
 
         #endregion
+
+        public DataSources Clone()
+        {
+            DataSources d = new DataSources();
+            d.vessel = this.vessel;
+            d.args = new List<string>(this.args);
+
+            return d;
+        }
     }
 }

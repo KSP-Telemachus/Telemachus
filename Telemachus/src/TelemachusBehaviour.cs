@@ -53,17 +53,16 @@ namespace Telemachus
                     ioPageResponsibility = new IOPageResponsibility();
                     server.addHTTPResponsibility(ioPageResponsibility);
 
-                    DataSources dataSources = new DataSources();
                     vesselChangeDetector = new VesselChangeDetector();
-                    IKSPAPI kspAPI = new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig);
-                    dataLinkResponsibility = new DataLinkResponsibility(serverConfig, kspAPI, dataSources);
+
+                    dataLinkResponsibility = new DataLinkResponsibility(serverConfig, new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig));
                     server.addHTTPResponsibility(dataLinkResponsibility);
 
                     Servers.MinimalWebSocketServer.ServerConfiguration webSocketconfig = new Servers.MinimalWebSocketServer.ServerConfiguration();
                     webSocketconfig.bufferSize = 300;
                     webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
                     webSocketServer.ServerNotify += WebSocketServerNotify;
-                    webSocketServer.addWebSocketService("/datalink", new KSPWebSocketService(kspAPI, dataSources));
+                    webSocketServer.addWebSocketService("/datalink", new KSPWebSocketService(new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig)));
                     webSocketServer.subscribeToHTTPForStealing(server);
 
                     server.startServing();
@@ -146,7 +145,7 @@ namespace Telemachus
 
         private static void WebSocketServerNotify(object sender, Servers.NotifyEventArgs e)
         {
-            PluginLogger.print(e.message);
+            PluginLogger.debug(e.message);
         }
 
         #endregion
@@ -281,7 +280,6 @@ namespace Telemachus
             {
                 APIHandler.appendAPIList(ref APIList);
             }
-
         }
 
         public void getAPIEntry(string APIString, ref List<APIEntry> APIList)
@@ -314,5 +312,30 @@ namespace Telemachus
         }
 
         abstract public Vessel getVessel();
+
+        public void parseParams(ref String arg, ref DataSources dataSources)
+        {
+            dataSources.args.Clear();
+
+            try
+            {
+                if (arg.Contains("["))
+                {
+                    String[] argsSplit = arg.Split('[');
+                    argsSplit[1] = argsSplit[1].Substring(0, argsSplit[1].Length - 1);
+                    arg = argsSplit[0];
+                    String[] paramSplit = argsSplit[1].Split(',');
+
+                    for (int i = 0; i < paramSplit.Length; i++)
+                    {
+                        dataSources.args.Add(paramSplit[i]);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                PluginLogger.debug(e.Message + " " + e.StackTrace);
+            }
+        }
     }
 }

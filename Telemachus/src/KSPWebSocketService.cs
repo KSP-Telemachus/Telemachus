@@ -15,10 +15,9 @@ namespace Telemachus
         private int MAX_STREAM_RATE = 0;
 
         private IKSPAPI kspAPI = null;
-        private DataSources dataSources = null;
         private Servers.AsynchronousServer.ClientConnection clientConnection = null;
 
-        private Regex matchJSONAttributes = new Regex(@"[\{|,\s+]""([^:]*)"":([^:]*)[,|\}]");
+        private Regex matchJSONAttributes = new Regex(@"[\{""|,\s+""|,""]([^"":]*)"":([^:]*)[,|\}]");
 
         private Timer streamTimer = new Timer();
 
@@ -27,8 +26,8 @@ namespace Telemachus
         HashSet<string> toRun = new HashSet<string>();
         readonly private System.Object subscriptionLock = new System.Object();
 
-        public KSPWebSocketService(IKSPAPI kspAPI, DataSources dataSources, Servers.AsynchronousServer.ClientConnection clientConnection)
-            : this(kspAPI, dataSources)
+        public KSPWebSocketService(IKSPAPI kspAPI, Servers.AsynchronousServer.ClientConnection clientConnection)
+            : this(kspAPI)
         {
             this.clientConnection = clientConnection;
             streamTimer.Interval = streamRate;
@@ -36,17 +35,16 @@ namespace Telemachus
             streamTimer.Enabled = true;
         }
 
-        public KSPWebSocketService(IKSPAPI kspAPI, DataSources dataSources)
+        public KSPWebSocketService(IKSPAPI kspAPI)
         {
             this.kspAPI = kspAPI;
-            this.dataSources = dataSources;
         }
 
         private void streamData(object sender, ElapsedEventArgs e)
         {
             streamTimer.Interval = streamRate;
 
-            dataSources.vessel = kspAPI.getVessel();
+            DataSources dataSources = new DataSources();
 
             if (toRun.Count + subscriptions.Count > 0)
             {
@@ -58,14 +56,21 @@ namespace Telemachus
 
                     lock (subscriptionLock)
                     {
+                        dataSources.vessel = kspAPI.getVessel();
+
                         toRun.UnionWith(subscriptions);
 
                         foreach (string s in toRun)
                         {
-                            kspAPI.process(s.Substring(1, s.Length - 2), out entry);
+                            string refArg = s.Trim().Substring(1, s.Length - 2);
+                            kspAPI.parseParams(ref refArg, ref dataSources);
+
+                            kspAPI.process(refArg, out entry);
+
                             if (entry != null)
                             {
                                 entry.formatter.setVarName(entry.APIString);
+                                
                                 entries.Add(entry.formatter.format(entry.function(dataSources)));
                             }
                         }
@@ -184,7 +189,7 @@ namespace Telemachus
 
         public IWebSocketService buildService(Servers.AsynchronousServer.ClientConnection clientConnection)
         {
-            return new KSPWebSocketService(kspAPI, dataSources, clientConnection);
+            return new KSPWebSocketService(kspAPI, clientConnection);
         }
 
         #region Unused Callbacks
