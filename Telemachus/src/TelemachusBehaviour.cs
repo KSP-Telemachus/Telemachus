@@ -24,6 +24,7 @@ namespace Telemachus
         private static ServerConfiguration serverConfig = new ServerConfiguration();
         private static DataLinkResponsibility dataLinkResponsibility = null;
         private static IOPageResponsibility ioPageResponsibility = null;
+        private static VesselChangeDetector vesselChangeDetector = null;
 
         static public string getServerPrimaryIPAddress()
         {
@@ -52,7 +53,7 @@ namespace Telemachus
                     server.addHTTPResponsibility(ioPageResponsibility);
 
                     DataSources dataSources = new DataSources();
-                    VesselChangeDetector vesselChangeDetector = new VesselChangeDetector();
+                    vesselChangeDetector = new VesselChangeDetector();
                     IKSPAPI kspAPI = new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig);
                     dataLinkResponsibility = new DataLinkResponsibility(serverConfig, kspAPI, dataSources);
                     server.addHTTPResponsibility(dataLinkResponsibility);
@@ -163,6 +164,7 @@ namespace Telemachus
         public void Update()
         {
             delayedAPIRunner.execute();
+            vesselChangeDetector.update(FlightGlobals.ActiveVessel);
         }
 
         #endregion

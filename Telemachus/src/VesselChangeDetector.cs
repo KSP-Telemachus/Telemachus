@@ -10,6 +10,14 @@ namespace Telemachus
     {
         public static bool hasTelemachusPart = false;
 
+        public void update(Vessel vessel)
+        {
+            if (vessel != null)
+            {
+                updateHasTelemachusPart(vessel);
+            }
+        }
+
         private void updateHasTelemachusPart(Vessel vessel)
         {
             try

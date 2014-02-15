@@ -43,7 +43,7 @@
     function doTest()
     {
         doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":60}")
-        //setTimeout(function () { doSend("{\"run\":[\"f.setThrottle[0.5]\"]}") }, 5000);
+        setTimeout(function () { doSend("{\"run\":[\"f.setThrottle[0.5]\"]}") }, 5000);
     }
 
     function doSend(message)

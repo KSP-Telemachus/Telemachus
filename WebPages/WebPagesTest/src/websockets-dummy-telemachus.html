@@ -43,12 +43,12 @@
     function doTest()
     {
         doSend("{\"+\":[\"d.unitless\",\"d.string\"], \"rate\":300, \"run\":[\"d.run\"]}");
+        setTimeout(function () { doSend("{\"run\":[\"d.run[0.5]\"]}") }, 5000);
+        //setTimeout(function () { doSend("{\"-\":[\"d.unitless\"]}") }, 5000);
 
-        setTimeout(function () { doSend("{\"-\":[\"d.unitless\"]}") }, 5000);
+        //setTimeout(function () { doSend("{\"run\":[\"d.rrun\"]}") }, 10000);
 
-        setTimeout(function () { doSend("{\"run\":[\"d.rrun\"]}") }, 10000);
-
-        setTimeout(function () { doSend("{\"rate\":1000}") }, 15000);
+        //setTimeout(function () { doSend("{\"rate\":1000}") }, 15000);
 
         //doSend("{}");
 
