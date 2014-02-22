@@ -1372,7 +1372,7 @@ namespace Telemachus
 
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
-                "r.resourceCurrent", "Resource Information [string resource type]",
+                "r.resourceCurrent", "Resource Information for Current Stage [string resource type]",
                 formatters.CurrentResourceList, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new APIEntry(
