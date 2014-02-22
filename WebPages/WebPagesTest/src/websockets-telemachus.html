@@ -6,7 +6,7 @@
 
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 <script type="text/javascript">
-    var wsUri = "ws://localhost:8085/datalink";
+    var wsUri = "ws://192.168.1.64:8085/datalink";
 
     var output;
 
@@ -42,8 +42,23 @@
 
     function doTest()
     {
+        doBasicTest();
+    }
+
+
+    function doArgumentTest() {
+        doSend("{\"+\":[\"r.resourceMax[LiquidFuel]\"], \"rate\":100}");
+    }
+
+    function doBasicTest()
+    {
+        doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":100}");
+    }
+
+    function doComplexTest()
+    {
         //doSend("{\"+\":[\"b.name[0]\"]}")
-        doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":100}")
+        doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":100}");
         //doSend("{\"+\":[\"o.inclination\"], \"run\":[\"f.setThrottle[0.7]\"]}");
         //setTimeout(function () { doSend("{\"+\":[\"b.name[0]\"]}") }, 7000);
         //setTimeout(function () { doSend("{\"-\":[\"b.name[0]\"]}") }, 8000);

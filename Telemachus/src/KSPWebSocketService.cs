@@ -70,7 +70,7 @@ namespace Telemachus
                             if (entry != null)
                             {
                                 entry.formatter.setVarName(entry.APIString);
-                                
+
                                 entries.Add(entry.formatter.format(entry.function(dataSources)));
                             }
                         }
@@ -84,10 +84,15 @@ namespace Telemachus
                         clientConnection.Send(frame.AsBytes());
                     }
                 }
-                catch(Exception)
+                catch (Exception)
                 {
-
+                    close();
                 }
+            }
+            else
+            {
+                WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes("{}"));
+                clientConnection.Send(frame.AsBytes());
             }
         }
 
