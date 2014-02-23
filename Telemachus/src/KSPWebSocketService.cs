@@ -58,42 +58,61 @@ namespace Telemachus
                     {
                         dataSources.vessel = kspAPI.getVessel();
 
-                        toRun.UnionWith(subscriptions);
-
-                        foreach (string s in toRun)
+                        //Only parse the paused argument if the active vessel is null
+                        if (dataSources.vessel != null)
                         {
-                            string refArg = s.Trim().Substring(1, s.Length - 2);
-                            kspAPI.parseParams(ref refArg, ref dataSources);
+                            toRun.UnionWith(subscriptions);
 
-                            kspAPI.process(refArg, out entry);
+                            foreach (string s in toRun)
+                            {
+                                string refArg = s.Trim().Substring(1, s.Length - 2);
+                                kspAPI.parseParams(ref refArg, ref dataSources);
+
+                                kspAPI.process(refArg, out entry);
+
+                                if (entry != null)
+                                {
+                                    entry.formatter.setVarName(entry.APIString);
+
+                                    entries.Add(entry.formatter.format(entry.function(dataSources)));
+                                }
+                            }
+
+                            toRun.Clear();
 
                             if (entry != null)
                             {
-                                entry.formatter.setVarName(entry.APIString);
-
-                                entries.Add(entry.formatter.format(entry.function(dataSources)));
+                                WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes(entry.formatter.pack(entries)));
+                                clientConnection.Send(frame.AsBytes());
                             }
                         }
-
-                        toRun.Clear();
-                    }
-
-                    if (entry != null)
-                    {
-                        WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes(entry.formatter.pack(entries)));
-                        clientConnection.Send(frame.AsBytes());
-                    }
+                        else
+                        {
+                            sendNullMessage();
+                        }
+                    } 
                 }
-                catch (Exception)
+                catch(NullReferenceException)
                 {
+                    PluginLogger.debug("Swallowing null reference exception, potentially due to async game state change.");
+                    sendNullMessage();
+                }
+                catch (Exception ex)
+                {
+                    PluginLogger.debug("Closing socket due to potential client disconnect:" + ex.GetType().ToString());
                     close();
                 }
             }
             else
             {
-                WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes("{}"));
-                clientConnection.Send(frame.AsBytes());
+                sendNullMessage();
             }
+        }
+
+        protected void sendNullMessage()
+        {
+            WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes("{}"));
+            clientConnection.Send(frame.AsBytes());
         }
 
         public void OpCodeText(object sender, FrameEventArgs e)

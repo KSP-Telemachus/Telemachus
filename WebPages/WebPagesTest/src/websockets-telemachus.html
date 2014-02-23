@@ -42,13 +42,16 @@
 
     function doTest()
     {
-        doRollTest();
+        doNoSubscriptionTest();
+    }
+
+    function doPausedStateTest() {
+        doSend("{\"+\":[\"n.roll\",\"p.paused\"], \"rate\":100}");
     }
 
     function doRCSStateTest() {
         doSend("{\"+\":[\"v.rcsValue\"], \"rate\":100}");
     }
-
 
     function doRollTest() {
         doSend("{\"+\":[\"n.roll\"], \"rate\":100}");
@@ -70,6 +73,12 @@
         //doSend("{\"+\":[\"o.inclination\"], \"run\":[\"f.setThrottle[0.7]\"]}");
         //setTimeout(function () { doSend("{\"+\":[\"b.name[0]\"]}") }, 7000);
         //setTimeout(function () { doSend("{\"-\":[\"b.name[0]\"]}") }, 8000);
+    }
+
+    function doNoSubscriptionTest() {
+        doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":100}");
+        setTimeout(function () { doSend("{\"-\":[\"v.altitude\"], \"-\":[\"o.inclination\"], \"rate\":100}") }, 7000);
+        setTimeout(function () { doSend("{\"+\":[\"b.name[0]\"]}") }, 10000);
     }
 
     function doSend(message)
