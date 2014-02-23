@@ -440,7 +440,8 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   float t = FlightInputHandler.state.mainThrottle;
+                   //float t = FlightInputHandler.state.mainThrottle;
+                   float t = dataSources.vessel.ctrlState.mainThrottle;
                    return t;
                },
                 "f.throttle", "Throttle", formatters.Default, APIEntry.UnitType.UNITLESS));
