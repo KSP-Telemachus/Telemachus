@@ -42,11 +42,15 @@
 
     function doTest()
     {
-        doNoSubscriptionTest();
+        doStringifyTest();
     }
 
     function doPausedStateTest() {
         doSend("{\"+\":[\"n.roll\",\"p.paused\"], \"rate\":100}");
+    }
+
+    function doSpaceTest() {
+        doSend("{\"+\":[\"n.roll\", \"p.paused\"], \"rate\":100}");
     }
 
     function doRCSStateTest() {
@@ -64,6 +68,10 @@
     function doBasicTest()
     {
         doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":100}");
+    }
+
+    function doStringifyTest() {
+        doSend(JSON.stringify({ "+":["v.altitude","n.roll"], "rate":"200" }));
     }
 
     function doComplexTest()

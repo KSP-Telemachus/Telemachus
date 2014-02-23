@@ -157,13 +157,20 @@ namespace Telemachus
             }
             catch (Exception)
             {
-
+                PluginLogger.debug("Swallowing integer parse failure when setting stream rate.");
             }
         }
 
         private string[] splitString(string p)
         {
-            return p.Substring(1, p.Length - 2).Split(',');
+            string[] strings = p.Substring(1, p.Length - 2).Split(',');
+
+            for (int i = 0; i < strings.Length; i++)
+            {
+                strings[i] = strings[i].Trim();
+            }
+
+            return strings;
         }
 
         private void run(string p)
