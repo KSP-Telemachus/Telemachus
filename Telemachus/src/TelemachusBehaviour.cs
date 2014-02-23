@@ -26,6 +26,7 @@ namespace Telemachus
         private static DataLinkResponsibility dataLinkResponsibility = null;
         private static IOPageResponsibility ioPageResponsibility = null;
         private static VesselChangeDetector vesselChangeDetector = null;
+        private static KSPWebSocketService kspWebSocketService = null;
 
         static public string getServerPrimaryIPAddress()
         {
@@ -62,7 +63,8 @@ namespace Telemachus
                     webSocketconfig.bufferSize = 300;
                     webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
                     webSocketServer.ServerNotify += WebSocketServerNotify;
-                    webSocketServer.addWebSocketService("/datalink", new KSPWebSocketService(new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig)));
+                    kspWebSocketService = new KSPWebSocketService(new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig));
+                    webSocketServer.addWebSocketService("/datalink", kspWebSocketService);
                     webSocketServer.subscribeToHTTPForStealing(server);
 
                     server.startServing();
@@ -175,12 +177,12 @@ namespace Telemachus
 
         static public double getDownLinkRate()
         {
-            return dataLinkResponsibility.dataRates.getDownLinkRate();
+            return dataLinkResponsibility.dataRates.getDownLinkRate() + KSPWebSocketService.dataRates.getDownLinkRate();
         }
 
         static public double getUpLinkRate()
         {
-            return dataLinkResponsibility.dataRates.getUpLinkRate();
+            return dataLinkResponsibility.dataRates.getUpLinkRate() + KSPWebSocketService.dataRates.getUpLinkRate();
         }
 
         #endregion

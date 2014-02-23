@@ -7,6 +7,12 @@ namespace Telemachus
 {
     public class UpLinkDownLinkRate
     {
+        #region Constants
+
+        public const int BITS_PER_BYTE = 8;
+
+        #endregion
+
         #region Fields
 
         private static TimeSpan TIME_SPAN_5_SECONDS = new TimeSpan(0, 0, 5);

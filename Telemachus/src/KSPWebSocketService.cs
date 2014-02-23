@@ -12,6 +12,14 @@ namespace Telemachus
 {
     public class KSPWebSocketService : IWebSocketService
     {
+        #region Data Rate Fields
+
+        public const int RATE_AVERAGE_SAMPLE_SIZE = 20;
+        static public UpLinkDownLinkRate dataRates { get { return itsDataRates; } set { itsDataRates = value; } }
+        private static UpLinkDownLinkRate itsDataRates = new UpLinkDownLinkRate(RATE_AVERAGE_SAMPLE_SIZE);
+
+        #endregion
+
         private int MAX_STREAM_RATE = 0;
 
         private IKSPAPI kspAPI = null;
@@ -83,7 +91,9 @@ namespace Telemachus
                             if (entry != null)
                             {
                                 WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes(entry.formatter.pack(entries)));
-                                clientConnection.Send(frame.AsBytes());
+                                byte[] bFrame = frame.AsBytes();
+                                dataRates.addDownLinkPoint(System.DateTime.Now, bFrame.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
+                                clientConnection.Send(bFrame);
                             }
                         }
                         else
@@ -118,6 +128,8 @@ namespace Telemachus
         public void OpCodeText(object sender, FrameEventArgs e)
         {
             string command = e.frame.PayloadAsUTF8();
+            
+            dataRates.addUpLinkPoint(System.DateTime.Now, command.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
 
             MatchCollection mc = matchJSONAttributes.Matches(command);
 
@@ -153,7 +165,6 @@ namespace Telemachus
                 {
                     streamRate = proposedRate;
                 }
-
             }
             catch (Exception)
             {
