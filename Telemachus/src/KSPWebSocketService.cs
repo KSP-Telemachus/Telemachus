@@ -73,15 +73,15 @@ namespace Telemachus
 
                             foreach (string s in toRun)
                             {
-                                string refArg = s.Trim().Substring(1, s.Length - 2);
+                                string trimedQuotes = s.Trim().Substring(1, s.Length - 2);
+                                string refArg = trimedQuotes;
                                 kspAPI.parseParams(ref refArg, ref dataSources);
 
                                 kspAPI.process(refArg, out entry);
 
                                 if (entry != null)
                                 {
-                                    entry.formatter.setVarName(entry.APIString);
-
+                                    entry.formatter.setVarName(trimedQuotes);
                                     entries.Add(entry.formatter.format(entry.function(dataSources)));
                                 }
                             }
