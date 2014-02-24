@@ -168,7 +168,15 @@ namespace Telemachus
         public void Update()
         {
             delayedAPIRunner.execute();
-            vesselChangeDetector.update(FlightGlobals.ActiveVessel);
+
+            if (FlightGlobals.fetch != null)
+            {
+                vesselChangeDetector.update(FlightGlobals.ActiveVessel);
+            }
+            else
+            {
+                PluginLogger.debug("Flight globals was null during start up; skipping update of vessel change.");
+            }
         }
 
         #endregion
