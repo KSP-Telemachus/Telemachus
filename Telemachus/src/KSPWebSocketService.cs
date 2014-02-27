@@ -73,16 +73,17 @@ namespace Telemachus
 
                             foreach (string s in toRun)
                             {
+                                DataSources dataSourcesClone = dataSources.Clone();
                                 string trimedQuotes = s.Trim().Substring(1, s.Length - 2);
                                 string refArg = trimedQuotes;
-                                kspAPI.parseParams(ref refArg, ref dataSources);
+                                kspAPI.parseParams(ref refArg, ref dataSourcesClone);
 
                                 kspAPI.process(refArg, out entry);
 
                                 if (entry != null)
                                 {
                                     entry.formatter.setVarName(trimedQuotes);
-                                    entries.Add(entry.formatter.format(entry.function(dataSources)));
+                                    entries.Add(entry.formatter.format(entry.function(dataSourcesClone)));
                                 }
                             }
 
