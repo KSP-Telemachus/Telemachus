@@ -1186,6 +1186,9 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.verticalSpeed; },
                 "v.verticalSpeed", "Vertical Speed", formatters.Default, APIEntry.UnitType.VELOCITY));
             registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.geeForce; },
+                "v.geeForce", "G-Force", formatters.Default, APIEntry.UnitType.G));
+            registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.atmDensity; },
                 "v.atmosphericDensity", "Atmospheric Density", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
