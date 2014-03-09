@@ -556,6 +556,14 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.Light]; },
                 "v.lightValue", "Query light value", formatters.String, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.Brakes]; },
+                "v.brakeValue", "Query brake value", formatters.String, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.Gear]; },
+                "v.gearValue", "Query gear value", formatters.String, APIEntry.UnitType.UNITLESS));
         }
 
         private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
@@ -953,6 +961,15 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].name; },
                 "b.name", "Body Name", formatters.String, APIEntry.UnitType.STRING));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].maxAtmosphereAltitude; },
+                "b.maxAtmosphere", "Body Max Atmosphere", formatters.Default, APIEntry.UnitType.DISTANCE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].Radius; },
+                "b.radius", "Body Radius", formatters.Default, APIEntry.UnitType.DISTANCE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.Bodies.Count; },
+                "b.number", "Number of Bodies", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].gravParameter; },
                 "b.o.gravParameter", "Body Gravitational Parameter", formatters.Default, APIEntry.UnitType.GRAV));
