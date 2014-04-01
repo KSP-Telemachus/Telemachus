@@ -1,17 +1,27 @@
 <html>
 <head>
+  <meta charset="utf-8">
   <title>Telemachus Console</title>
-  <link rel="stylesheet" type="text/css" href="leafletksp.css">
-  <link rel="stylesheet" href="console.css" media="screen">
-  <script src="jquery-1.9.1.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="leafletksp.js"></script>
-  <script src="console.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="jquery-ui-1.10.3.min.css" type="text/css" charset="UTF-8">
+  <link rel="stylesheet" href="leafletksp.css" type="text/css" charset="UTF-8">
+  <link rel="stylesheet" href="console.css" type="text/css" media="screen" charset="UTF-8">
+  <script src="jquery-1.9.1.min.js" type="text/javascript" charset="UTF-8"></script>
+  <script src="jquery-ui-1.10.3.min.js" type="text/javascript" charset="UTF-8"></script>
+  <script src="jquery.ui.touch-punch.min.js" type="text/javascript" charset="UTF-8"></script>
+  <script src="d3.v3.min.js" type="text/javascript" charset="UTF-8"></script>
+  <script src="leafletksp.js" type="text/javascript" charset="UTF-8"></script>
+  <script src="console.js" type="text/javascript" charset="UTF-8"></script>
 </head>
 <body>
   <header>
     <h1></h1>
     <nav class="dropdown">
-      <a href="#" title="Change console" role="presentation">&#9776;</a>
+      <button>
+        <svg viewBox="0,0 180,150">
+          <title>Change Layout</title>
+          <path d="M15,15L165,15M15,75L165,75M15,135L165,135"></path>
+        </svg>
+      </button>
       <ul>
       </ul>
     </nav>
@@ -23,8 +33,8 @@
       <header>
         <h2>Telemetry</h2>
       </header>
-      <dl>
-      </dl>
+      <ul>
+      </ul>
       <form>
         <div>
           <select id="apiCategory">
@@ -67,7 +77,12 @@
         <header>
           <h2></h2>
           <nav class="dropdown">
-            <a href="#" title="Change display" role="presentation">&#9776;</a>
+            <button>
+              <svg viewBox="0,0 180,150">
+                <title>Change Chart</title>
+                <path d="M15,15L165,15M15,75L165,75M15,135L165,135"></path>
+              </svg>
+            </button>
             <ul>
             </ul>
           </nav>
@@ -79,7 +94,12 @@
         <header>
           <h2></h2>
           <nav class="dropdown">
-            <a href="#" title="Change display" role="presentation">&#9776;</a>
+            <button>
+              <svg viewBox="0,0 180,150">
+                <title>Change Chart</title>
+                <path d="M15,15L165,15M15,75L165,75M15,135L165,135"></path>
+              </svg>
+            </button>
             <ul>
             </ul>
           </nav>
@@ -91,7 +111,12 @@
         <header>
           <h2></h2>
           <nav class="dropdown">
-            <a href="#" title="Change display" role="presentation">&#9776;</a>
+            <button>
+              <svg viewBox="0,0 180,150">
+                <title>Change Chart</title>
+                <path d="M15,15L165,15M15,75L165,75M15,135L165,135"></path>
+              </svg>
+            </button>
             <ul>
             </ul>
           </nav>

@@ -196,8 +196,8 @@
       yaxis: {
         label: "Angle",
         unit: "\u00B0",
-        min: null,
-        max: null
+        min: -360,
+        max: 360
       }
     },
     "Quadratic": {
@@ -224,6 +224,24 @@
         label: "Velocity",
         unit: "m/s",
         min: 0,
+        max: null
+      }
+    },
+    "Exponential": {
+      series: ["test.exp"],
+      yaxis: {
+        label: "Velocity",
+        unit: "m/s",
+        min: 1,
+        max: null
+      }
+    },
+    "Logarithmic": {
+      series: ["test.log"],
+      yaxis: {
+        label: "Velocity",
+        unit: "m/s",
+        min: null,
         max: null
       }
     }
@@ -266,7 +284,7 @@
 
   testLayouts = {
     "Test": {
-      charts: ["Sine and Cosine", "Quadratic", "Random"],
+      charts: ["Sine and Cosine", "Exponential", "Random"],
       telemetry: ['test.rand', 'test.sin', 'test.cos', 'test.square', 'test.exp', 'test.sqrt', 'test.log']
     }
   };
@@ -561,9 +579,9 @@
                   case 'test.rand':
                     return lastRand + (rand - 500) / 10;
                   case 'test.sin':
-                    return 1000 * Math.sin(x * 2 * Math.PI);
+                    return 360 * Math.sin(x * 2 * Math.PI);
                   case 'test.cos':
-                    return 1000 * Math.cos(x * 2 * Math.PI);
+                    return 360 * Math.cos(x * 2 * Math.PI);
                   case 'test.square':
                     return x * x;
                   case 'test.exp':
@@ -625,369 +643,337 @@
   };
 
   Chart = (function() {
+    var activeCharts, angleTicks, refreshXAxis, refreshYAxis, resizeHandler, uniqueId, updateDataPaths;
 
-    function Chart(canvas, series, yaxis) {
-      var _this = this;
-      this.$canvas = $(canvas);
+    uniqueId = (function() {
+      var counter;
+      counter = 0;
+      return function() {
+        return "chart-id-" + (counter++);
+      };
+    })();
+
+    activeCharts = [];
+
+    resizeHandler = function(event) {
+      var c, _i, _len, _results;
+      activeCharts = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = activeCharts.length; _i < _len; _i++) {
+          c = activeCharts[_i];
+          if ($.contains(document, c.svg.node())) {
+            _results.push(c);
+          }
+        }
+        return _results;
+      })();
+      if (activeCharts.length === 0) {
+        return $(window).off('resize', resizeHandler);
+      } else {
+        _results = [];
+        for (_i = 0, _len = activeCharts.length; _i < _len; _i++) {
+          c = activeCharts[_i];
+          _results.push(c.resize());
+        }
+        return _results;
+      }
+    };
+
+    function Chart(parent, series, yaxis) {
+      var $parent, clipPathId, dataHeight, dataWidth, g, magnitude, prefix, rootGroup, tspan,
+        _this = this;
+      $parent = $(parent);
       this.data = [];
       this.series = series.slice();
-      this.xaxis = {
-        min: 0,
-        max: 1,
-        ticks: []
-      };
-      this.yaxis = $.extend({
-        tickSpacingMin: 30
-      }, yaxis);
       this.padding = {
-        left: 70,
-        top: 10,
-        right: 10,
-        bottom: 30
+        left: 70.5,
+        top: 13.5,
+        right: 13.5,
+        bottom: 30.5
       };
       if (this.series.length <= 1) {
-        this.padding.bottom = 10;
+        this.padding.bottom = 13.5;
       }
-      this.seriesStyles = ['rgb(192, 128, 0)', 'rgb(0, 128, 0)', 'rgb(0, 128, 192)', 'rgb(192, 192, 192)'];
-      this.gridStyle = 'rgb(96, 96, 96)';
-      this.axisStyle = 'rgb(192, 192, 192)';
-      this.font = 'bold 10pt "Helvetic Neue",Helvetica,Arial,sans serif';
-      this.fontSize = 10;
-      this.tickLength = 5;
-      this.tickLabelSpacing = 10;
-      this.legendSpacing = 40;
-      this.legendBoxSize = 5;
-      this.$canvas.resize(function(event) {
-        return _this.draw();
-      });
-      this.draw();
+      this.legendSpacing = 30;
+      this.width = $parent.width();
+      this.height = $parent.height();
+      dataWidth = Math.max(this.width - (this.padding.left + this.padding.right), 0);
+      dataHeight = Math.max(this.height - (this.padding.top + this.padding.bottom), 0);
+      this.x = d3.scale.linear().range([0, dataWidth]).domain([0, 300]);
+      magnitude = Math.max(orderOfMagnitude(yaxis.min), orderOfMagnitude(yaxis.max));
+      prefix = d3.formatPrefix(Math.pow(10, magnitude - 2));
+      this.y = d3.scale.linear().range([dataHeight, 0]).domain([prefix.scale(yaxis.min), prefix.scale(yaxis.max)]);
+      this.y.prefix = prefix;
+      this.y.fixedDomain = [yaxis.min, yaxis.max];
+      this.xaxis = d3.svg.axis().scale(this.x).orient("bottom").tickSize(dataHeight, 0).tickFormat(function(d) {
+        var h, m, result, t;
+        if (_this.missionTimeOffset) {
+          t = (d - _this.missionTimeOffset) / 60;
+          if (t < 0) {
+            result = "T-";
+            t = -t;
+          } else {
+            result = "T+";
+          }
+          h = t / 60 | 0;
+          m = t % 60 | 0;
+          if (m < 10) {
+            m = "0" + m;
+          }
+          return result + h + ":" + m;
+        }
+      }).tickValues([]);
+      this.yaxis = d3.svg.axis().scale(this.y).orient("left").ticks((dataHeight / 39) | 0);
+      this.yaxis.label = yaxis.label;
+      this.yaxis.unit = yaxis.unit;
+      if ((this.y.fixedDomain[0] != null) && (this.y.fixedDomain[1] != null) && (this.y.fixedDomain[1] - this.y.fixedDomain[0]) % 90 === 0) {
+        this.yaxis.tickValues(angleTicks.apply(null, [this.y.fixedDomain].concat(__slice.call(this.yaxis.ticks()))));
+      }
+      this.svg = d3.select($parent[0]).append("svg:svg").attr("width", this.width).attr("height", this.height);
+      rootGroup = this.svg.append("svg:g").attr("transform", "translate(" + this.padding.left + ", " + this.padding.top + ")");
+      clipPathId = uniqueId();
+      rootGroup.append("svg:defs").append("svg:clipPath").attr("id", clipPathId).append("svg:rect").attr("x", 0).attr("y", -this.padding.top).attr("width", dataWidth).attr("height", dataHeight + this.padding.top);
+      rootGroup.append("svg:g").attr("class", "y grid").attr("clip-path", "url(#" + clipPathId + ")");
+      g = rootGroup.append("svg:g").attr("class", "x axis");
+      g.append("svg:g").attr("class", "ticks").attr("clip-path", "url(#" + clipPathId + ")");
+      g.append("svg:path").attr("class", "domain").attr("d", "M0," + dataHeight + "H" + dataWidth);
+      refreshXAxis.call(this);
+      g = rootGroup.append("svg:g").attr("class", "y axis");
+      g.append("svg:text").attr("class", "label").attr("text-anchor", "middle").attr("x", -dataHeight / 2).attr("y", -(this.padding.left - 18)).attr("transform", "rotate(-90)").text(this.yaxis.label + ((this.yaxis.unit != null) || this.y.prefix.symbol !== '' ? " (" + this.y.prefix.symbol + this.yaxis.unit + ")" : ''));
+      refreshYAxis.call(this);
+      rootGroup.append("svg:g").attr("class", "data").attr("clip-path", "url(#" + clipPathId + ")").selectAll("path").data(this.series).enter().append("svg:path");
+      if (this.series.length > 1) {
+        tspan = rootGroup.append("svg:text").attr("class", "legend").attr("transform", "translate(" + (dataWidth / 2) + ", " + (dataHeight + 20) + ")").attr("text-anchor", "middle").selectAll("tspan").data(this.series).enter().append("svg:tspan").attr("dx", function(d, i) {
+          if (i > 0) {
+            return _this.legendSpacing;
+          }
+        }).on("mouseover", function(d, i) {
+          if (_this.svg.select(".active").empty()) {
+            _this.svg.selectAll(".data path").classed("inactive", function(d, j) {
+              return j !== i;
+            });
+            return _this.svg.selectAll(".legend > tspan").classed("inactive", function(d, j) {
+              return j !== i;
+            });
+          }
+        }).on("mouseout", function() {
+          if (_this.svg.select(".active").empty()) {
+            return _this.svg.selectAll(".data path, .legend > tspan").classed("inactive", false);
+          }
+        }).on("click", function(d, i) {
+          if (d3.select(this).classed("active")) {
+            return rootGroup.selectAll(".data path, .legend > tspan").classed("inactive", false).classed("active", false);
+          } else {
+            rootGroup.selectAll(".data path").classed("inactive", function(d, j) {
+              return j !== i;
+            });
+            return rootGroup.selectAll(".legend > tspan").classed("inactive", function(d, j) {
+              return j !== i;
+            }).classed("active", function(d, j) {
+              return j === i;
+            });
+          }
+        });
+        tspan.append("svg:tspan").attr("class", "bullet").text("\u25fc ");
+        tspan.append("svg:tspan").attr("class", "title").text(function(d) {
+          return d;
+        });
+      }
+      activeCharts.push(this);
+      if (activeCharts.length === 1) {
+        $(window).on('resize', resizeHandler);
+      }
     }
 
-    Chart.prototype.addSample = function(x, series) {
-      var e, i, windowEnd, windowStart, _i, _len, _ref;
-      this.data.push([x].concat(series));
+    Chart.prototype.destroy = function() {
+      var i;
+      i = activeCharts.indexOf(this);
+      activeCharts.splice(i, 1);
+      if (activeCharts.length === 0) {
+        return $(window).off('resize', resizeHandler);
+      }
+    };
+
+    Chart.prototype.addSample = function(x, sample) {
+      var $parent, dt, e, extent, i, magnitude, prefix, windowEnd, windowStart, x1, x2, _i, _j, _ref, _ref1, _ref2, _ref3, _ref4, _ref5;
+      this.data.push([x].concat(sample));
       this.data.sort(function(a, b) {
         return a[0] - b[0];
       });
-      windowStart = 0;
-      windowEnd = this.data.length - 1;
-      _ref = this.data;
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        e = _ref[i];
-        if (e[0] < this.xaxis.min) {
-          windowStart = i;
-        }
-        if (e[0] <= this.xaxis.max) {
-          windowEnd = i;
-        }
-      }
-      return this.data = this.data.slice(windowStart, windowEnd + 1);
-    };
-
-    Chart.prototype.draw = function() {
-      var chartHeight, chartWidth, ctx, height, i, sample, width, ymax, ymin, _i, _j, _k, _len, _ref, _ref1, _ref2, _ref3, _ref4;
-      width = this.$canvas.width();
-      height = this.$canvas.height();
-      if (width === 0 || height === 0) {
-        return;
-      }
-      chartWidth = width - (this.padding.left + this.padding.right);
-      chartHeight = height - (this.padding.top + this.padding.bottom);
-      ctx = this.$canvas[0].getContext('2d');
-      ctx.save();
-      ctx.clearRect(0, 0, width, height);
-      this.xaxis.scale = chartWidth / (this.xaxis.max - this.xaxis.min);
-      if ((this.yaxis.min != null) && (this.yaxis.max != null)) {
-        ymin = this.yaxis.min;
-        ymax = this.yaxis.max;
+      if (this.lastUpdate != null) {
+        dt = Date.now() - ((_ref = this.lastUpdate) != null ? _ref : 0);
+        this.lastUpdate += dt;
       } else {
-        ymin = (_ref = this.yaxis.min) != null ? _ref : Infinity;
-        ymax = (_ref1 = this.yaxis.max) != null ? _ref1 : -Infinity;
-        _ref2 = this.data;
-        for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
-          sample = _ref2[_i];
-          for (i = _j = 1, _ref3 = sample.length; 1 <= _ref3 ? _j < _ref3 : _j > _ref3; i = 1 <= _ref3 ? ++_j : --_j) {
-            if (!(sample[i] != null)) {
-              continue;
-            }
-            if (this.yaxis.min == null) {
-              ymin = Math.min(sample[i], ymin);
-            }
-            if (this.yaxis.max == null) {
-              ymax = Math.max(sample[i], ymax);
-            }
-          }
-        }
-        if (ymin === Infinity) {
-          ymin = 0;
-        }
-        if (ymax === -Infinity) {
-          ymax = 0;
-        }
+        dt = 0;
+        this.lastUpdate = Date.now();
       }
-      this.yaxis.ticks = this.calculateTicks(this.yaxis, ymin, ymax, (chartHeight / this.yaxis.tickSpacingMin) | 0);
-      ymin = this.yaxis.ticks[0];
-      ymax = this.yaxis.ticks[this.yaxis.ticks.length - 1];
-      this.yaxis.scale = chartHeight / (ymax - ymin);
-      ctx.translate(this.padding.left, height - this.padding.bottom);
-      ctx.scale(1, -1);
-      this.drawGrid(ctx, chartWidth, chartHeight, this.xaxis.min, ymin);
-      for (i = _k = _ref4 = this.series.length; _ref4 <= 1 ? _k <= 1 : _k >= 1; i = _ref4 <= 1 ? ++_k : --_k) {
-        this.drawSeries(ctx, this.xaxis.min, ymin, i);
-      }
-      ctx.clearRect(-this.padding.left, -this.padding.bottom, this.padding.left, height);
-      ctx.clearRect(-this.padding.left, -this.padding.bottom, width, this.padding.bottom);
-      this.drawAxes(ctx, chartWidth, chartHeight, ymin);
-      if (this.series.length > 1) {
-        this.drawLegend(ctx, chartWidth);
-      }
-      return ctx.restore();
-    };
-
-    Chart.prototype.calculateTicks = function(axis, min, max, maxIntervals) {
-      var bottom, bottomFixed, i, interval, intervalAbove, intervalBelow, intervalValue, intervals, magnitude, nextBottom, nextInterval, nextTop, reduce, tick, ticks, top, topFixed, _ref, _ref1, _ref2;
-      bottomFixed = axis.min != null;
-      topFixed = axis.max != null;
-      reduce = function(interval) {
-        switch (interval[0]) {
-          case 5:
-            return [2, interval[1]];
-          case 2:
-            return [1, interval[1]];
-          case 1:
-            return [5, interval[1] - 1];
-        }
-      };
-      intervalValue = function(interval) {
-        return interval[0] * Math.pow(10, interval[1]);
-      };
-      intervalAbove = function(num, interval) {
-        var m, v;
-        v = intervalValue(interval);
-        m = num < 0 ? v + num % v : num % v;
-        return num - m + v;
-      };
-      intervalBelow = function(num, interval) {
-        var m, v;
-        v = intervalValue(interval);
-        m = num < 0 ? v + num % v : num % v;
-        if (m === 0) {
-          return num - v;
-        } else {
-          return num - m;
-        }
-      };
-      if (max < min) {
-        if (topFixed && bottomFixed) {
-          _ref = [max, min], min = _ref[0], max = _ref[1];
-        } else if (topFixed) {
-          min = max;
-        } else {
-          max = min;
-        }
-      }
-      if (maxIntervals < 1) {
-        maxIntervals = 1;
-      }
-      bottom = min;
-      top = max;
-      if (bottomFixed && topFixed && top - bottom >= 90 && ((top - bottom) % 90 === 0)) {
-        intervals = [15, 30, 45, 90];
-        while (((top - bottom) / intervals[0]) > maxIntervals) {
-          intervals.shift();
-        }
-        return (function() {
-          var _i, _ref1, _results;
-          _results = [];
-          for (tick = _i = bottom, _ref1 = intervals[0]; bottom <= top ? _i <= top : _i >= top; tick = _i += _ref1) {
-            _results.push(tick);
-          }
-          return _results;
-        })();
-      }
-      if (min === max) {
-        if (max === 0) {
-          return [0, 1];
-        } else {
-          magnitude = orderOfMagnitude(max);
-          interval = [1, magnitude];
-          if (!bottomFixed) {
-            bottom = intervalBelow(min, interval);
-          }
-          if (!(topFixed && !bottomFixed)) {
-            top = intervalAbove(max, interval);
-          }
-          topFixed = bottomFixed = true;
-        }
-      } else {
-        magnitude = Math.max(orderOfMagnitude(min), orderOfMagnitude(max));
-        interval = [1, magnitude];
-        if (!bottomFixed) {
-          bottom = intervalBelow(min, interval);
-        }
-        if (!topFixed) {
-          top = intervalAbove(min, interval);
-        }
-      }
-      while (true) {
-        nextInterval = reduce(interval);
-        nextBottom = bottomFixed ? bottom : intervalBelow(min, nextInterval);
-        nextTop = topFixed ? top : intervalAbove(max, nextInterval);
-        if ((nextTop - nextBottom) / intervalValue(nextInterval) > maxIntervals) {
+      for (i = _i = _ref1 = this.data.length - 1; _ref1 <= 0 ? _i <= 0 : _i >= 0; i = _ref1 <= 0 ? ++_i : --_i) {
+        if (this.data[i][0] <= this.x.domain()[1]) {
+          windowEnd = i + 1;
           break;
         }
-        _ref1 = [nextBottom, nextTop, nextInterval], bottom = _ref1[0], top = _ref1[1], interval = _ref1[2];
       }
-      ticks = [bottom, top];
-      [].splice.apply(ticks, [1, 0].concat(_ref2 = (function() {
-        var _i, _ref3, _ref4, _results;
-        _results = [];
-        for (i = _i = _ref3 = intervalAbove(bottom, interval), _ref4 = intervalValue(interval); _ref3 <= top ? _i < top : _i > top; i = _i += _ref4) {
-          _results.push(i);
+      if (dt > 100 && dt < 1000 && this.data.length >= 2) {
+        x1 = this.data[this.data.length - 2][0];
+        x2 = this.data[this.data.length - 1][0];
+      } else {
+        x1 = x2 = 0;
+      }
+      windowStart = 0;
+      for (i = _j = 1, _ref2 = this.data.length; 1 <= _ref2 ? _j < _ref2 : _j > _ref2; i = 1 <= _ref2 ? ++_j : --_j) {
+        if (this.data[i][0] >= this.x.domain()[0] - (x2 - x1)) {
+          windowStart = i - 1;
+          break;
         }
-        return _results;
-      })())), _ref2;
-      return ticks;
-    };
-
-    Chart.prototype.drawGrid = function(ctx, width, height, xoffset, yoffset) {
-      var tick, x, y, _i, _j, _len, _len1, _ref, _ref1;
-      ctx.save();
-      ctx.strokeStyle = this.gridStyle;
-      ctx.beginPath();
-      _ref = this.xaxis.ticks;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        tick = _ref[_i];
-        x = Math.round(this.xaxis.scale * (tick - xoffset) - 0.5) + 0.5;
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
       }
-      _ref1 = this.yaxis.ticks;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        tick = _ref1[_j];
-        y = Math.round(this.yaxis.scale * (tick - yoffset) - 0.5) + 0.5;
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-      }
-      ctx.stroke();
-      ctx.strokeStyle = this.axisStyle;
-      ctx.beginPath();
-      y = Math.round(-this.yaxis.scale * yoffset - 0.5) + 0.5;
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-      return ctx.restore();
-    };
-
-    Chart.prototype.drawSeries = function(ctx, xmin, ymin, i) {
-      var d, j, _i, _len, _ref, _ref1;
-      ctx.save();
-      ctx.lineWidth = 2;
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = this.seriesStyles[i - 1];
-      ctx.beginPath();
-      _ref = this.data;
-      for (j = _i = 0, _len = _ref.length; _i < _len; j = ++_i) {
-        d = _ref[j];
-        if (d[i] != null) {
-          if (((_ref1 = this.data[j - 1]) != null ? _ref1[i] : void 0) != null) {
-            ctx.lineTo(this.xaxis.scale * (d[0] - xmin), this.yaxis.scale * (d[i] - ymin));
+      this.data = this.data.slice(windowStart, windowEnd);
+      if (!((this.y.fixedDomain[0] != null) && (this.y.fixedDomain[1] != null))) {
+        extent = d3.extent(d3.merge((function() {
+          var _k, _len, _ref3, _results;
+          _ref3 = this.data;
+          _results = [];
+          for (_k = 0, _len = _ref3.length; _k < _len; _k++) {
+            e = _ref3[_k];
+            _results.push(e.slice(1));
+          }
+          return _results;
+        }).call(this)));
+        extent = [(_ref3 = this.y.fixedDomain[0]) != null ? _ref3 : extent[0], (_ref4 = this.y.fixedDomain[1]) != null ? _ref4 : extent[1]];
+        if (extent[1] < extent[0]) {
+          if (this.y.fixedDomain[0] != null) {
+            extent[1] = extent[0];
           } else {
-            ctx.moveTo(this.xaxis.scale * (d[0] - xmin), this.yaxis.scale * (d[i] - ymin));
+            extent[0] = extent[1];
           }
         }
-      }
-      ctx.stroke();
-      return ctx.restore();
-    };
-
-    Chart.prototype.drawAxes = function(ctx, width, height, yoffset) {
-      var PREFIXES, prefix, tick, tickMagnitude, tickScale, y, _i, _j, _len, _len1, _ref, _ref1, _ref2;
-      PREFIXES = ['f', 'p', 'n', '\u03bc', 'm', '', 'k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y'];
-      ctx.save();
-      ctx.strokeStyle = this.axisStyle;
-      ctx.beginPath();
-      ctx.moveTo(-this.tickLength, 0.5);
-      ctx.lineTo(width + 0.5, 0.5);
-      ctx.moveTo(0.5, 0);
-      ctx.lineTo(0.5, height + 0.5);
-      _ref = this.yaxis.ticks;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        tick = _ref[_i];
-        if (!(tick !== yoffset)) {
-          continue;
+        if (this.y.prefix.scale(extent[0]) !== this.y.domain()[0] || this.y.prefix.scale(extent[1]) !== this.y.domain()[1]) {
+          magnitude = Math.max(orderOfMagnitude(extent[0]), orderOfMagnitude(extent[1]));
+          prefix = d3.formatPrefix(Math.pow(10, magnitude - 2));
+          if (prefix.symbol !== this.y.prefix.symbol) {
+            this.y.prefix = prefix;
+            this.svg.select('.y.axis text.label').text(this.yaxis.label + ((this.yaxis.unit != null) || this.y.prefix.symbol !== '' ? " (" + this.y.prefix.symbol + this.yaxis.unit + ")" : ''));
+          }
+          (_ref5 = this.y.domain([this.y.prefix.scale(extent[0]), this.y.prefix.scale(extent[1])])).nice.apply(_ref5, this.yaxis.ticks()).domain([this.y.fixedDomain[0] != null ? this.y.prefix.scale(this.y.fixedDomain[0]) : this.y.domain()[0], this.y.fixedDomain[1] != null ? this.y.prefix.scale(this.y.fixedDomain[1]) : this.y.domain()[1]]);
+          refreshYAxis.call(this, dt);
         }
-        y = Math.round(this.yaxis.scale * (tick - yoffset) - 0.5) + 0.5;
-        ctx.moveTo(-this.tickLength, y);
-        ctx.lineTo(0.5, y);
       }
-      ctx.stroke();
-      tickMagnitude = Math.max(orderOfMagnitude(this.yaxis.ticks[0]), orderOfMagnitude(this.yaxis.ticks[this.yaxis.ticks.length - 1]));
-      if (tickMagnitude > 0) {
-        tickMagnitude -= 1;
-      }
-      tickScale = Math.ceil(tickMagnitude / 3);
-      if (tickScale > 0) {
-        tickScale -= 1;
-      }
-      prefix = PREFIXES[tickScale + 5];
-      ctx.font = this.font;
-      ctx.fillStyle = this.axisStyle;
-      ctx.textBaseline = 'middle';
-      ctx.scale(1, -1);
-      ctx.save();
-      ctx.textAlign = 'center';
-      ctx.translate(-(this.padding.left - this.fontSize), -height / 2);
-      ctx.rotate(-Math.PI / 2);
-      if (((this.yaxis.unit != null) && this.yaxis.unit !== '') || prefix !== '') {
-        ctx.fillText("" + this.yaxis.label + " (" + prefix + ((_ref1 = this.yaxis.unit) != null ? _ref1 : '') + ")", 0, 0, height);
+      $parent = $(this.svg.node().parentElement);
+      if ($parent.length === 0) {
+
+      } else if (this.width !== $parent.width() || this.height !== $parent.height()) {
+        return this.resize();
       } else {
-        ctx.fillText("" + this.yaxis.label, 0, 0, height);
+        refreshXAxis.call(this);
+        updateDataPaths.call(this);
+        if (dt > 100 && dt < 1000) {
+          return this.svg.selectAll(".data path,.x.axis .tick").attr("transform", "translate(" + (this.x(x2) - this.x(x1)) + ",0)").interrupt().transition().duration(dt).ease("linear").attr("transform", "translate(0,0)");
+        }
       }
-      ctx.restore();
-      ctx.textAlign = 'right';
-      tickScale = Math.pow(1000, -tickScale);
-      _ref2 = this.yaxis.ticks;
-      for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-        tick = _ref2[_j];
-        y = Math.round(this.yaxis.scale * (tick - yoffset) - 0.5) + 0.5;
-        ctx.fillText(stripInsignificantZeros((tick * tickScale).toFixed(3)), -this.tickLabelSpacing, -y);
-      }
-      return ctx.restore();
     };
 
-    Chart.prototype.drawLegend = function(ctx, width, series) {
-      var i, legendWidth, name, seriesWidths, x, _i, _len, _ref;
-      ctx.save();
-      ctx.font = this.font;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      seriesWidths = (function() {
-        var _i, _len, _ref, _results;
-        _ref = this.series;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          name = _ref[_i];
-          _results.push(ctx.measureText(name).width);
-        }
-        return _results;
-      }).call(this);
-      legendWidth = seriesWidths.reduce(function(sum, width) {
-        return sum + width;
-      }) + (this.series.length - 1) * this.legendSpacing;
-      ctx.scale(1, -1);
-      x = width / 2 - legendWidth / 2;
-      _ref = this.series;
-      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-        name = _ref[i];
-        ctx.fillStyle = this.seriesStyles[i];
-        ctx.fillRect(x, this.padding.bottom - (this.fontSize + this.legendBoxSize / 2), this.legendBoxSize, this.legendBoxSize);
-        ctx.fillStyle = this.axisStyle;
-        ctx.fillText(name, x + this.fontSize, this.padding.bottom - this.fontSize);
-        x += seriesWidths[i] + this.legendSpacing;
+    Chart.prototype.resize = function() {
+      var $parent, dataHeight, dataWidth;
+      $parent = $(this.svg.node().parentElement);
+      if ($parent.length === 0) {
+        return;
       }
-      return ctx.restore();
+      this.width = $parent.width();
+      this.height = $parent.height();
+      dataWidth = Math.max(this.width - (this.padding.left + this.padding.right), 0);
+      dataHeight = Math.max(this.height - (this.padding.top + this.padding.bottom), 0);
+      this.x.range([0, dataWidth]);
+      this.y.range([dataHeight, 0]);
+      this.xaxis.tickSize(dataHeight, 0);
+      this.yaxis.ticks((dataHeight / 39) | 0);
+      if ((this.y.fixedDomain[0] != null) && (this.y.fixedDomain[1] != null) && (this.y.fixedDomain[1] - this.y.fixedDomain[0]) % 90 === 0) {
+        this.yaxis.tickValues(angleTicks.apply(null, [this.y.fixedDomain].concat(__slice.call(this.yaxis.ticks()))));
+      }
+      this.svg.attr("width", this.width).attr("height", this.height);
+      this.svg.select("defs rect").attr("width", dataWidth).attr("height", dataHeight + this.padding.top);
+      this.svg.select("g.y.grid").selectAll("line").attr("x2", dataWidth);
+      this.svg.select("g.x.axis path.domain").attr("d", "M0," + dataHeight + "H" + dataWidth);
+      this.svg.select("g.y.axis text").attr("x", -dataHeight / 2);
+      this.svg.select("text.legend").attr("transform", "translate(" + (dataWidth / 2) + "," + (dataHeight + 20) + ")");
+      refreshXAxis.call(this);
+      refreshYAxis.call(this);
+      return updateDataPaths.call(this);
+    };
+
+    refreshXAxis = function() {
+      var tick, ticks;
+      ticks = this.svg.select("g.x.axis .ticks").selectAll("g.tick").data(this.xaxis.tickValues());
+      ticks.select("line").attr("x1", this.x).attr("y1", 0).attr("x2", this.x).attr("y2", this.xaxis.tickSize());
+      ticks.select("text").attr("x", this.x).attr("y", this.xaxis.tickSize()).text(this.xaxis.tickFormat());
+      tick = ticks.enter().append("svg:g").attr("class", "tick");
+      tick.append("svg:line").attr("x1", this.x).attr("y1", 0).attr("x2", this.x).attr("y2", this.xaxis.tickSize());
+      tick.append("svg:text").attr("x", this.x).attr("y", this.xaxis.tickSize()).attr("dx", "0.5em").attr("dy", "-1ex").attr("text-anchor", "start").text(this.xaxis.tickFormat());
+      return ticks.exit().remove();
+    };
+
+    refreshYAxis = function(duration) {
+      var grid, _ref, _ref1,
+        _this = this;
+      grid = this.svg.select("g.y.grid").selectAll("line").data((_ref = this.yaxis.tickValues()) != null ? _ref : (_ref1 = this.y).ticks.apply(_ref1, this.yaxis.ticks()));
+      grid.classed("zero", function(d) {
+        return d === 0;
+      });
+      (duration != null ? grid.transition().duration(duration) : grid).attr("y1", function(d) {
+        return _this.y(d);
+      }).attr("y2", function(d) {
+        return _this.y(d);
+      });
+      grid.enter().append("svg:line").attr("x1", 0).attr("y1", function(d) {
+        return _this.y(d);
+      }).attr("x2", this.width).attr("y2", function(d) {
+        return _this.y(d);
+      }).classed("zero", function(d) {
+        return d === 0;
+      });
+      grid.exit().remove();
+      if (duration != null) {
+        return this.svg.select("g.y.axis").transition().duration(duration).call(this.yaxis);
+      } else {
+        return this.svg.select("g.y.axis").call(this.yaxis);
+      }
+    };
+
+    updateDataPaths = function() {
+      var _this = this;
+      return this.svg.selectAll("g.data path").data(this.series).attr("d", function(d, i) {
+        var j, path, _i, _len, _ref, _ref1;
+        path = "";
+        _ref = _this.data;
+        for (j = _i = 0, _len = _ref.length; _i < _len; j = ++_i) {
+          d = _ref[j];
+          if (!d[i + 1]) {
+            continue;
+          }
+          path += path.length > 0 && (((_ref1 = _this.data[j - 1]) != null ? _ref1[i + 1] : void 0) != null) ? "L" : "M";
+          path += "" + (_this.x(d[0])) + "," + (_this.y(_this.y.prefix.scale(d[i + 1])));
+        }
+        return path;
+      });
+    };
+
+    angleTicks = function(domain, maxTicks) {
+      var i, span, tick, _i, _len, _ref;
+      span = Math.abs(domain[1] - domain[0]);
+      _ref = [15, 30, 45, 90, 180, 360];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        if (span / i <= maxTicks) {
+          return (function() {
+            var _j, _ref1, _ref2, _results;
+            _results = [];
+            for (tick = _j = _ref1 = domain[0], _ref2 = domain[1]; _ref1 <= _ref2 ? _j <= _ref2 : _j >= _ref2; tick = _j += i) {
+              _results.push(tick);
+            }
+            return _results;
+          })();
+        }
+      }
+      return domain;
     };
 
     return Chart;
@@ -1044,20 +1030,19 @@
       setChart($(this).closest(".chart"), $(this).text());
       return $(this).closest("ul").hide();
     });
-    $(document).on("click.dropdown", ".dropdown > a", function() {
+    $(document).on("click.dropdown", ".dropdown button", function() {
       var $menu, $this;
       $this = $(this);
+      console.log($this.width(), $this.height(), $this.outerWidth(true), $this.outerHeight(true));
       $menu = $this.next();
       return $menu.toggle().css({
-        left: Math.max($this.position().left + $this.width() - $menu.outerWidth(), 0),
-        top: $this.position().top + Math.min($(window).height() - $menu.outerHeight() - $this.offset().top, $this.height())
+        left: Math.max($this.position().left + $this.outerWidth(true) - $menu.outerWidth() + 5, 0),
+        top: $this.position().top + Math.min($(window).height() - $menu.outerHeight() - $this.offset().top, $this.outerHeight(true))
       });
     });
-    $(document).on("click.dropdown", function() {
+    $(document).on("click.dropdown", function(event) {
       return $(".dropdown").not($(event.target).parents()).children("ul").hide();
     });
-    setLayout(defaultLayout);
-    $("#deleteLayout").prop("disabled", !(defaultLayout in customLayouts));
     $("#apiCategory").change(function(event) {
       var api, apistring, category, _ref2, _results;
       category = $("#apiCategory").val();
@@ -1072,9 +1057,17 @@
       }
       return _results;
     });
-    $("#telemetry").on("click", "dt a", function(event) {
+    $("#telemetry form").submit(function(event) {
+      event.preventDefault();
+      return addTelemetry($("#apiSelect").val());
+    });
+    $("#telemetry ul").on("click", "button.remove", function(event) {
       event.preventDefault();
       return removeTelemetry($(this).parent());
+    });
+    $("#telemetry ul").sortable({
+      handle: ".handle",
+      containment: "#telemetry"
     });
     $(".alert").on("telemetryAlert", function(event, message) {
       var $display, $this;
@@ -1106,7 +1099,7 @@
           })(),
           telemetry: (function() {
             var _i, _len, _ref2, _results;
-            _ref2 = $("#telemetry dt");
+            _ref2 = $("#telemetry li");
             _results = [];
             for (_i = 0, _len = _ref2.length; _i < _len; _i++) {
               elem = _ref2[_i];
@@ -1145,6 +1138,30 @@
       $("#saveLayout").prop("disabled", true);
       $("#deleteLayout").prop("disabled", true);
     }
+    $(window).resize(function() {
+      var $alert, $chart, $display, $telemetry, $telemetryAdd, $telemetryForm, $telemetryList, $telemetrySelect, buttonWidth, display, margins, winHeight, _i, _len, _ref2, _ref3;
+      winHeight = Math.min($(window).height(), (_ref2 = window.innerHeight) != null ? _ref2 : 1e6);
+      $("#container").height(winHeight - ($("#container").position().top + $("body > footer").outerHeight(true)));
+      _ref3 = $(".display", "#charts");
+      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
+        display = _ref3[_i];
+        $display = $(display);
+        $chart = $display.closest(".chart");
+        $display.height($chart.height() - $display.position().top - ($display.outerHeight() - $display.height()));
+        $alert = $display.siblings(".alert");
+        $alert.css("fontSize", $display.height() / 5).css("marginTop", -($display.outerHeight() + $alert.height()) / 2);
+      }
+      $telemetry = $("#telemetry");
+      $telemetryList = $("ul", $telemetry);
+      $telemetryForm = $("form", $telemetry);
+      margins = $telemetryList.outerHeight(true) - $telemetryList.height();
+      $telemetryList.height($telemetryForm.position().top - $telemetryList.position().top - margins);
+      $("form", $telemetry).width($telemetry.width());
+      $telemetrySelect = $("#apiSelect");
+      $telemetryAdd = $("form input", $telemetry);
+      buttonWidth = $telemetryAdd.outerWidth(true) + 5;
+      return $telemetrySelect.width($telemetry.width() - buttonWidth - ($telemetrySelect.outerWidth() - $telemetrySelect.width()));
+    }).resize();
     Telemachus.subscribeAlerts($(".alert"));
     Telemachus.loadAPI(testMode).done(function() {
       $("#apiCategory").change();
@@ -1162,75 +1179,53 @@
         return $("#ut").text(dateString(universalTime));
       }
     }, 1000);
-    $("#telemetry form").submit(function(event) {
-      event.preventDefault();
-      return addTelemetry($("#apiSelect").val());
-    });
-    return $(window).resize(function() {
-      var $alert, $chart, $display, $telemetry, $telemetryAdd, $telemetryForm, $telemetryList, $telemetrySelect, buttonWidth, canvas, display, margins, winHeight, _i, _j, _len, _len1, _ref2, _ref3, _ref4;
-      winHeight = Math.min($(window).height(), (_ref2 = window.innerHeight) != null ? _ref2 : 1e6);
-      $("#container").height(winHeight - ($("#container").position().top + $("body > footer").outerHeight(true)));
-      _ref3 = $(".display", "#charts");
-      for (_i = 0, _len = _ref3.length; _i < _len; _i++) {
-        display = _ref3[_i];
-        $display = $(display);
-        $chart = $display.closest(".chart");
-        $display.height($chart.height() - $display.position().top - 20);
-        $alert = $display.siblings(".alert");
-        $alert.css("fontSize", $display.height() / 5).css("marginTop", -($display.outerHeight() + $alert.height()) / 2);
-      }
-      _ref4 = $("canvas");
-      for (_j = 0, _len1 = _ref4.length; _j < _len1; _j++) {
-        canvas = _ref4[_j];
-        $(canvas).prop({
-          width: $(canvas).width(),
-          height: $(canvas).height()
-        });
-      }
-      $telemetry = $("#telemetry");
-      $telemetryList = $("dl", $telemetry);
-      $telemetryForm = $("form", $telemetry);
-      margins = $telemetryList.outerHeight(true) - $telemetryList.height();
-      $telemetryList.height($telemetryForm.position().top - $telemetryList.position().top - margins);
-      $("form", $telemetry).width($telemetry.width());
-      $telemetrySelect = $("#apiSelect");
-      $telemetryAdd = $("form input", $telemetry);
-      buttonWidth = $telemetryAdd.outerWidth(true) + 5;
-      return $telemetrySelect.width($telemetry.width() - buttonWidth);
-    }).resize();
+    setLayout(defaultLayout);
+    return $("#deleteLayout").prop("disabled", !(defaultLayout in customLayouts));
   });
 
   addTelemetry = function(api) {
-    var $dd;
-    if ((api != null) && api in Telemachus.api && $("#telemetry dd[data-api='" + api + "']").length === 0) {
-      $("<dt>").data("api", api).text(Telemachus.api[api].name + " ").append($("<a>").attr({
-        href: "#",
-        title: "Remove"
-      })).appendTo("#telemetry dl");
-      $dd = $("<dd>").data("api", api).text("No Data").appendTo("#telemetry dl").on("telemetry", function(event, data) {
+    var $data, $li;
+    if ((api != null) && api in Telemachus.api && $("#telemetry li[data-api='" + api + "']").length === 0) {
+      $li = $("<li>").data("api", api).append($("<h3>").text(Telemachus.api[api].name)).append($("<button>").attr({
+        "class": "remove"
+      })).append($("<img>").attr({
+        "class": "handle",
+        src: "draghandle.png",
+        alt: "Drag to reorder"
+      })).appendTo("#telemetry ul");
+      $data = $("<div>").attr({
+        "class": "telemetry-data"
+      }).text("No Data").appendTo($li);
+      $li.on("telemetry", function(event, data) {
         var value;
         value = data[api];
-        return $dd.text(Telemachus.format(value, api));
+        return $data.text(Telemachus.format(value, api));
       });
-      return Telemachus.subscribe($dd, api);
+      Telemachus.subscribe($li, api);
+      return $("#telemetry ul").sortable("refresh").disableSelection();
     }
   };
 
   removeTelemetry = function(elem) {
     var $elem;
-    $elem = $(elem).next().addBack();
+    $elem = $(elem);
     Telemachus.unsubscribe($elem);
-    return $elem.remove();
+    $elem.remove();
+    return $("#telemetry ul").sortable("refresh");
   };
 
   resetChart = function(elem) {
-    var $display;
+    var $display, _ref;
     $display = $(".display", elem).empty();
-    return Telemachus.unsubscribe($display);
+    Telemachus.unsubscribe($display);
+    if ((_ref = $display.data('chart')) != null) {
+      _ref.destroy();
+    }
+    return $display.data('chart', null);
   };
 
   setChart = function(elem, chartName) {
-    var $canvas, $display, $map, apis, body, chart, e, map, marker;
+    var $display, $map, apis, body, chart, e, map, marker;
     resetChart(elem);
     chart = charts[chartName];
     if (chart == null) {
@@ -1285,12 +1280,8 @@
         }
       });
     } else {
-      $canvas = $("<canvas>").attr({
-        width: $display.width(),
-        height: $display.height()
-      }).appendTo($display);
       apis = chart.series;
-      chart = new Chart($canvas, (function() {
+      chart = new Chart($display[0], (function() {
         var _i, _len, _results;
         _results = [];
         for (_i = 0, _len = apis.length; _i < _len; _i++) {
@@ -1301,22 +1292,23 @@
         }
         return _results;
       })(), chart.yaxis);
-      return $display.on("telemetry", function(event, data) {
-        var i, missionTime, sample, t, x, _i, _len;
+      return $display.data('chart', chart).on("telemetry", function(event, data) {
+        var i, lastT, missionTime, sample, t, x, _i, _len, _ref, _ref1;
         t = data["t.universalTime"];
         missionTime = data["v.missionTime"];
-        chart.xaxis.min = t - 300;
-        chart.xaxis.max = t;
-        chart.xaxis.ticks = ((function() {
-          var _i, _ref, _ref1, _results;
+        chart.missionTimeOffset = (missionTime > 0 ? t - missionTime : void 0);
+        chart.x.domain([t - 300, t]);
+        lastT = Math.min((_ref = (_ref1 = chart.data[chart.data.length - 1]) != null ? _ref1[0] : void 0) != null ? _ref : t, t);
+        chart.xaxis.tickValues((function() {
+          var _i, _ref2, _ref3, _results;
           _results = [];
-          for (x = _i = _ref = t - missionTime % 60, _ref1 = t - 300; _i > _ref1; x = _i += -60) {
-            if (missionTime > 0 && (t - x - 0.01) <= missionTime) {
+          for (x = _i = _ref2 = t - missionTime % 60, _ref3 = t - 360 - (t - lastT); _i > _ref3; x = _i += -60) {
+            if (missionTime > 0 && x >= (t - missionTime)) {
               _results.push(x);
             }
           }
           return _results;
-        })()).reverse();
+        })());
         sample = (function() {
           var _i, _len, _results;
           _results = [];
@@ -1332,8 +1324,7 @@
             sample[i] = e[1][0];
           }
         }
-        chart.addSample(t, sample);
-        return chart.draw();
+        return chart.addSample(t, sample);
       });
     }
   };
@@ -1348,7 +1339,7 @@
       window.localStorage.setItem("defaultLayout", name);
       $("h1").text(name);
       layout = layouts[name];
-      _ref = $("#telemetry dl dt");
+      _ref = $("#telemetry ul li");
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         elem = _ref[_i];
         removeTelemetry(elem);
@@ -1369,10 +1360,10 @@
   };
 
   orderOfMagnitude = function(v) {
-    if (v === 0) {
+    if (+v === 0) {
       return 0;
     }
-    return Math.floor(Math.log(Math.abs(v)) / Math.LN10 + 1.0000000000000001);
+    return 1 + Math.floor(1e-12 + Math.log(Math.abs(+v)) / Math.LN10);
   };
 
   siUnit = function(v, unit) {
@@ -1401,6 +1392,9 @@
 
   hourMinSec = function(t) {
     var hour, min, sec;
+    if (t == null) {
+      t = 0;
+    }
     hour = (t / 3600) | 0;
     if (hour < 10) {
       hour = "0" + hour;
@@ -1410,7 +1404,7 @@
     if (min < 10) {
       min = "0" + min;
     }
-    sec = (t % 60).toFixed();
+    sec = (t % 60 | 0).toFixed();
     if (sec < 10) {
       sec = "0" + sec;
     }
@@ -1419,6 +1413,9 @@
 
   dateString = function(t) {
     var day, year;
+    if (t == null) {
+      t = 0;
+    }
     year = ((t / (365 * 24 * 3600)) | 0) + 1;
     t %= 365 * 24 * 3600;
     day = ((t / (24 * 3600)) | 0) + 1;
@@ -1428,6 +1425,9 @@
 
   missionTimeString = function(t) {
     var result;
+    if (t == null) {
+      t = 0;
+    }
     result = "T+";
     if (t >= 365 * 24 * 3600) {
       result += (t / (365 * 24 * 3600) | 0) + ":";
@@ -1445,6 +1445,9 @@
 
   durationString = function(t) {
     var result;
+    if (t == null) {
+      t = 0;
+    }
     result = t < 0 ? "-" : "";
     t = Math.abs(t);
     if (t >= 365 * 24 * 3600) {
