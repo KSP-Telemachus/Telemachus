@@ -70,8 +70,12 @@
         doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":100}");
     }
 
+    function doBodyTest() {
+        doSend("{\"+\":[\"b.maxAtmosphere[1]\"], \"+\":[\"b.name[0]\"], \"rate\":100}");
+    }
+
     function doStringifyTest() {
-        doSend(JSON.stringify({ "+": ["v.altitude", "n.roll", "b.name[1]", "r.resource[LiquidFuel]", "f.throttle"], "run":["f.light[false]"], "rate": 100 }));
+        doSend(JSON.stringify({ "+": ["v.altitude", "b.maxAtmosphere[1]", "n.roll", "b.name[1]", "r.resource[LiquidFuel]", "f.throttle"], "run":["f.light[false]"], "rate": 100 }));
     }
 
     function doComplexTest()
