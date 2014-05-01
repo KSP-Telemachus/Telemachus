@@ -1,0 +1,15 @@
+{
+  "NAME": "Telemachus",
+  "URL": "https://raw.githubusercontent.com/richardbunt/Telemachus/master/Telemachus.version",
+  "VERSION": {
+    "MAJOR": 1,
+    "MINOR": 4,
+    "PATCH": 22,
+    "BUILD": 0
+  },
+  "KSP_VERSION": {
+    "MAJOR": 0,
+    "MINOR": 23,
+    "PATCH": 5
+  }
+}
