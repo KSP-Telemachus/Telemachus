@@ -40,7 +40,16 @@
         max: null
       }
     },
-    "G-Force": {
+	"Vessel G-Force": {
+      series: ["v.geeForce"],
+      yaxis: {
+        label: "Acceleration",
+        unit: "Gs",
+        min: null,
+        max: null
+      }
+    },
+    "Sensor G-Force": {
       series: ["s.sensor.acc"],
       yaxis: {
         label: "Acceleration",
