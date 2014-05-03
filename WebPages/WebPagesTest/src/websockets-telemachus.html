@@ -42,7 +42,7 @@
 
     function doTest()
     {
-        doStringifyTest();
+        doArgumentTest();
     }
 
     function doPausedStateTest() {
@@ -67,7 +67,7 @@
 
     function doBasicTest()
     {
-        doSend("{\"+\":[\"v.altitude\"], \"+\":[\"o.inclination\"], \"rate\":100}");
+        doSend("{\"+\":[\"v.altitude\",\"n.roll\"]}");
     }
 
     function doBodyTest() {
@@ -76,6 +76,10 @@
 
     function doStringifyTest() {
         doSend(JSON.stringify({ "+": ["v.altitude", "b.maxAtmosphere[1]", "n.roll", "b.name[1]", "r.resource[LiquidFuel]", "f.throttle"], "run":["f.light[false]"], "rate": 100 }));
+    }
+
+    function doMJTest() {
+        doSend(JSON.stringify({ "+": ["v.altitude"], "run": ["mj.surface[0,45,0]"]}));
     }
 
     function doComplexTest()
