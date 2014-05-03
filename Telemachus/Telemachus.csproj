@@ -14,6 +14,12 @@
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- Telemachus-specific configuration -->
+    <PublishToKSP>true</PublishToKSP>
+    <PublishToKSPPath>C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData</PublishToKSPPath>
+    <!-- End of Telemachus-specific configuration-->
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -73,18 +79,21 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>rd /s /q  "$(ProjectDir)..\publish\GameData"
-rd /s /q "C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData\Telemachus"
+    <PostBuildEvent>
+      rd /s /q  "$(ProjectDir)..\publish\GameData"
 
-xcopy "$(TargetDir)Servers.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
-xcopy "$(TargetDir)Telemachus.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
-xcopy "$(ProjectDir)..\Parts\*" "$(ProjectDir)..\publish\GameData\Telemachus\Parts\"  /e /y /i /r
-xcopy "$(ProjectDir)..\WebPages\WebPages\src\*" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\PluginData\Telemachus\" /e /y /i /r
-xcopy "$(ProjectDir)..\licences\*" "$(ProjectDir)..\publish\GameData\Telemachus\" /e /y /i /r
-
-xcopy "$(ProjectDir)..\WebPages\WebPagesTest\src\*" "C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData\Telemachus\Plugins\PluginData\Telemachus\test" /e /y /i /r
-xcopy "$(ProjectDir)..\publish\GameData\*"  "C:\Users\Richard Bunt\KSP\ksp-win-telemachus-dev\KSP_win\GameData\" /e /y /i /r
-</PostBuildEvent>
+      xcopy "$(TargetDir)Servers.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
+      xcopy "$(TargetDir)Telemachus.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
+      xcopy "$(ProjectDir)..\Parts\*" "$(ProjectDir)..\publish\GameData\Telemachus\Parts\"  /e /y /i /r
+      xcopy "$(ProjectDir)..\WebPages\WebPages\src\*" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\PluginData\Telemachus\" /e /y /i /r
+      xcopy "$(ProjectDir)..\licences\*" "$(ProjectDir)..\publish\GameData\Telemachus\" /e /y /i /r
+    </PostBuildEvent>
+    <PostBuildEvent Condition="'$(PublishToKSP)' == 'true'">
+      rd /s /q "$(PublishToKSPPath)\Telemachus"
+      
+      xcopy "$(ProjectDir)..\WebPages\WebPagesTest\src\*" "C$(PublishToKSPPath)\Telemachus\Plugins\PluginData\Telemachus\test" /e /y /i /r
+      xcopy "$(ProjectDir)..\publish\GameData\*"  "$(PublishToKSPPath)\" /e /y /i /r
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
