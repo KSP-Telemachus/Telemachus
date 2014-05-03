@@ -74,7 +74,7 @@ namespace Telemachus
                             foreach (string s in toRun)
                             {
                                 DataSources dataSourcesClone = dataSources.Clone();
-                                string trimedQuotes = s.Trim().Substring(1, s.Length - 2);
+                                string trimedQuotes = s.Trim();
                                 string refArg = trimedQuotes;
                                 kspAPI.parseParams(ref refArg, ref dataSourcesClone);
 
@@ -175,7 +175,7 @@ namespace Telemachus
 
         private string[] splitString(string p)
         {
-            string[] strings = p.Substring(1, p.Length - 2).Split(',');
+            string[] strings = p.Substring(2, p.Length - 4).Split(new string[] {"\",\""}, StringSplitOptions.None);
 
             for (int i = 0; i < strings.Length; i++)
             {
