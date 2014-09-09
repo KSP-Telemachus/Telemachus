@@ -25,7 +25,7 @@ namespace Telemachus
         private IKSPAPI kspAPI = null;
         private Servers.AsynchronousServer.ClientConnection clientConnection = null;
 
-        private Regex matchJSONAttributes = new Regex(@"[\{""|,\s+""|,""]([^"":]*)"":([^:]*)[,|\}]");
+        private Regex matchJSONAttributes = new Regex(@"[\{\s*""|,\s*""|]([^"":]*)""\s*:\s*([^:]*)\s*[,|\}]");
 
         private Timer streamTimer = new Timer();
 
