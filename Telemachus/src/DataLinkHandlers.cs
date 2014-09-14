@@ -869,15 +869,14 @@ namespace Telemachus
         {
             ModuleDockingNode targetPort = null;
             Transform selfTransform = FlightGlobals.ActiveVessel.ReferenceTransform;
-            try
-            {
-                targetPort = FlightGlobals.fetch.VesselTarget as ModuleDockingNode;
-            }
-            catch
+            
+            targetPort = FlightGlobals.fetch.VesselTarget as ModuleDockingNode;
+            
+            if (targetPort == null)
             {
                 return;
             }
-
+            
             Transform targetTransform = targetPort.transform;
             Vector3 targetPortOutVector;
             Vector3 targetPortRollReferenceVector;
