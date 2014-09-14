@@ -42,7 +42,7 @@
 
     function doTest()
     {
-        doArgumentTest();
+        doSpaceTest();
     }
 
     function doPausedStateTest() {
@@ -63,6 +63,10 @@
 
     function doArgumentTest() {
         doSend("{\"+\":[\"r.resourceMax[LiquidFuel]\"], \"rate\":100}");
+    }
+
+    function doSpaceTest() {
+        doSend("{\"+\": [\"v.altitude\",\"n.roll\"]}");
     }
 
     function doBasicTest()
