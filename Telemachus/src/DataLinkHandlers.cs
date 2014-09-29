@@ -1418,9 +1418,22 @@ namespace Telemachus
                 formatters.ResourceList, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new APIEntry(
-                dataSources => { return getsResourceValues(dataSources); },
+                dataSources =>
+                {
+                    List<Vessel.ActiveResource> activeResources = dataSources.vessel.GetActiveResources();
+
+                    foreach (Vessel.ActiveResource resource in activeResources)
+                    {
+                        if (resource.info.name.Equals(dataSources.args[0]))
+                        {
+                            return resource.amount;
+                        }
+                    }
+
+                    return 0;
+                },
                 "r.resourceCurrent", "Resource Information for Current Stage [string resource type]",
-                formatters.CurrentResourceList, APIEntry.UnitType.UNITLESS));
+                formatters.Default, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
