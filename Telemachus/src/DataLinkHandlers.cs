@@ -986,6 +986,15 @@ namespace Telemachus
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].Radius; },
                 "b.radius", "Body Radius", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].sphereOfInfluence; },
+                "b.soi", "Body Sphere of Influence", formatters.Default, APIEntry.UnitType.DISTANCE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].rotationPeriod; },
+                "b.rotationPeriod", "Rotation Period", formatters.Default, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].tidallyLocked; },
+                "b.tidallyLocked", "Tidally Locked", formatters.String, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies.Count; },
                 "b.number", "Number of Bodies", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
