@@ -978,76 +978,76 @@ namespace Telemachus
         {
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].name; },
-                "b.name", "Body Name", formatters.String, APIEntry.UnitType.STRING));
+                "b.name", "Body Name [body id]", formatters.String, APIEntry.UnitType.STRING));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].maxAtmosphereAltitude; },
-                "b.maxAtmosphere", "Body Max Atmosphere", formatters.Default, APIEntry.UnitType.DISTANCE));
+                "b.maxAtmosphere", "Body Max Atmosphere [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].Radius; },
-                "b.radius", "Body Radius", formatters.Default, APIEntry.UnitType.DISTANCE));
+                "b.radius", "Body Radius [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].sphereOfInfluence; },
-                "b.soi", "Body Sphere of Influence", formatters.Default, APIEntry.UnitType.DISTANCE));
+                "b.soi", "Body Sphere of Influence [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].rotationPeriod; },
-                "b.rotationPeriod", "Rotation Period", formatters.Default, APIEntry.UnitType.UNITLESS));
+                "b.rotationPeriod", "Rotation Period [body id]", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].tidallyLocked; },
-                "b.tidallyLocked", "Tidally Locked", formatters.String, APIEntry.UnitType.UNITLESS));
+                "b.tidallyLocked", "Tidally Locked [body id]", formatters.String, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies.Count; },
-                "b.number", "Number of Bodies", formatters.Default, APIEntry.UnitType.UNITLESS));
+                "b.number", "Number of Bodies [body id]", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].gravParameter; },
-                "b.o.gravParameter", "Body Gravitational Parameter", formatters.Default, APIEntry.UnitType.GRAV));
+                "b.o.gravParameter", "Body Gravitational Parameter [body id]", formatters.Default, APIEntry.UnitType.GRAV));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.GetRelativeVel().magnitude; },
-                "b.o.relativeVelocity", "Relative Velocity", formatters.Default, APIEntry.UnitType.VELOCITY));
+                "b.o.relativeVelocity", "Relative Velocity [body id]", formatters.Default, APIEntry.UnitType.VELOCITY));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.PeA; },
-                "b.o.PeA", "Periapsis", formatters.Default, APIEntry.UnitType.DISTANCE));
+                "b.o.PeA", "Periapsis [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.ApA; },
-                "b.o.ApA", "Apoapsis", formatters.Default, APIEntry.UnitType.DISTANCE));
+                "b.o.ApA", "Apoapsis [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.timeToAp; },
-                "b.o.timeToAp", "Time to Apoapsis", formatters.Default, APIEntry.UnitType.TIME));
+                "b.o.timeToAp", "Time to Apoapsis [body id]", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.timeToPe; },
-                "b.o.timeToPe", "Time to Periapsis", formatters.Default, APIEntry.UnitType.TIME));
+                "b.o.timeToPe", "Time to Periapsis [body id]", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.inclination; },
-                "b.o.inclination", "Inclination", formatters.Default, APIEntry.UnitType.DEG));
+                "b.o.inclination", "Inclination [body id]", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.eccentricity; },
-                "b.o.eccentricity", "Eccentricity", formatters.Default, APIEntry.UnitType.UNITLESS));
+                "b.o.eccentricity", "Eccentricity [body id]", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.period; },
-                "b.o.period", "Orbital Period", formatters.Default, APIEntry.UnitType.TIME));
+                "b.o.period", "Orbital Period [body id]", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.argumentOfPeriapsis; },
-                "b.o.argumentOfPeriapsis", "Argument of Periapsis", formatters.Default, APIEntry.UnitType.DEG));
+                "b.o.argumentOfPeriapsis", "Argument of Periapsis [body id]", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.timeToTransition1; },
-                "b.o.timeToTransition1", "Time to Transition 1", formatters.Default, APIEntry.UnitType.TIME));
+                "b.o.timeToTransition1", "Time to Transition 1 [body id]", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.timeToTransition1; },
-                "b.o.timeToTransition2", "Time to Transition 2", formatters.Default, APIEntry.UnitType.TIME));
+                "b.o.timeToTransition2", "Time to Transition 2 [body id]", formatters.Default, APIEntry.UnitType.TIME));
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.semiMajorAxis; },
-               "b.o.sma", "Semimajor Axis", formatters.Default, APIEntry.UnitType.DISTANCE));
+               "b.o.sma", "Semimajor Axis [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.LAN; },
-               "b.o.lan", "Longitude of Ascending Node", formatters.Default, APIEntry.UnitType.DEG));
+               "b.o.lan", "Longitude of Ascending Node [body id]", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.meanAnomalyAtEpoch; },
-               "b.o.maae", "Mean Anomaly at Epoch", formatters.Default, APIEntry.UnitType.UNITLESS));
+               "b.o.maae", "Mean Anomaly at Epoch [body id]", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return Planetarium.GetUniversalTime() - FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.ObT; },
-                "b.o.timeOfPeriapsisPassage", "Time of Periapsis Passage", formatters.Default, APIEntry.UnitType.DATE));
+                "b.o.timeOfPeriapsisPassage", "Time of Periapsis Passage [body id]", formatters.Default, APIEntry.UnitType.DATE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI); },
-                "b.o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
+                "b.o.trueAnomaly", "True Anomaly [body id]", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
                 dataSources =>
                 {
@@ -1091,7 +1091,7 @@ namespace Telemachus
                     double phaseAngle = (Math.Atan2(bodyPos.y, bodyPos.x) - Math.Atan2(vesselPos.y, vesselPos.x)) * (180.0 / Math.PI);
                     return (phaseAngle < 0) ? phaseAngle + 360 : phaseAngle;
                 },
-                "b.o.phaseAngle", "Phase Angle", formatters.Default, APIEntry.UnitType.DEG));
+                "b.o.phaseAngle", "Phase Angle [body id]", formatters.Default, APIEntry.UnitType.DEG));
         }
 
         #endregion
@@ -1623,7 +1623,9 @@ namespace Telemachus
         {
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return partPaused(); },
-                "p.paused", "Paused", formatters.Default, APIEntry.UnitType.UNITLESS));
+                "p.paused", 
+                "Returns an integer indicating the state of antenna.\n 0 - Flight scene\n 1 - Paused\n 2 - No power\n 3 - Off\n 4 - Not found.", 
+                formatters.Default, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
