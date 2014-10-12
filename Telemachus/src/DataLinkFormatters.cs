@@ -216,7 +216,7 @@ namespace Telemachus
 
                     foreach (PartResource p in resources)
                     {
-                        if (p.part.inStageIndex == Staging.CurrentStage)
+                        if (p.part.inverseStage == Staging.CurrentStage)
                         {
                             amount += p.amount;
                         }
