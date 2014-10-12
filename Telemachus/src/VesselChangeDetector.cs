@@ -8,10 +8,19 @@ namespace Telemachus
 {
     public class VesselChangeDetector
     {
+        public event EventHandler<EventArgs> UpdateNotify;
+
         public static bool hasTelemachusPart = false;
+
+        private EventArgs updateEventArgs;
 
         public void update(Vessel vessel)
         {
+            if (UpdateNotify != null)
+            {
+                UpdateNotify(this,updateEventArgs);
+            }
+
             if (vessel != null)
             {
                 updateHasTelemachusPart(vessel);

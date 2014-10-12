@@ -986,6 +986,9 @@ namespace Telemachus
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].Radius; },
                 "b.radius", "Body Radius [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].atmosphereContainsOxygen; },
+                "b.atmosphereContainsOxygen", "Atmosphere contains oxygen [body id]", formatters.String, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].sphereOfInfluence; },
                 "b.soi", "Body Sphere of Influence [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
@@ -1354,7 +1357,7 @@ namespace Telemachus
     {
         #region Fields
 
-        SensorCache sensorCache = new SensorCache();
+        SensorCache sensorCache = null;
 
         #endregion
 
@@ -1363,6 +1366,8 @@ namespace Telemachus
         public SensorDataLinkHandler(VesselChangeDetector vesselChangeDetector, FormatterProvider formatters)
             : base(formatters)
         {
+            sensorCache = new SensorCache(vesselChangeDetector);
+
             registerAPI(new PlotableAPIEntry(
                dataSources => { return getsSensorValues(dataSources); },
                "s.sensor", "Sensor Information [string sensor type]", formatters.SensorModuleList,
@@ -1391,6 +1396,7 @@ namespace Telemachus
 
         protected List<ModuleEnviroSensor> getsSensorValues(DataSources datasources)
         {
+            sensorCache.vessel = datasources.vessel;
             return sensorCache.get(datasources);
         }
 
@@ -1403,7 +1409,8 @@ namespace Telemachus
 
         #region Fields
 
-        ResourceCache resourceCache = new ResourceCache();
+        ResourceCache resourceCache = null;
+        ActiveResourceCache activeResourceCache = null;
 
         #endregion
 
@@ -1412,6 +1419,10 @@ namespace Telemachus
         public ResourceDataLinkHandler(VesselChangeDetector vesselChangeDetector, FormatterProvider formatters)
             : base(formatters)
         {
+
+            resourceCache = new ResourceCache(vesselChangeDetector);
+            activeResourceCache = new ActiveResourceCache(vesselChangeDetector);
+
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
                 "r.resource", "Resource Information [string resource type]",
@@ -1420,20 +1431,10 @@ namespace Telemachus
             registerAPI(new APIEntry(
                 dataSources =>
                 {
-                    List<Vessel.ActiveResource> activeResources = dataSources.vessel.GetActiveResources();
-
-                    foreach (Vessel.ActiveResource resource in activeResources)
-                    {
-                        if (resource.info.name.Equals(dataSources.args[0]))
-                        {
-                            return resource.amount;
-                        }
-                    }
-
-                    return 0;
+                    return getsActiveResourceValues(dataSources);
                 },
                 "r.resourceCurrent", "Resource Information for Current Stage [string resource type]",
-                formatters.Default, APIEntry.UnitType.UNITLESS));
+                formatters.ActiveResourceList, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
@@ -1447,7 +1448,14 @@ namespace Telemachus
 
         protected List<PartResource> getsResourceValues(DataSources datasources)
         {
+            resourceCache.vessel = datasources.vessel;
             return resourceCache.get(datasources);
+        }
+
+        protected List<Vessel.ActiveResource> getsActiveResourceValues(DataSources datasources)
+        {
+            activeResourceCache.vessel = datasources.vessel;
+            return activeResourceCache.get(datasources);
         }
 
         #endregion
@@ -1463,34 +1471,24 @@ namespace Telemachus
 
         #region Fields
 
+        private Vessel theVessel = null;
+        public Vessel vessel
+        {
+            get { return theVessel; }
+            set { theVessel = value; }
+        }
+
         protected Dictionary<string, List<T>> partModules = new Dictionary<string, List<T>>();
-        protected bool isDirty = true;
-        protected int accesses = 0;
 
         #endregion
 
         #region Lock
 
-        readonly private System.Object cacheLock = new System.Object();
+        readonly protected System.Object cacheLock = new System.Object();
 
         #endregion
 
         #region Cache
-
-        protected void setDirty(bool value)
-        {
-            isDirty = value;
-        }
-
-        protected bool checkDirty()
-        {
-            return isDirty;
-        }
-
-        public void setDirty()
-        {
-            setDirty(true);
-        }
 
         public List<T> get(DataSources dataSources)
         {
@@ -1499,19 +1497,6 @@ namespace Telemachus
 
             lock (cacheLock)
             {
-                accesses++;
-
-                if (accesses >= ACCESS_REFRESH)
-                {
-                    setDirty();
-                }
-
-                if (checkDirty())
-                {
-                    refresh(dataSources.vessel);
-                    accesses = 0;
-                }
-
                 partModules.TryGetValue(ID, out avail);
             }
 
@@ -1532,10 +1517,79 @@ namespace Telemachus
         #endregion
     }
 
+    public class ActiveResourceCache : ModuleCache<Vessel.ActiveResource>
+    {
+        #region ModuleCache
+
+        public ActiveResourceCache(VesselChangeDetector vesselChangeDetector)
+        {
+            vesselChangeDetector.UpdateNotify += update;
+        }
+
+        private void update(object sender, EventArgs eventArgs)
+        {
+            if (vessel != null)
+            {
+                lock (cacheLock)
+                {
+                    refresh(vessel);
+                }
+            }
+        }
+
+        protected override void refresh(Vessel vessel)
+        {
+            try
+            {
+                partModules.Clear();
+
+                foreach (Part part in vessel.parts)
+                {
+                    if (part.Resources.Count > 0)
+                    {
+                        foreach (Vessel.ActiveResource resource in vessel.GetActiveResources())
+                        {
+                            List<Vessel.ActiveResource> list = null;
+                            if (list == null)
+                            {
+                                list = new List<Vessel.ActiveResource>();
+                                partModules[resource.info.name] = list;
+                            }
+
+                            list.Add(resource);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                PluginLogger.debug(e.Message);
+            }
+        }
+
+        #endregion
+    }
+
     public class ResourceCache : ModuleCache<PartResource>
     {
         #region ModuleCache
 
+        public ResourceCache(VesselChangeDetector vesselChangeDetector)
+        {
+            vesselChangeDetector.UpdateNotify += update;
+        }
+
+        private void update(object sender, EventArgs eventArgs)
+        {
+            if (vessel != null)
+            {
+                lock (cacheLock)
+                {
+                    refresh(vessel);
+                }
+            }
+        }
+        
         protected override void refresh(Vessel vessel)
         {
             try
@@ -1575,6 +1629,22 @@ namespace Telemachus
     public class SensorCache : ModuleCache<ModuleEnviroSensor>
     {
         #region ModuleCache
+
+        public SensorCache(VesselChangeDetector vesselChangeDetector)
+        {
+            vesselChangeDetector.UpdateNotify += update;
+        }
+
+        private void update(object sender, EventArgs eventArgs)
+        {
+            if (vessel != null)
+            {
+                lock (cacheLock)
+                {
+                    refresh(vessel);
+                }
+            }
+        }
 
         protected override void refresh(Vessel vessel)
         {
@@ -1624,7 +1694,7 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return partPaused(); },
                 "p.paused", 
-                "Returns an integer indicating the state of antenna.\n 0 - Flight scene\n 1 - Paused\n 2 - No power\n 3 - Off\n 4 - Not found.", 
+                "Returns an integer indicating the state of antenna. 0 - Flight scene; 1 - Paused; 2 - No power; 3 - Off; 4 - Not found.", 
                 formatters.Default, APIEntry.UnitType.UNITLESS));
         }
 

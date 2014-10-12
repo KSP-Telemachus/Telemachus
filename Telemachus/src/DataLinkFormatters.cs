@@ -18,6 +18,7 @@ namespace Telemachus
         public DataSourceResultFormatter SensorModuleList { get; set; }
         public DataSourceResultFormatter ResourceList { get; set; }
         public DataSourceResultFormatter CurrentResourceList { get; set; }
+        public DataSourceResultFormatter ActiveResourceList { get; set; }
         public DataSourceResultFormatter MaxResourceList { get; set; }
         public DataSourceResultFormatter APIEntry { get; set; }
         public DataSourceResultFormatter String { get; set; }
@@ -46,6 +47,7 @@ namespace Telemachus
             SensorModuleList = new SensorModuleListJSONFormatter();
             ResourceList = new ResourceListJSONFormatter();
             MaxResourceList = new MaxResourceListJSONFormatter();
+            ActiveResourceList = new ActiveResourceListJSONFormatter();
             CurrentResourceList = new CurrentResourceListJSONFormatter();
             APIEntry = new APIEntryJSONFormatter();
             String = new StringJSONFormatter();
@@ -218,6 +220,28 @@ namespace Telemachus
                         {
                             amount += p.amount;
                         }
+                    }
+
+                    return varName + JSON_ASSIGN + amount.ToString();
+                }
+
+                return varName + JSON_ASSIGN + "-1";
+            }
+        }
+
+        public class ActiveResourceListJSONFormatter : JSONFormatter
+        {
+            public override string format(object input)
+            {
+                List<Vessel.ActiveResource> resources = (List<Vessel.ActiveResource>)input;
+
+                if (resources.Count > 0)
+                {
+                    double amount = 0d;
+
+                    foreach (Vessel.ActiveResource p in resources)
+                    {
+                        amount += p.amount;
                     }
 
                     return varName + JSON_ASSIGN + amount.ToString();
