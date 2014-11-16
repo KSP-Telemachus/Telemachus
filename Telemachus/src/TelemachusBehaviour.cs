@@ -27,6 +27,7 @@ namespace Telemachus
         private static IOPageResponsibility ioPageResponsibility = null;
         private static VesselChangeDetector vesselChangeDetector = null;
         private static KSPWebSocketService kspWebSocketService = null;
+        private static bool isPartless = false;
 
         static public string getServerPrimaryIPAddress()
         {
@@ -54,7 +55,7 @@ namespace Telemachus
                     ioPageResponsibility = new IOPageResponsibility();
                     server.addHTTPResponsibility(ioPageResponsibility);
 
-                    vesselChangeDetector = new VesselChangeDetector();
+                    vesselChangeDetector = new VesselChangeDetector(isPartless);
 
                     dataLinkResponsibility = new DataLinkResponsibility(serverConfig, new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig));
                     server.addHTTPResponsibility(dataLinkResponsibility);
@@ -137,6 +138,9 @@ namespace Telemachus
             serverConfig.version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             serverConfig.name = "Telemachus";
             serverConfig.backLog = 1000;
+
+            isPartless = config.GetValue<int>("PARTLESS") == 0 ? false : true;
+            PluginLogger.print("Partless:" + isPartless);
         }
 
         static private void stopDataLink()

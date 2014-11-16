@@ -11,8 +11,13 @@ namespace Telemachus
         public event EventHandler<EventArgs> UpdateNotify;
 
         public static bool hasTelemachusPart = false;
-
         private EventArgs updateEventArgs;
+        private bool isPartless = false;
+
+        public VesselChangeDetector(bool isPartLess)
+        {
+            this.isPartless = isPartLess;
+        }
 
         public void update(Vessel vessel)
         {
@@ -29,13 +34,20 @@ namespace Telemachus
 
         private void updateHasTelemachusPart(Vessel vessel)
         {
-            try
+            if (isPartless)
             {
-                hasTelemachusPart = vessel.parts.FindAll(p => p.Modules.Contains("TelemachusDataLink")).Count > 0;
+                hasTelemachusPart = true;
             }
-            catch (Exception e)
+            else
             {
-                PluginLogger.debug(e.Message + " " + e.StackTrace);
+                try
+                {
+                    hasTelemachusPart = vessel.parts.FindAll(p => p.Modules.Contains("TelemachusDataLink")).Count > 0;
+                }
+                catch (Exception e)
+                {
+                    PluginLogger.debug(e.Message + " " + e.StackTrace);
+                }
             }
         }
     }
