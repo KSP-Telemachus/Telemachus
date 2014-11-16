@@ -121,8 +121,19 @@ namespace Telemachus
                 PluginLogger.print("No IP address in configuration file.");
             }
 
-            serverConfig.maxRequestLength = 8000;
 
+            serverConfig.maxRequestLength = config.GetValue<int>("MAXREQUESTLENGTH");
+
+            if (serverConfig.maxRequestLength < 8000)
+            {
+                PluginLogger.print("No max request length specified, setting to 8000.");
+                serverConfig.maxRequestLength = 10000;
+            }
+            else
+            {
+                PluginLogger.print("Max request length set to:" + serverConfig.maxRequestLength);
+            }
+            
             serverConfig.version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             serverConfig.name = "Telemachus";
             serverConfig.backLog = 1000;
