@@ -1437,6 +1437,14 @@ namespace Telemachus
                 formatters.ActiveResourceList, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    return getsActiveResourceValues(dataSources);
+                },
+                "r.resourceCurrentMax", "Max Resource Information for Current Stage [string resource type]",
+                formatters.MaxCurrentResourceList, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new APIEntry(
                 dataSources => { return getsResourceValues(dataSources); },
                 "r.resourceMax", "Max Resource Information [string resource type]",
                 formatters.MaxResourceList, APIEntry.UnitType.UNITLESS));

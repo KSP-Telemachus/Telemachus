@@ -20,6 +20,7 @@ namespace Telemachus
         public DataSourceResultFormatter CurrentResourceList { get; set; }
         public DataSourceResultFormatter ActiveResourceList { get; set; }
         public DataSourceResultFormatter MaxResourceList { get; set; }
+        public DataSourceResultFormatter MaxCurrentResourceList { get; set; }
         public DataSourceResultFormatter APIEntry { get; set; }
         public DataSourceResultFormatter String { get; set; }
         public DataSourceResultFormatter Vector3d { get; set; }
@@ -49,6 +50,7 @@ namespace Telemachus
             MaxResourceList = new MaxResourceListJSONFormatter();
             ActiveResourceList = new ActiveResourceListJSONFormatter();
             CurrentResourceList = new CurrentResourceListJSONFormatter();
+            MaxCurrentResourceList = new ActiveResourceTotalListJSONFormatter();
             APIEntry = new APIEntryJSONFormatter();
             String = new StringJSONFormatter();
             Vector3d = new Vector3dJSONFormatter();
@@ -242,6 +244,28 @@ namespace Telemachus
                     foreach (Vessel.ActiveResource p in resources)
                     {
                         amount += p.amount;
+                    }
+
+                    return varName + JSON_ASSIGN + amount.ToString();
+                }
+
+                return varName + JSON_ASSIGN + "-1";
+            }
+        }
+
+        public class ActiveResourceTotalListJSONFormatter : JSONFormatter
+        {
+            public override string format(object input)
+            {
+                List<Vessel.ActiveResource> resources = (List<Vessel.ActiveResource>)input;
+
+                if (resources.Count > 0)
+                {
+                    double amount = 0d;
+
+                    foreach (Vessel.ActiveResource p in resources)
+                    {
+                        amount += p.maxAmount;
                     }
 
                     return varName + JSON_ASSIGN + amount.ToString();
