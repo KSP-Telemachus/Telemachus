@@ -344,7 +344,7 @@ namespace Telemachus
 
             registerAPI(new ActionAPIEntry(
                 dataSources => { on_attitude = int.Parse(dataSources.args[0]); return 0; },
-                "v.setFbW", "Set Fly by Wire On or Off [bool state]", formatters.Default));
+                "v.setFbW", "Set Fly by Wire On or Off [int state]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                 dataSources =>
