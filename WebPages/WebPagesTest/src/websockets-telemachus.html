@@ -45,6 +45,10 @@
         doBasicTest();
     }
 
+    function doStressTest() {
+        doSend(JSON.stringify({ "+": ["v.name", "v.body", "v.brakeValue", "v.gearValue", "v.rcsValue", "v.lightValue", "v.sasValue"], "rate": 100 }));
+    }
+
     function doPausedStateTest() {
         doSend("{\"+\":[\"n.roll\",\"p.paused\"], \"rate\":100}");
     }

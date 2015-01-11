@@ -8,9 +8,8 @@ namespace Telemachus
 {
     public interface DataSourceResultFormatter
     {
-        string format(object input);
+        string format(object input, string varName);
         string pack(List<String> list);
-        void setVarName(string varName);
     }
 
     public abstract class FormatterProvider
@@ -68,8 +67,6 @@ namespace Telemachus
             protected const string JSON_CLOSE_LIST = "]";
             protected const string JSON_OPEN_LIST = "[";
 
-            protected string varName = "";
-
             public string pack(List<string> list)
             {
                 StringBuilder sb = new StringBuilder();
@@ -91,17 +88,12 @@ namespace Telemachus
                 return sb.ToString();
             }
 
-            public abstract string format(object input);
-
-            public void setVarName(string varName)
-            {
-                this.varName = "\"" + varName + "\"";
-            }
+            public abstract string format(object input, string varName);
         }
 
         public class DefaultJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 return varName + JSON_ASSIGN + input.ToString().ToLower();
             }
@@ -109,7 +101,7 @@ namespace Telemachus
 
         public class Vector3dJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 Vector3d vector = (Vector3d)input;
                 return varName + JSON_ASSIGN + JSON_OPEN_LIST + vector.x + JSON_SEPARATE_LIST + vector.y +
@@ -119,7 +111,7 @@ namespace Telemachus
 
         public class StringJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 return varName + JSON_ASSIGN + "\"" + input.ToString() + "\"";
             }
@@ -127,7 +119,7 @@ namespace Telemachus
 
         public class APIEntryJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 StringBuilder sb = new StringBuilder();
                 List<APIEntry> APIList = (List<APIEntry>)input;
@@ -160,7 +152,7 @@ namespace Telemachus
 
         public class APIEntryStringArrayFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 StringBuilder sb = new StringBuilder();
                 List<String> APIList = (List<String>)input;
@@ -186,7 +178,7 @@ namespace Telemachus
 
         public class ResourceListJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 List<PartResource> resources = (List<PartResource>)input;
 
@@ -208,7 +200,7 @@ namespace Telemachus
 
         public class CurrentResourceListJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 List<PartResource> resources = (List<PartResource>)input;
 
@@ -233,7 +225,7 @@ namespace Telemachus
 
         public class ActiveResourceListJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 List<Vessel.ActiveResource> resources = (List<Vessel.ActiveResource>)input;
 
@@ -255,7 +247,7 @@ namespace Telemachus
 
         public class ActiveResourceTotalListJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 List<Vessel.ActiveResource> resources = (List<Vessel.ActiveResource>)input;
 
@@ -277,7 +269,7 @@ namespace Telemachus
 
         public class MaxResourceListJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 List<PartResource> resources = (List<PartResource>)input;
 
@@ -299,7 +291,7 @@ namespace Telemachus
 
         public class SensorModuleListJSONFormatter : JSONFormatter
         {
-            public override string format(object input)
+            public override string format(object input, string varName)
             {
                 List<ModuleEnviroSensor> sensors = (List<ModuleEnviroSensor>)input;
                 if (sensors.Count > 0)

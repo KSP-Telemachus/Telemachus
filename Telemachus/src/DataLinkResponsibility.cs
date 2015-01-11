@@ -126,7 +126,7 @@ namespace Telemachus
                 PluginLogger.fine(refArg);
                 kspAPI.parseParams(ref refArg, ref dataSources);
                 currentEntry = argumentParse(refArg, dataSources);
-                APIResults.Add(currentEntry.formatter.format(currentEntry.function(dataSources)));
+                APIResults.Add(currentEntry.formatter.format(currentEntry.function(dataSources), dataSources.getVarName()));
 
                 //Only parse the paused argument if the active vessel is null
                 if (dataSources.vessel == null)
@@ -147,7 +147,7 @@ namespace Telemachus
 
             kspAPI.process(argsSplit[1], out result);
 
-            result.formatter.setVarName(argsSplit[0]);
+            dataSources.setVarName(argsSplit[0]);
             return result;
         }
 
@@ -160,7 +160,7 @@ namespace Telemachus
 
         public Vessel vessel;
         public List<String> args = new List<String>();
-
+        protected string varName;
         #endregion
 
         public DataSources Clone()
@@ -168,8 +168,18 @@ namespace Telemachus
             DataSources d = new DataSources();
             d.vessel = this.vessel;
             d.args = new List<string>(this.args);
-
+            d.varName = this.getVarName();
             return d;
+        }
+
+        public void setVarName(string varName)
+        {
+            this.varName = "\"" + varName + "\"";
+        }
+
+        public string getVarName()
+        {
+            return varName;
         }
     }
 }

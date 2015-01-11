@@ -82,8 +82,8 @@ namespace Telemachus
 
                                 if (entry != null)
                                 {
-                                    entry.formatter.setVarName(trimedQuotes);
-                                    entries.Add(entry.formatter.format(entry.function(dataSourcesClone)));
+                                    dataSources.setVarName(trimedQuotes);
+                                    entries.Add(entry.formatter.format(entry.function(dataSourcesClone), dataSourcesClone.getVarName()));
                                 }
                             }
 
