@@ -349,10 +349,8 @@ namespace Telemachus
             registerAPI(new ActionAPIEntry(
                 dataSources =>
                 {
-
                     pitch = checkFlightStateParameters(float.Parse(dataSources.args[0]));
                     yaw = checkFlightStateParameters(float.Parse(dataSources.args[1]));
-
                     roll = checkFlightStateParameters(float.Parse(dataSources.args[2]));
                     x = checkFlightStateParameters(float.Parse(dataSources.args[3]));
                     y = checkFlightStateParameters(float.Parse(dataSources.args[4]));
@@ -361,6 +359,28 @@ namespace Telemachus
                     return 0;
                 },
                 "v.setPitchYawRollXYZ", "Set pitch, yaw, roll, X, Y and Z [float pitch, yaw, roll, x, y, z]", formatters.Default));
+                
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    pitch = checkFlightStateParameters(float.Parse(dataSources.args[0]));
+                    yaw = checkFlightStateParameters(float.Parse(dataSources.args[1]));
+                    roll = checkFlightStateParameters(float.Parse(dataSources.args[2]));
+
+                    return 0;
+                },
+                "v.setAttitude", "Set pitch, yaw, roll [float pitch, yaw, roll]", formatters.Default));
+            
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {   
+                    x = checkFlightStateParameters(float.Parse(dataSources.args[0]));
+                    y = checkFlightStateParameters(float.Parse(dataSources.args[1]));
+                    z = checkFlightStateParameters(float.Parse(dataSources.args[2]));
+
+                    return 0;
+                },
+                "v.setTranslation", "Set X, Y and Z [float x, y, z]", formatters.Default));
         }
 
         #endregion
