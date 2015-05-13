@@ -1019,7 +1019,7 @@ namespace Telemachus
                 "b.tidallyLocked", "Tidally Locked [body id]", formatters.String, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies.Count; },
-                "b.number", "Number of Bodies [body id]", formatters.Default, APIEntry.UnitType.UNITLESS));
+                "b.number", "Number of Bodies", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].gravParameter; },
                 "b.o.gravParameter", "Body Gravitational Parameter [body id]", formatters.Default, APIEntry.UnitType.GRAV));
