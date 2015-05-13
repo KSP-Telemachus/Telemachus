@@ -980,8 +980,8 @@ namespace Telemachus
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].name; },
                 "b.name", "Body Name [body id]", formatters.String, APIEntry.UnitType.STRING));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].maxAtmosphereAltitude; },
-                "b.maxAtmosphere", "Body Max Atmosphere [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
+                dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].atmosphereDepth; },
+                "b.maxAtmosphere", "Body Atmosphere Depth [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].Radius; },
                 "b.radius", "Body Radius [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
