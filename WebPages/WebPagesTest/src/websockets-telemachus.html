@@ -42,7 +42,15 @@
 
     function doTest()
     {
-        doBasicTest();
+        doStressRollRootTest();
+    }
+
+    function doStressRollTest() {
+        doSend(JSON.stringify({ "+": ["n.roll", "n.pitch", "n.heading"], "rate": 10 }));
+    }
+
+    function doStressRollRootTest() {
+        doSend(JSON.stringify({ "+": ["n.rollRoot", "n.pitchRoot", "n.headingRoot"], "rate": 10 }));
     }
 
     function doStressTest() {
