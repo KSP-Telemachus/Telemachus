@@ -42,11 +42,15 @@
 
     function doTest()
     {
-        doBasicTest();
+        doAttitudeStressTest();
     }
 
     function doStressTest() {
         doSend(JSON.stringify({ "+": ["v.name", "v.body", "v.brakeValue", "v.gearValue", "v.rcsValue", "v.lightValue", "v.sasValue"], "rate": 100 }));
+    }
+
+    function doAttitudeStressTest() {
+        doSend(JSON.stringify({ "+": ["n.heading", "n.pitch", "n.roll"], "rate": 10 }));
     }
 
     function doPausedStateTest() {
