@@ -45,6 +45,14 @@
         doAttitudeStressTest();
     }
 
+    function doStressRollTest() {
+        doSend(JSON.stringify({ "+": ["n.roll", "n.pitch", "n.heading"], "rate": 10 }));
+    }
+
+    function doStressRollRootTest() {
+        doSend(JSON.stringify({ "+": ["n.rollRoot", "n.pitchRoot", "n.headingRoot"], "rate": 10 }));
+    }
+
     function doStressTest() {
         doSend(JSON.stringify({ "+": ["v.name", "v.body", "v.brakeValue", "v.gearValue", "v.rcsValue", "v.lightValue", "v.sasValue"], "rate": 100 }));
     }

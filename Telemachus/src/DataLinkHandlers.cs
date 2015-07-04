@@ -1130,51 +1130,100 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources =>
                 {
-                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
                     return result.eulerAngles.y;
                 },
-                "n.heading", "Heading", formatters.Default, APIEntry.UnitType.DEG));
+                "n.heading2", "Heading", formatters.Default, APIEntry.UnitType.DEG));
 
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
                    return (result.eulerAngles.x > 180) ? (360.0 - result.eulerAngles.x) : -result.eulerAngles.x;
                },
-               "n.pitch", "Pitch", formatters.Default, APIEntry.UnitType.DEG));
+               "n.pitch2", "Pitch", formatters.Default, APIEntry.UnitType.DEG));
 
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
                    return (result.eulerAngles.z > 180) ?
                        (result.eulerAngles.z - 360.0) : result.eulerAngles.z;
                },
-               "n.roll", "Roll", formatters.Default, APIEntry.UnitType.DEG));
+               "n.roll2", "Roll", formatters.Default, APIEntry.UnitType.DEG));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources =>
                 {
-                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
                     return result.eulerAngles.y;
                 },
-                "n.rawheading", "Raw Heading", formatters.Default, APIEntry.UnitType.DEG));
+                "n.rawheading2", "Raw Heading", formatters.Default, APIEntry.UnitType.DEG));
 
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
                    return result.eulerAngles.x;
                },
-               "n.rawpitch", "Raw Pitch", formatters.Default, APIEntry.UnitType.DEG));
+               "n.rawpitch2", "Raw Pitch", formatters.Default, APIEntry.UnitType.DEG));
 
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel);
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
                    return result.eulerAngles.z;
                },
-               "n.rawroll", "Raw Roll", formatters.Default, APIEntry.UnitType.DEG));
+               "n.rawroll2", "Raw Roll", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources =>
+                {
+                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.rootPart.transform.position);
+                    return result.eulerAngles.y;
+                },
+                "n.heading", "Heading calculated using the position of the vessels root part", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+               dataSources =>
+               {
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.rootPart.transform.position);
+                   return (result.eulerAngles.x > 180) ? (360.0 - result.eulerAngles.x) : -result.eulerAngles.x;
+               },
+               "n.pitch", "Pitch calculated using the position of the vessels root part", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+               dataSources =>
+               {
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.rootPart.transform.position);
+                   return (result.eulerAngles.z > 180) ?
+                       (result.eulerAngles.z - 360.0) : result.eulerAngles.z;
+               },
+               "n.roll", "Roll calculated using the position of the vessels root part", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources =>
+                {
+                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.rootPart.transform.position);
+                    return result.eulerAngles.y;
+                },
+                "n.rawheading", "Raw Heading calculated using the position of the vessels root part", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+               dataSources =>
+               {
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.rootPart.transform.position);
+                   return result.eulerAngles.x;
+               },
+               "n.rawpitch", "Raw Pitch calculated using the position of the vessels root part", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+               dataSources =>
+               {
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.rootPart.transform.position);
+                   return result.eulerAngles.z;
+               },
+               "n.rawroll", "Raw Roll calculated using the position of the vessels root part", formatters.Default, APIEntry.UnitType.DEG));
         }
 
         #endregion
@@ -1182,12 +1231,11 @@ namespace Telemachus
         #region Methods
 
         //Borrowed from MechJeb2
-        private Quaternion updateHeadingPitchRollField(Vessel v)
+        private Quaternion updateHeadingPitchRollField(Vessel v, Vector3d CoM)
         {
-            Vector3d CoM, north, up;
+            Vector3d north, up;
             Quaternion rotationSurface;
-
-            CoM = v.findWorldCenterOfMass();
+         
             up = (CoM - v.mainBody.position).normalized;
 
             north = Vector3d.Exclude(up, (v.mainBody.position + v.mainBody.transform.up *
@@ -1197,14 +1245,6 @@ namespace Telemachus
             return Quaternion.Inverse(Quaternion.Euler(90, 0, 0) *
                 Quaternion.Inverse(v.GetTransform().rotation) * rotationSurface);
         }
-
-        /*private double calculatePitch(Vessel v)
-        {
-            Vector3d worldUp = (v.CoM - v.mainBody.position).normalized;
-            double angle = Vector3d.Angle(worldUp, v.transform.up);
-
-            return worldUp.x - v.transform.up.x < 0 ? angle : -angle;
-        }*/
 
         #endregion
     }
