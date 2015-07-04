@@ -31,13 +31,13 @@ namespace TelemachusTest
             VesselChangeDetector vesselChangeDetector = new VesselChangeDetector(false);
             IKSPAPI kspAPI = new DummyKSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, config);
 
-            webSocketServer.addWebSocketService("/server", new KSPWebSocketService(kspAPI));
-            webSocketServer.subscribeToHTTPForStealing(server);
+            //webSocketServer.addWebSocketService("/server", new KSPWebSocketService(kspAPI,));
+            //webSocketServer.subscribeToHTTPForStealing(server);
 
             // start the HTTP server
-            server.startServing();
-            Console.Read();
-            server.stopServing();
+            //server.startServing();
+            //Console.Read();
+            //server.stopServing();
         }
 
         static void server_ServerNotify(object sender, Servers.NotifyEventArgs e)

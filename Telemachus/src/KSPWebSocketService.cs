@@ -27,15 +27,16 @@ namespace Telemachus
 
         private Regex matchJSONAttributes = new Regex(@"[\{""|,""|,""]([^"":]*)"":([^:]*)[,|\}]");
 
-        private Timer streamTimer = new Timer();
+        private IterationToEvent<UpdateTimerEventArgs> gameLoopEvent = null;
+        private UpdateTimer streamTimer = new UpdateTimer();
 
         private int streamRate = 500;
         HashSet<string> subscriptions = new HashSet<string>();
         HashSet<string> toRun = new HashSet<string>();
         readonly private System.Object subscriptionLock = new System.Object();
 
-        public KSPWebSocketService(IKSPAPI kspAPI, Servers.AsynchronousServer.ClientConnection clientConnection)
-            : this(kspAPI)
+        public KSPWebSocketService(IKSPAPI kspAPI, Servers.AsynchronousServer.ClientConnection clientConnection, IterationToEvent<UpdateTimerEventArgs> gameLoopEvent)
+            : this(kspAPI, gameLoopEvent)
         {
             this.clientConnection = clientConnection;
             streamTimer.Interval = streamRate;
@@ -43,27 +44,29 @@ namespace Telemachus
             streamTimer.Enabled = true;
         }
 
-        public KSPWebSocketService(IKSPAPI kspAPI)
+        public KSPWebSocketService(IKSPAPI kspAPI, IterationToEvent<UpdateTimerEventArgs> gameLoopEvent)
         {
             this.kspAPI = kspAPI;
+            this.gameLoopEvent = gameLoopEvent;
+            gameLoopEvent.Iterated += streamTimer.update;
         }
 
-        private void streamData(object sender, ElapsedEventArgs e)
+        private void streamData(object sender, UpdateTimerEventArgs e)
         {
-            streamTimer.Interval = streamRate;
-
             DataSources dataSources = new DataSources();
 
-            if (toRun.Count + subscriptions.Count > 0)
+            lock (subscriptionLock)
             {
-                try
+                streamTimer.Interval = streamRate;
+
+                if (toRun.Count + subscriptions.Count > 0)
                 {
-                    List<string> entries = new List<string>();
-
-                    APIEntry entry = null;
-
-                    lock (subscriptionLock)
+                    try
                     {
+                        List<string> entries = new List<string>();
+
+                        APIEntry entry = null;
+
                         dataSources.vessel = kspAPI.getVessel();
 
                         //Only parse the paused argument if the active vessel is null
@@ -101,22 +104,22 @@ namespace Telemachus
                         {
                             sendNullMessage();
                         }
-                    } 
+                    }
+                    catch(NullReferenceException)
+                    {
+                        PluginLogger.debug("Swallowing null reference exception, potentially due to async game state change.");
+                        sendNullMessage();
+                    }
+                    catch (Exception ex)
+                    {
+                        PluginLogger.debug("Closing socket due to potential client disconnect:" + ex.GetType().ToString());
+                        close();
+                    }
                 }
-                catch(NullReferenceException)
+                else
                 {
-                    PluginLogger.debug("Swallowing null reference exception, potentially due to async game state change.");
                     sendNullMessage();
                 }
-                catch (Exception ex)
-                {
-                    PluginLogger.debug("Closing socket due to potential client disconnect:" + ex.GetType().ToString());
-                    close();
-                }
-            }
-            else
-            {
-                sendNullMessage();
             }
         }
 
@@ -159,19 +162,21 @@ namespace Telemachus
         private void rate(string p)
         {
             int proposedRate = 0;
-
-            try
+            lock (subscriptionLock)
             {
-                proposedRate = int.Parse(p);
-
-                if (proposedRate >= MAX_STREAM_RATE)
+                try
                 {
-                    streamRate = proposedRate;
+                    proposedRate = int.Parse(p);
+
+                    if (proposedRate >= MAX_STREAM_RATE)
+                    {
+                        streamRate = proposedRate;
+                    }
                 }
-            }
-            catch (Exception)
-            {
-                PluginLogger.debug("Swallowing integer parse failure when setting stream rate.");
+                catch (Exception)
+                {
+                    PluginLogger.debug("Swallowing integer parse failure when setting stream rate.");
+                }
             }
         }
 
@@ -228,13 +233,13 @@ namespace Telemachus
 
         private void close()
         {
-            streamTimer.Stop();
+            gameLoopEvent.Iterated -= streamTimer.update;
             clientConnection.tryShutdown();
         }
 
         public IWebSocketService buildService(Servers.AsynchronousServer.ClientConnection clientConnection)
         {
-            return new KSPWebSocketService(kspAPI, clientConnection);
+            return new KSPWebSocketService(kspAPI, clientConnection, gameLoopEvent);
         }
 
         #region Unused Callbacks

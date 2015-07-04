@@ -59,11 +59,13 @@
     <Compile Include="src\DataLinkResponsibility.cs" />
     <Compile Include="src\ElseResponsibility.cs" />
     <Compile Include="src\IOPageResponsibility.cs" />
+    <Compile Include="src\IterationToEvent.cs" />
     <Compile Include="src\KSPWebSocketService.cs" />
     <Compile Include="src\PluginLogger.cs" />
     <Compile Include="src\TelemachusBehaviour.cs" />
     <Compile Include="src\TelemachusPartModules.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\UpdateTimer.cs" />
     <Compile Include="src\UpLinkDownLinkRate.cs" />
     <Compile Include="src\VesselChangeDetector.cs" />
   </ItemGroup>

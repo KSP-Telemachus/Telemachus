@@ -4,12 +4,19 @@ using Servers.MinimalHTTPServer;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Timers;
 using UnityEngine;
 
 namespace Telemachus
 {
     class TelemachusBehaviour : MonoBehaviour
     {
+        #region Constants
+
+        private float MICRO_SECONDS = 1000.0f;
+
+        #endregion
+
         #region Fields
 
         public static GameObject instance;
@@ -27,6 +34,7 @@ namespace Telemachus
         private static IOPageResponsibility ioPageResponsibility = null;
         private static VesselChangeDetector vesselChangeDetector = null;
         private static KSPWebSocketService kspWebSocketService = null;
+        private static IterationToEvent<UpdateTimerEventArgs> kspWebSocketDataStreamer = new IterationToEvent<UpdateTimerEventArgs>();
         private static bool isPartless = false;
 
         static public string getServerPrimaryIPAddress()
@@ -64,7 +72,8 @@ namespace Telemachus
                     webSocketconfig.bufferSize = 300;
                     webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
                     webSocketServer.ServerNotify += WebSocketServerNotify;
-                    kspWebSocketService = new KSPWebSocketService(new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig));
+                    kspWebSocketService = new KSPWebSocketService(new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig), 
+                        kspWebSocketDataStreamer);
                     webSocketServer.addWebSocketService("/datalink", kspWebSocketService);
                     webSocketServer.subscribeToHTTPForStealing(server);
 
@@ -187,6 +196,7 @@ namespace Telemachus
             if (FlightGlobals.fetch != null)
             {
                 vesselChangeDetector.update(FlightGlobals.ActiveVessel);
+                kspWebSocketDataStreamer.update(new UpdateTimerEventArgs(Time.time * MICRO_SECONDS));
             }
             else
             {
