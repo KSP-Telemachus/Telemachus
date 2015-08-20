@@ -567,23 +567,23 @@ namespace Telemachus
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.RCS]; },
-                "v.rcsValue", "Query RCS value", formatters.String, APIEntry.UnitType.UNITLESS));
+                "v.rcsValue", "Query RCS value", formatters.Default, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.SAS]; },
-                "v.sasValue", "Query SAS value", formatters.String, APIEntry.UnitType.UNITLESS));
+                "v.sasValue", "Query SAS value", formatters.Default, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.Light]; },
-                "v.lightValue", "Query light value", formatters.String, APIEntry.UnitType.UNITLESS));
+                "v.lightValue", "Query light value", formatters.Default, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.Brakes]; },
-                "v.brakeValue", "Query brake value", formatters.String, APIEntry.UnitType.UNITLESS));
+                "v.brakeValue", "Query brake value", formatters.Default, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.Gear]; },
-                "v.gearValue", "Query gear value", formatters.String, APIEntry.UnitType.UNITLESS));
+                "v.gearValue", "Query gear value", formatters.Default, APIEntry.UnitType.UNITLESS));
         }
 
         private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
@@ -715,14 +715,14 @@ namespace Telemachus
                 {
                     return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetName() : "No Target Selected.";
                 },
-                "tar.name", "Target Name", formatters.String, APIEntry.UnitType.STRING));
+                "tar.name", "Target Name", formatters.Default, APIEntry.UnitType.STRING));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources =>
                 {
                     return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetType().ToString() : "";
                 },
-                "tar.type", "Target Type", formatters.String, APIEntry.UnitType.STRING));
+                "tar.type", "Target Type", formatters.Default, APIEntry.UnitType.STRING));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.fetch.VesselTarget != null ? Vector3.Distance(FlightGlobals.fetch.VesselTarget.GetTransform().position, dataSources.vessel.GetTransform().position) : 0; },
                 "tar.distance", "Target Distance", formatters.Default, APIEntry.UnitType.DISTANCE));
@@ -785,7 +785,7 @@ namespace Telemachus
                 "tar.o.trueAnomaly", "Target True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().referenceBody.name : ""; },
-               "tar.o.orbitingBody", "Target Orbiting Body", formatters.String, APIEntry.UnitType.STRING));
+               "tar.o.orbitingBody", "Target Orbiting Body", formatters.Default, APIEntry.UnitType.STRING));
         }
 
         #endregion
@@ -998,7 +998,7 @@ namespace Telemachus
         {
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].name; },
-                "b.name", "Body Name [body id]", formatters.String, APIEntry.UnitType.STRING));
+                "b.name", "Body Name [body id]", formatters.Default, APIEntry.UnitType.STRING));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].atmosphereDepth; },
                 "b.maxAtmosphere", "Body Atmosphere Depth [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
@@ -1007,7 +1007,7 @@ namespace Telemachus
                 "b.radius", "Body Radius [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].atmosphereContainsOxygen; },
-                "b.atmosphereContainsOxygen", "Atmosphere contains oxygen [body id]", formatters.String, APIEntry.UnitType.UNITLESS));
+                "b.atmosphereContainsOxygen", "Atmosphere contains oxygen [body id]", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].sphereOfInfluence; },
                 "b.soi", "Body Sphere of Influence [body id]", formatters.Default, APIEntry.UnitType.DISTANCE));
@@ -1016,7 +1016,7 @@ namespace Telemachus
                 "b.rotationPeriod", "Rotation Period [body id]", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies[int.Parse(dataSources.args[0])].tidallyLocked; },
-                "b.tidallyLocked", "Tidally Locked [body id]", formatters.String, APIEntry.UnitType.UNITLESS));
+                "b.tidallyLocked", "Tidally Locked [body id]", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightGlobals.Bodies.Count; },
                 "b.number", "Number of Bodies", formatters.Default, APIEntry.UnitType.UNITLESS));
@@ -1309,10 +1309,10 @@ namespace Telemachus
                 "v.dynamicPressure", "Dynamic Pressure", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.name; },
-                "v.name", "Name", formatters.String, APIEntry.UnitType.STRING));
+                "v.name", "Name", formatters.Default, APIEntry.UnitType.STRING));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.referenceBody.name; },
-                "v.body", "Body Name", formatters.String, APIEntry.UnitType.STRING));
+                "v.body", "Body Name", formatters.Default, APIEntry.UnitType.STRING));
             registerAPI(new PlotableAPIEntry(
                 dataSources =>
                 {
@@ -1857,7 +1857,7 @@ namespace Telemachus
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(); },
-                "a.version", "Telemachus Version", formatters.String, APIEntry.UnitType.UNITLESS));
+                "a.version", "Telemachus Version", formatters.Default, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion

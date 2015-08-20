@@ -1,6 +1,7 @@
 ﻿//Author: Richard Bunt
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -8,8 +9,8 @@ namespace Telemachus
 {
     public interface DataSourceResultFormatter
     {
-        string format(object input, string varName);
-        string pack(List<String> list);
+        /// Prepares an object for serialization e.g. transforms it into any special basic representation
+        object prepareForSerialization(object input);
     }
 
     public abstract class FormatterProvider
@@ -21,7 +22,6 @@ namespace Telemachus
         public DataSourceResultFormatter MaxResourceList { get; set; }
         public DataSourceResultFormatter MaxCurrentResourceList { get; set; }
         public DataSourceResultFormatter APIEntry { get; set; }
-        public DataSourceResultFormatter String { get; set; }
         public DataSourceResultFormatter Vector3d { get; set; }
         public DataSourceResultFormatter Default { get; set; }
         public DataSourceResultFormatter StringArray { get; set; }
@@ -51,7 +51,6 @@ namespace Telemachus
             CurrentResourceList = new CurrentResourceListJSONFormatter();
             MaxCurrentResourceList = new ActiveResourceTotalListJSONFormatter();
             APIEntry = new APIEntryJSONFormatter();
-            String = new StringJSONFormatter();
             Vector3d = new Vector3dJSONFormatter();
             StringArray = new APIEntryStringArrayFormatter();
             Default = new DefaultJSONFormatter();
@@ -59,300 +58,170 @@ namespace Telemachus
 
         public abstract class JSONFormatter : DataSourceResultFormatter
         {
-            protected const string JSON_ASSIGN = ":";
-            protected const string JSON_DELIMITER = ",";
-            protected const string JSON_START = "{";
-            protected const string JSON_END = "}";
-            protected const string JSON_SEPARATE_LIST = ",";
-            protected const string JSON_CLOSE_LIST = "]";
-            protected const string JSON_OPEN_LIST = "[";
-
-            public string pack(List<string> list)
-            {
-                StringBuilder sb = new StringBuilder();
-
-                sb.Append(JSON_START);
-
-                for (int i = 0; i < list.Count; i++)
-                {
-                    sb.Append(list[i]);
-
-                    if (i < list.Count - 1)
-                    {
-                        sb.Append(JSON_DELIMITER);
-                    }
-                }
-
-                sb.Append(JSON_END);
-
-                return sb.ToString();
-            }
-
-            public abstract string format(object input, string varName);
+            public abstract object prepareForSerialization(object input);
         }
 
         public class DefaultJSONFormatter : JSONFormatter
         {
-            public override string format(object input, string varName)
+            public override object prepareForSerialization(object input)
             {
-                return varName + JSON_ASSIGN + input.ToString().ToLower();
+                return input;
             }
         }
 
         public class Vector3dJSONFormatter : JSONFormatter
         {
-            public override string format(object input, string varName)
+            public override object prepareForSerialization(object input)
             {
-                Vector3d vector = (Vector3d)input;
-                return varName + JSON_ASSIGN + JSON_OPEN_LIST + vector.x + JSON_SEPARATE_LIST + vector.y +
-                    JSON_SEPARATE_LIST + vector.z + JSON_CLOSE_LIST;
-            }
-        }
-
-        public class StringJSONFormatter : JSONFormatter
-        {
-            public override string format(object input, string varName)
-            {
-                return varName + JSON_ASSIGN + "\"" + input.ToString() + "\"";
+                var vec = (Vector3d)input;
+                return new[] { vec.x, vec.y, vec.z };
             }
         }
 
         public class APIEntryJSONFormatter : JSONFormatter
         {
-            public override string format(object input, string varName)
+            public override object prepareForSerialization(object input)
             {
-                StringBuilder sb = new StringBuilder();
-                List<APIEntry> APIList = (List<APIEntry>)input;
+                var apiList = input as List<APIEntry>;
+                var apiData = new List<Dictionary<string, object>>();
 
-                sb.Append("[");
-
-                for (int i = 0; i < APIList.Count; i++)
+                foreach (var api in apiList)
                 {
-                    sb.Append("{");
-                    sb.Append("\"apistring\": \"" + APIList[i].APIString + "\"");
-                    sb.Append(",");
-                    sb.Append("\"name\": \"" + APIList[i].name + "\"");
-                    sb.Append(",");
-                    sb.Append("\"units\": \"" + APIList[i].units + "\"");
-                    sb.Append(",");
-                    sb.Append("\"plotable\": " + APIList[i].plotable.ToString().ToLower());
-                    sb.Append("}");
-
-                    if (i < APIList.Count - 1)
-                    {
-                        sb.Append(",");
-                    }
+                    var apiDict = new Dictionary<string, object>();
+                    apiDict["apistring"] = api.APIString;
+                    apiDict["name"] = api.name;
+                    apiDict["units"] = api.units.ToString();
+                    apiDict["plotable"] = api.plotable;
+                    apiData.Add(apiDict);
                 }
 
-                sb.Append("]");
-
-                return varName + JSON_ASSIGN + sb.ToString();
+                return apiData;
             }
         }
 
         public class APIEntryStringArrayFormatter : JSONFormatter
         {
-            public override string format(object input, string varName)
+            public override object prepareForSerialization(object input)
             {
-                StringBuilder sb = new StringBuilder();
-                List<String> APIList = (List<String>)input;
-
-                sb.Append("[");
-
-                for (int i = 0; i < APIList.Count; i++)
-                {
-                    sb.Append("\"" + APIList[i] + "\"");
-
-
-                    if (i < APIList.Count - 1)
-                    {
-                        sb.Append(",");
-                    }
-                }
-
-                sb.Append("]");
-
-                return varName + JSON_ASSIGN + sb.ToString();
+                // Looks like this is a list of string... this should be handled fine by serialization
+                return input;
             }
         }
 
         public class ResourceListJSONFormatter : JSONFormatter
         {
-            public override string format(object input, string varName)
+            /// Generically sums resources with a particular condition
+            /// <typeparam name="T"></typeparam>
+            /// <param name="resources">The list of resources to sum</param>
+            /// <param name="valueAccessor">A lambda to access the resource value of interest</param>
+            /// <param name="conditionForInclusion">A condition that the resource entry has to pass</param>
+            /// <returns>The sum of resources, or -1 if there are no resources.</returns>
+            protected object SumResources<T>(IList<T> resources, Func<T, double> valueAccessor, Func<T, bool> conditionForInclusion = null)
             {
-                List<PartResource> resources = (List<PartResource>)input;
-
-                if (resources.Count > 0)
+                if (resources.Count == 0) return -1;
+                double result = 0;
+                foreach (var entry in resources)
                 {
-                    double amount = 0d;
-
-                    foreach (PartResource p in resources)
+                    if (conditionForInclusion != null && !conditionForInclusion(entry))
                     {
-                        amount += p.amount;
+                        // Skip if we don't pass the condition
+                        continue;
                     }
-
-                    return varName + JSON_ASSIGN + amount.ToString();
+                    result += valueAccessor(entry);
                 }
+                return result;
+            }
 
-                return varName + JSON_ASSIGN + "-1";
+            public override object prepareForSerialization(object input)
+            {
+                return SumResources((List<PartResource>)input, x => x.amount);
             }
         }
 
-        public class CurrentResourceListJSONFormatter : JSONFormatter
+        public class CurrentResourceListJSONFormatter : ResourceListJSONFormatter
         {
-            public override string format(object input, string varName)
+            public override object prepareForSerialization(object input)
             {
-                List<PartResource> resources = (List<PartResource>)input;
-
-                if (resources.Count > 0)
-                {
-                    double amount = 0d;
-
-                    foreach (PartResource p in resources)
-                    {
-                        if (p.part.inStageIndex == Staging.CurrentStage)
-                        {
-                            amount += p.amount;
-                        }
-                    }
-
-                    return varName + JSON_ASSIGN + amount.ToString();
-                }
-
-                return varName + JSON_ASSIGN + "-1";
+                return SumResources((List<PartResource>)input,
+                    x => x.amount,
+                    x => x.part.inStageIndex == Staging.CurrentStage);
             }
         }
 
-        public class ActiveResourceListJSONFormatter : JSONFormatter
+
+        public class ActiveResourceListJSONFormatter : ResourceListJSONFormatter
         {
-            public override string format(object input, string varName)
+            public override object prepareForSerialization(object input)
             {
-                List<Vessel.ActiveResource> resources = (List<Vessel.ActiveResource>)input;
-
-                if (resources.Count > 0)
-                {
-                    double amount = 0d;
-
-                    foreach (Vessel.ActiveResource p in resources)
-                    {
-                        amount += p.amount;
-                    }
-
-                    return varName + JSON_ASSIGN + amount.ToString();
-                }
-
-                return varName + JSON_ASSIGN + "-1";
+                return SumResources((List<Vessel.ActiveResource>)input,
+                    x => x.amount);
             }
         }
 
-        public class ActiveResourceTotalListJSONFormatter : JSONFormatter
+        public class ActiveResourceTotalListJSONFormatter : ResourceListJSONFormatter
         {
-            public override string format(object input, string varName)
+            public override object prepareForSerialization(object input)
             {
-                List<Vessel.ActiveResource> resources = (List<Vessel.ActiveResource>)input;
-
-                if (resources.Count > 0)
-                {
-                    double amount = 0d;
-
-                    foreach (Vessel.ActiveResource p in resources)
-                    {
-                        amount += p.maxAmount;
-                    }
-
-                    return varName + JSON_ASSIGN + amount.ToString();
-                }
-
-                return varName + JSON_ASSIGN + "-1";
+                return SumResources((List<Vessel.ActiveResource>)input,
+                    x => x.maxAmount);
             }
         }
 
-        public class MaxResourceListJSONFormatter : JSONFormatter
+        public class MaxResourceListJSONFormatter : ResourceListJSONFormatter
         {
-            public override string format(object input, string varName)
+            public override object prepareForSerialization(object input)
             {
-                List<PartResource> resources = (List<PartResource>)input;
-
-                if (resources.Count > 0)
-                {
-                    double amount = 0d;
-
-                    foreach (PartResource p in resources)
-                    {
-                        amount += p.maxAmount;
-                    }
-
-                    return varName + JSON_ASSIGN + amount.ToString();
-                }
-
-                return varName + JSON_ASSIGN + "-1";
+                return SumResources((List<PartResource>)input,
+                    x => x.maxAmount);
             }
         }
 
         public class SensorModuleListJSONFormatter : JSONFormatter
         {
-            public override string format(object input, string varName)
+            public override object prepareForSerialization(object input)
             {
                 List<ModuleEnviroSensor> sensors = (List<ModuleEnviroSensor>)input;
-                if (sensors.Count > 0)
+                var sensorValues = new List<float>();
+                var sensorNames = new List<string>();
+
+                foreach (var sensor in sensors)
                 {
-                    StringBuilder sb0 = new StringBuilder();
-                    StringBuilder sb1 = new StringBuilder();
-                    sb0.Append("[");
-                    sb1.Append("[");
-
-                    foreach (ModuleEnviroSensor m in sensors)
+                    // Read a value for this sensor
+                    if (!sensor.isEnabled)
                     {
-                        if (!m.isEnabled)
+                        sensorValues.Add(0);
+                    } else
+                    {
+                        float f = 0;
+                        try {
+                            // Try to read the sensor as a float by grabbing the start
+                            var numberOnly = Regex.Match(sensor.readoutInfo, "^[-+]?[0-9]*\\.?[0-9]*([eE][-+]?[0-9]+)?").Value;
+                            float.TryParse(numberOnly, out f);
+                        } catch
                         {
-                            sb0.Append("0,");
+                            f = 0;
                         }
-                        else
-                        {
-                            float f = 0;
-
-                            try
-                            {
-                                float.TryParse(Regex.Replace(m.readoutInfo, @"([0-9]+\.?[0-9]*).*", "$1"), out f);
-                            }
-                            catch
-                            {
-                                f = 0;
-                            }
-
-                            sb0.Append(f.ToString() + ",");
-                        }
-
-                        try
-                        {
-                            sb1.Append("\"" + (m.isEnabled ? "" : "Inactive ") + m.part.parent.name +
-                                    "\",");
-                        }
-                        catch
-                        {
-                            sb1.Append("\"Unavailable\",");
-                        }
+                        sensorValues.Add(f);
                     }
 
-                    if (sb0.Length > 1)
+                    // Read a partname for the sensor
+                    try
                     {
-                        sb0.Remove(sb0.Length - 1, 1);
+                        var partName = (sensor.isEnabled ? "" : "Inactive ") + sensor.part.parent.name;
+                        sensorNames.Add(partName);
+                    }
+                    catch
+                    {
+                        sensorNames.Add("Unavailable");
                     }
 
-                    if (sb1.Length > 1)
-                    {
-                        sb1.Remove(sb1.Length - 1, 1);
-                    }
-
-                    sb0.Append("]");
-                    sb1.Append("]");
-
-                    return varName + JSON_ASSIGN + "[" + sb1.ToString() + "," + sb0.ToString() + "]";
                 }
-                else
+                if (sensorNames.Count == 0)
                 {
-                    return varName + JSON_ASSIGN + "[[\"No Sensors of the Appropriate Type\"], [0]]";
+                    sensorNames.Add("No Sensors of the Appropriate Type");
+                    sensorValues.Add(0);
                 }
+                return new object[] { sensorNames, sensorValues };
             }
         }
     }

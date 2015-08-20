@@ -62,6 +62,7 @@
     <Compile Include="src\IterationToEvent.cs" />
     <Compile Include="src\KSPWebSocketService.cs" />
     <Compile Include="src\PluginLogger.cs" />
+    <Compile Include="src\SimpleJSON.cs" />
     <Compile Include="src\TelemachusBehaviour.cs" />
     <Compile Include="src\TelemachusPartModules.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

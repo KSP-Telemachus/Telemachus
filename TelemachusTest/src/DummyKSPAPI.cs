@@ -34,7 +34,7 @@ namespace TelemachusTest
                 "d.unitless", "Unitless", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return r.NextDouble(); },
-                "d.string", "String", formatters.String, APIEntry.UnitType.STRING));
+                "d.string", "String", formatters.Default, APIEntry.UnitType.STRING));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return r.NextDouble(); },
                 "d.run", "String", formatters.Default, APIEntry.UnitType.UNITLESS));
