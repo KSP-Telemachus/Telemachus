@@ -1,5 +1,4 @@
 ﻿//Author: Richard Bunt
-#define SYSTEMIO
 
 using System;
 using System.Collections.Generic;
@@ -20,29 +19,7 @@ namespace Telemachus
 
         static OKResponsePage.ByteReader KSPByteReader = fileName =>
         {
-
-#if (KSPIO)
-            KSP.IO.BinaryReader binaryReader = null;
-            long fileLen = 0;
-            if (fileName.Length > 0)
-            {
-                fileLen = KSP.IO.FileInfo.CreateForType<TelemachusDataLink>(fileName).Length;
-
-                if (fileLen > int.MaxValue)
-                {
-                    throw new ExceptionResponsePage("Unable to serve file, too large.");
-                }
-
-                binaryReader = KSP.IO.BinaryReader.CreateForType<TelemachusDataLink>
-                   (fileName);
-            }
-            byte[] content = binaryReader.ReadBytes((int)fileLen);
-            binaryReader.Close();
-#endif
-
-#if(SYSTEMIO)
             byte[] content = System.IO.File.ReadAllBytes(buildPath(escapeFileName(fileName)));
-#endif
 
             return content;
         };
@@ -52,17 +29,7 @@ namespace Telemachus
 
             if (fileName.Length > 0)
             {
-#if (KSPIO)
-                KSP.IO.TextReader textReader = KSP.IO.TextReader.CreateForType<TelemachusDataLink>
-                   (fileName);
-                string content = textReader.ReadToEnd();
-                textReader.Close();
-#endif
-
-#if(SYSTEMIO)
                 string content = System.IO.File.ReadAllText(buildPath(escapeFileName(fileName)));
-#endif
-
                 return content;
             }
 
