@@ -18,15 +18,7 @@ namespace ServersTest
             server.ServerNotify += server_ServerNotify;
             server.addHTTPResponsibility(new ElseResponsibility());
             server.addHTTPResponsibility(new RunningResponsibility());
-
-            // configure web socket server but do not start running
-            Servers.MinimalWebSocketServer.ServerConfiguration webSocketconfig = new Servers.MinimalWebSocketServer.ServerConfiguration();
-            webSocketconfig.bufferSize = 100;
-            Servers.MinimalWebSocketServer.Server webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
-            webSocketServer.ServerNotify += server_ServerNotify;
-            webSocketServer.addWebSocketService("/server", new WebSocketEchoService());
-            webSocketServer.subscribeToHTTPForStealing(server);
-
+            
             // start the HTTP server
             server.startServing();
             Console.Read();

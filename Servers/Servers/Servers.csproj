@@ -48,7 +48,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\AsynchronousServer.cs" />
-    <Compile Include="src\MinimalWebSocketServer.cs" />
     <Compile Include="src\HTTPTransactions.cs" />
     <Compile Include="src\MinimalHTTPServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -57,7 +56,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="src\WebSocketTransactions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

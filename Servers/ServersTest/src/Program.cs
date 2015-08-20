@@ -26,7 +26,6 @@ namespace ServersTest
         private static void buildTests()
         {
             tests["WebServer"] = new MinimalWebServerTest();
-            tests["WebSocket"] = new MinimalWebSocketServerTest();
             tests["SocketStealing"] = new SocketStealingTest();
         }
     }

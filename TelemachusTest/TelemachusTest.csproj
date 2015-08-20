@@ -74,7 +74,6 @@
     </Compile>
     <Compile Include="src\GenerateAPIDocumentation.cs" />
     <Compile Include="src\DummyKSPAPI.cs" />
-    <Compile Include="src\TelemachusWebSocketServerTest.cs" />
     <Compile Include="src\TelemachusWebServerTest.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

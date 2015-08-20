@@ -4,20 +4,16 @@ using Servers.MinimalHTTPServer;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 using System.Text;
 using System.Timers;
 using UnityEngine;
+using WebSocketSharp.Server;
 
 namespace Telemachus
 {
     class TelemachusBehaviour : MonoBehaviour
     {
-        #region Constants
-
-        private float MICRO_SECONDS = 1000.0f;
-
-        #endregion
-
         #region Fields
 
         public static GameObject instance;
@@ -27,15 +23,16 @@ namespace Telemachus
 
         #region Data Link
 
+        private static WebSocketServer wsServer = null;
+        private static IKSPAPI apiInstance = null;
+
         private static Server server = null;
-        private static Servers.MinimalWebSocketServer.Server webSocketServer = null;
+
         private static PluginConfiguration config = PluginConfiguration.CreateForType<TelemachusBehaviour>();
         private static ServerConfiguration serverConfig = new ServerConfiguration();
         private static DataLinkResponsibility dataLinkResponsibility = null;
         private static IOPageResponsibility ioPageResponsibility = null;
         private static VesselChangeDetector vesselChangeDetector = null;
-        private static KSPWebSocketService kspWebSocketService = null;
-        private static IterationToEvent<UpdateTimerEventArgs> kspWebSocketDataStreamer = new IterationToEvent<UpdateTimerEventArgs>();
 
         // Create a default plugin manager to handle registrations
         private static PluginManager pluginManager = new PluginManager();
@@ -73,14 +70,10 @@ namespace Telemachus
                     dataLinkResponsibility = new DataLinkResponsibility(serverConfig, new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig, pluginManager));
                     server.addHTTPResponsibility(dataLinkResponsibility);
 
-                    Servers.MinimalWebSocketServer.ServerConfiguration webSocketconfig = new Servers.MinimalWebSocketServer.ServerConfiguration();
-                    webSocketconfig.bufferSize = 300;
-                    webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
-                    webSocketServer.ServerNotify += WebSocketServerNotify;
-                    kspWebSocketService = new KSPWebSocketService(new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig, pluginManager), 
-                        kspWebSocketDataStreamer);
-                    webSocketServer.addWebSocketService("/datalink", kspWebSocketService);
-                    webSocketServer.subscribeToHTTPForStealing(server);
+                    apiInstance = new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig);
+                    wsServer = new WebSocketServer(8086);
+                    wsServer.AddWebSocketService("/datalink", () => new KSPWebSocketService(apiInstance));
+                    wsServer.Start();
 
                     server.startServing();
 
@@ -164,8 +157,8 @@ namespace Telemachus
                 PluginLogger.print("Telemachus data link shutting down.");
                 server.stopServing();
                 server = null;
-                webSocketServer.stopServing();
-                webSocketServer = null;
+                wsServer.Stop();
+                wsServer = null;
             }
         }
 
@@ -202,7 +195,15 @@ namespace Telemachus
             if (FlightGlobals.fetch != null)
             {
                 vesselChangeDetector.update(FlightGlobals.ActiveVessel);
-                kspWebSocketDataStreamer.update(new UpdateTimerEventArgs(Time.time * MICRO_SECONDS));
+
+                foreach (var client in wsServer.WebSocketServices["/datalink"].Sessions.Sessions.OfType<KSPWebSocketService>()) 
+                {
+                    if (client.UpdateRequired(Time.time))
+                    {
+                        PluginLogger.print("Updating client " + client.ID);
+                        client.SendDataUpdate();
+                    }
+                }
             }
             else
             {
@@ -283,12 +284,14 @@ namespace Telemachus
 
         static public double getDownLinkRate()
         {
-            return dataLinkResponsibility.dataRates.getDownLinkRate() + KSPWebSocketService.dataRates.getDownLinkRate();
+            throw new NotImplementedException("Currently deimplemented");
+//            return dataLinkResponsibility.dataRates.getDownLinkRate() + KSPWebSocketService.dataRates.getDownLinkRate();
         }
 
         static public double getUpLinkRate()
         {
-            return dataLinkResponsibility.dataRates.getUpLinkRate() + KSPWebSocketService.dataRates.getUpLinkRate();
+            throw new NotImplementedException("Currently deimplemented");
+            //            return dataLinkResponsibility.dataRates.getUpLinkRate() + KSPWebSocketService.dataRates.getUpLinkRate();
         }
 
         #endregion
