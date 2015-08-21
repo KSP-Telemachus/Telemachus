@@ -18,6 +18,11 @@ namespace TelemachusTest
         {
             return null;
         }
+
+        public override object ProcessAPIString(string apistring)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class DummyHandler : DataLinkHandler

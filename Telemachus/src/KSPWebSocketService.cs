@@ -65,8 +65,6 @@ namespace Telemachus
                     {
                         var entries = new Dictionary<string,object>();
 
-                        APIEntry entry = null;
-
                         dataSources.vessel = kspAPI.getVessel();
 
                         //Only parse the paused argument if the active vessel is null
@@ -74,19 +72,12 @@ namespace Telemachus
                         {
                             toRun.UnionWith(subscriptions);
 
-                            foreach (string s in toRun)
+                            foreach (string s in toRun.Select(x => x.Trim()))
                             {
-                                DataSources dataSourcesClone = dataSources.Clone();
-                                string trimedQuotes = s.Trim();
-                                string refArg = trimedQuotes;
-                                kspAPI.parseParams(ref refArg, ref dataSourcesClone);
-
-                                kspAPI.process(refArg, out entry);
-
-                                if (entry != null)
+                                var result = kspAPI.ProcessAPIString(s);
+                                if (result != null)
                                 {
-                                    dataSourcesClone.setVarName(trimedQuotes);
-                                    entries[dataSourcesClone.getVarName()] = entry.formatter.prepareForSerialization(entry.function(dataSourcesClone));
+                                    entries[s] = result;
                                 }
                             }
 

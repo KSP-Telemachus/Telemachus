@@ -116,7 +116,6 @@ namespace Telemachus
 
         private String argumentsParse(String args, DataSources dataSources)
         {
-            APIEntry currentEntry = null;
             var APIResults = new Dictionary<string,object>();
             String[] argsSplit = args.Split(ARGUMENTS_DELIMETER);
 
@@ -124,31 +123,21 @@ namespace Telemachus
             {
                 string refArg = arg;
                 PluginLogger.fine(refArg);
-                kspAPI.parseParams(ref refArg, ref dataSources);
-                currentEntry = argumentParse(refArg, dataSources);
-                APIResults[dataSources.getVarName()] = currentEntry.formatter.prepareForSerialization(currentEntry.function(dataSources));
 
-                //Only parse the paused argument if the active vessel is null
-                if (dataSources.vessel == null)
-                {
-                    break;
-                }
+                var nameAndAPI = SplitQueryParams(arg);
+                APIResults[nameAndAPI.Key] = kspAPI.ProcessAPIString(nameAndAPI.Value);
             }
 
             return SimpleJson.SimpleJson.SerializeObject(APIResults);
         }
 
-        
-
-        private APIEntry argumentParse(String args, DataSources dataSources)
+        /// <summary>Splits and unescapes a URL query fragment in the form a=b into separate key and value</summary>
+        private static KeyValuePair<string,string> SplitQueryParams(string queryWithAssign)
         {
-            String[] argsSplit = args.Split(ARGUMENTS_ASSIGN);
-            APIEntry result = null;
-
-            kspAPI.process(argsSplit[1], out result);
-
-            dataSources.setVarName(argsSplit[0]);
-            return result;
+            string[] argsSplit = queryWithAssign.Split(ARGUMENTS_ASSIGN);
+            var keyName = UnityEngine.WWW.UnEscapeURL(argsSplit[0]);
+            var apiName = UnityEngine.WWW.UnEscapeURL(argsSplit[1]);
+            return new KeyValuePair<string, string>(keyName, apiName);
         }
 
         #endregion

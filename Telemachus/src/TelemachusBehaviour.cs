@@ -303,6 +303,23 @@ namespace Telemachus
         {
             return FlightGlobals.ActiveVessel;
         }
+
+        public override object ProcessAPIString(string apistring)
+        {
+            var data = new DataSources() { vessel = getVessel() };
+            // Extract any arguments/parameters in this API string
+            var name = apistring;
+            parseParams(ref name, ref data);
+            // Get the API entry
+            APIEntry apiEntry = null;
+            process(name, out apiEntry);
+            if (apiEntry == null) return null;
+            
+            // run the API entry
+            var result = apiEntry.function(data);
+            // And return the serialization-ready value
+            return apiEntry.formatter.prepareForSerialization(result);
+        }
     }
 
     public abstract class IKSPAPI
@@ -372,5 +389,13 @@ namespace Telemachus
                 PluginLogger.debug(e.Message + " " + e.StackTrace);
             }
         }
+
+        /// <summary>
+        /// Accepts a string, and does any API processing (with the current vessel), returning the result.
+        /// </summary>
+        /// <remarks>This take responsibility for the whole chain of parsing, splitting and searching for the API</remarks>
+        /// <param name="apistring"></param>
+        /// <returns></returns>
+        public abstract object ProcessAPIString(string apistring);
     }
 }
