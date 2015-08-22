@@ -295,8 +295,6 @@ namespace Telemachus
                     new DockingDataLinkHandler(formatters)
                     }, formatters
                 ));
-
-            APIHandlers.Add(new DefaultDataLinkHandler(formatters));
         }
 
         public override Vessel getVessel()
@@ -324,6 +322,29 @@ namespace Telemachus
 
     public abstract class IKSPAPI
     {
+        public class UnknownAPIException : ArgumentException
+        {
+            public string apiString = "";
+
+            public UnknownAPIException(string apiString = "")
+            {
+                this.apiString = apiString;
+            }
+
+            public UnknownAPIException(string message, string apiString = "")
+                : base(message)
+            {
+                this.apiString = apiString;
+            }
+
+            public UnknownAPIException(string message, string apiString, Exception inner)
+                : base(message, inner)
+            {
+                this.apiString = apiString;
+            }
+        }
+
+
         protected List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
 
         public void getAPIList(ref List<APIEntry> APIList)
@@ -359,7 +380,7 @@ namespace Telemachus
                     break;
                 }
             }
-
+            if (result == null) throw new UnknownAPIException("Could not find API entry named " + API, API);
             apiEntry = result;
         }
 

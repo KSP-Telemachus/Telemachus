@@ -70,24 +70,29 @@ namespace Telemachus
                     PluginLogger.debug(e.Message + " " + e.StackTrace);
                 }
 
-                if (request.requestType == HTTPRequest.GET)
+                try {
+                    if (request.requestType == HTTPRequest.GET)
+                    {
+                        dataRates.addDownLinkPoint(
+                            System.DateTime.Now,
+                            ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
+                                argumentsParse(request.path.Remove(0,
+                                    request.path.IndexOf(ARGUMENTS_START) + 1),
+                                    dataSources)
+                            )) * UpLinkDownLinkRate.BITS_PER_BYTE);
+                    }
+                    else if (request.requestType == HTTPRequest.POST)
+                    {
+                        dataRates.addDownLinkPoint(
+                            System.DateTime.Now,
+                            ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
+                                argumentsParse(request.content,
+                                    dataSources)
+                            )) * UpLinkDownLinkRate.BITS_PER_BYTE);
+                    }
+                } catch (IKSPAPI.UnknownAPIException ex)
                 {
-                    dataRates.addDownLinkPoint(
-                        System.DateTime.Now,
-                        ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
-                            argumentsParse(request.path.Remove(0,
-                                request.path.IndexOf(ARGUMENTS_START) + 1),
-                                dataSources)
-                        )) * UpLinkDownLinkRate.BITS_PER_BYTE);
-                }
-                else if (request.requestType == HTTPRequest.POST)
-                {
-                    dataRates.addDownLinkPoint(
-                        System.DateTime.Now,
-                        ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
-                            argumentsParse(request.content,
-                                dataSources)
-                        )) * UpLinkDownLinkRate.BITS_PER_BYTE);
+                    throw new ExceptionResponsePage("Bad data link reference: " + ex.apiString);
                 }
 
                 return true;

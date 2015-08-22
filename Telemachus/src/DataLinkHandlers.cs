@@ -1889,27 +1889,6 @@ namespace Telemachus
         #endregion
     }
 
-    public class DefaultDataLinkHandler : DataLinkHandler
-    {
-        #region Initialisation
-
-        public DefaultDataLinkHandler(FormatterProvider formatters)
-            : base(formatters)
-        {
-        }
-
-        #endregion
-
-        #region DataLinkHandler
-
-        public override bool process(String API, out APIEntry result)
-        {
-            throw new Servers.MinimalHTTPServer.ExceptionResponsePage("Bad data link reference.");
-        }
-
-        #endregion
-    }
-
     public abstract class DataLinkHandler
     {
         #region API Delegates
