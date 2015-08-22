@@ -23,15 +23,12 @@ namespace Telemachus
 
         #region Data Link
 
-        private static WebSocketServer wsServer = null;
+        private static HttpServer webServer = null;
+        private static KSPWebServerDispatcher webDispatcher = null;
         private static IKSPAPI apiInstance = null;
-
-        private static Server server = null;
 
         private static PluginConfiguration config = PluginConfiguration.CreateForType<TelemachusBehaviour>();
         private static ServerConfiguration serverConfig = new ServerConfiguration();
-        private static DataLinkResponsibility dataLinkResponsibility = null;
-        private static IOPageResponsibility ioPageResponsibility = null;
         private static VesselChangeDetector vesselChangeDetector = null;
 
         // Create a default plugin manager to handle registrations
@@ -51,7 +48,7 @@ namespace Telemachus
 
         static private void startDataLink()
         {
-            if (server == null)
+            if (webServer == null)
             {
                 try
                 {
@@ -59,27 +56,32 @@ namespace Telemachus
 
                     readConfiguration();
 
-                    server = new Server(serverConfig);
-                    server.ServerNotify += HTTPServerNotify;
-                    server.addHTTPResponsibility(new ElseResponsibility());
-                    ioPageResponsibility = new IOPageResponsibility();
-                    server.addHTTPResponsibility(ioPageResponsibility);
-
+                    // Data access tools
                     vesselChangeDetector = new VesselChangeDetector(isPartless);
+                    apiInstance = new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig, pluginManager);
 
-                    dataLinkResponsibility = new DataLinkResponsibility(serverConfig, new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig, pluginManager));
-                    server.addHTTPResponsibility(dataLinkResponsibility);
+                    // Create the dispatcher and handlers. Handlers added in reverse priority order so that new ones are not ignored.
+                    webDispatcher = new KSPWebServerDispatcher();
 
-                    apiInstance = new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig);
-                    wsServer = new WebSocketServer(8086);
-                    wsServer.AddWebSocketService("/datalink", () => new KSPWebSocketService(apiInstance));
-                    wsServer.Start();
+                    // Create the server and associate the dispatcher
+                    webServer = new HttpServer(8086);
+                    webServer.OnGet += webDispatcher.DispatchGet;
 
-                    server.startServing();
+                    // Create the websocket server and attach to the web server
+                    webServer.AddWebSocketService("/datalink", () => new KSPWebSocketService(apiInstance));
 
-                    PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
-                        + server.getIPsAsString() +
-                        "). Try putting them into your web browser, some of them might not work.");
+                    // Finally, start serving requests!
+                    try {
+                        webServer.Start();
+                    } catch (Exception ex)
+                    {
+                        PluginLogger.print("Error starting web server: " + ex.ToString());
+                        throw;
+                    }
+
+                    //PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
+                    //    + server.getIPsAsString() +
+                    //    "). Try putting them into your web browser, some of them might not work.");
                 }
                 catch (Exception e)
                 {
@@ -111,7 +113,7 @@ namespace Telemachus
                 PluginLogger.print("No port in configuration file.");
             }
 
-            String ip = config.GetValue<String>("IPADDRESS");
+            string ip = config.GetValue<String>("IPADDRESS");
 
             if (ip != null)
             {
@@ -152,24 +154,12 @@ namespace Telemachus
 
         static private void stopDataLink()
         {
-            if (server != null)
+            if (webServer != null)
             {
                 PluginLogger.print("Telemachus data link shutting down.");
-                server.stopServing();
-                server = null;
-                wsServer.Stop();
-                wsServer = null;
+                webServer.Stop();
+                webServer = null;
             }
-        }
-
-        private static void HTTPServerNotify(object sender, Servers.NotifyEventArgs e)
-        {
-            PluginLogger.debug(e.message);
-        }
-
-        private static void WebSocketServerNotify(object sender, Servers.NotifyEventArgs e)
-        {
-            PluginLogger.debug(e.message);
         }
 
         #endregion
@@ -196,7 +186,7 @@ namespace Telemachus
             {
                 vesselChangeDetector.update(FlightGlobals.ActiveVessel);
 
-                foreach (var client in wsServer.WebSocketServices["/datalink"].Sessions.Sessions.OfType<KSPWebSocketService>()) 
+                foreach (var client in webServer.WebSocketServices["/datalink"].Sessions.Sessions.OfType<KSPWebSocketService>()) 
                 {
                     if (client.UpdateRequired(Time.time))
                     {
