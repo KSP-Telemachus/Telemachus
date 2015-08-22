@@ -1,5 +1,4 @@
 ﻿//Author: Richard Bunt
-using Servers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using Telemachus;
 
 namespace TelemachusTest
 {
@@ -19,7 +19,7 @@ namespace TelemachusTest
 
         public void run()
         {
-            Servers.AsynchronousServer.ServerConfiguration config = new Servers.AsynchronousServer.ServerConfiguration();
+            ServerConfiguration config = new ServerConfiguration();
             Telemachus.VesselChangeDetector vesselChangeDetector = new Telemachus.VesselChangeDetector(false);
             Telemachus.KSPAPI api = new Telemachus.KSPAPI(Telemachus.JSONFormatterProvider.Instance, vesselChangeDetector, config, null);
 

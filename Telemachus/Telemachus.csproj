@@ -66,6 +66,7 @@
     <Compile Include="src\PluginLogger.cs" />
     <Compile Include="src\PluginRegistration.cs" />
     <Compile Include="src\Plugins\RasterPropMonitorPlugin.cs" />
+    <Compile Include="src\ServerConfiguration.cs" />
     <Compile Include="src\SimpleJSON.cs" />
     <Compile Include="src\TelemachusBehaviour.cs" />
     <Compile Include="src\TelemachusPartModules.cs" />
@@ -73,12 +74,6 @@
     <Compile Include="src\UpLinkDownLinkRate.cs" />
     <Compile Include="src\VesselChangeDetector.cs" />
     <Compile Include="src\KSPWebSocketService.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Servers\Servers\Servers.csproj">
-      <Project>{57e9f7c0-db25-4b6d-aa53-c44d95b47468}</Project>
-      <Name>Servers</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

@@ -1,5 +1,4 @@
-﻿using Servers.MinimalHTTPServer;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -124,13 +123,10 @@ namespace Telemachus
             {
                 try {
                     apiResults[apiString] = api.ProcessAPIString(apiString);
-                } catch (ExceptionResponsePage ex)
+                } catch (IKSPAPI.UnknownAPIException)
                 {
                     // IF we get this message, we know it was because no variable was found
-                    if (ex.Message == "Bad data link reference.")
-                    {
-                        PluginLogger.print("Could not read variable " + apiString);
-                    }
+                    PluginLogger.print("Could not read variable " + apiString);
                 } catch (NullReferenceException)
                 {
                     PluginLogger.debug("Swallowing null reference exception, potentially due to async game state change.");

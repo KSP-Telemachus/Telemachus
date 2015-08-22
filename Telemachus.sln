@@ -1,20 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows Desktop
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Telemachus", "Telemachus\Telemachus.csproj", "{AF7DF6B2-7D88-4399-92FC-E21EC15231DE}"
-	ProjectSection(ProjectDependencies) = postProject
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468} = {57E9F7C0-DB25-4B6D-AA53-C44D95B47468}
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Servers", "Servers\Servers\Servers.csproj", "{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelemachusTest", "TelemachusTest\TelemachusTest.csproj", "{CA747DD4-ED3A-44D9-9866-4E0946138676}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AF7DF6B2-7D88-4399-92FC-E21EC15231DE} = {AF7DF6B2-7D88-4399-92FC-E21EC15231DE}
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468} = {57E9F7C0-DB25-4B6D-AA53-C44D95B47468}
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServersTest", "Servers\ServersTest\ServersTest.csproj", "{DEF5477E-CE26-45DF-8316-F762D7F417C0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,18 +30,6 @@ Global
 		{AF7DF6B2-7D88-4399-92FC-E21EC15231DE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AF7DF6B2-7D88-4399-92FC-E21EC15231DE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AF7DF6B2-7D88-4399-92FC-E21EC15231DE}.Release|x86.ActiveCfg = Release|Any CPU
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Debug|Any CPU.Build.0 = Debug|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Debug|x86.ActiveCfg = Debug|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Debug|x86.Build.0 = Debug|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Release|Any CPU.ActiveCfg = Release|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Release|Any CPU.Build.0 = Release|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Release|Mixed Platforms.Build.0 = Release|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Release|x86.ActiveCfg = Release|x86
-		{57E9F7C0-DB25-4B6D-AA53-C44D95B47468}.Release|x86.Build.0 = Release|x86
 		{CA747DD4-ED3A-44D9-9866-4E0946138676}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CA747DD4-ED3A-44D9-9866-4E0946138676}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA747DD4-ED3A-44D9-9866-4E0946138676}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -58,18 +40,6 @@ Global
 		{CA747DD4-ED3A-44D9-9866-4E0946138676}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{CA747DD4-ED3A-44D9-9866-4E0946138676}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{CA747DD4-ED3A-44D9-9866-4E0946138676}.Release|x86.ActiveCfg = Release|Any CPU
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Debug|Any CPU.Build.0 = Debug|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Debug|x86.ActiveCfg = Debug|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Debug|x86.Build.0 = Debug|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Release|Any CPU.ActiveCfg = Release|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Release|Any CPU.Build.0 = Release|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Release|Mixed Platforms.Build.0 = Release|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Release|x86.ActiveCfg = Release|x86
-		{DEF5477E-CE26-45DF-8316-F762D7F417C0}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

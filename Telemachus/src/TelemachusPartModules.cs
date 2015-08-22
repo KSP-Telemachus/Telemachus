@@ -6,7 +6,6 @@ using System.Net;
 using System.Text;
 using System.Collections.Generic;
 using System.Collections;
-using Servers.MinimalHTTPServer;
 
 namespace Telemachus
 {

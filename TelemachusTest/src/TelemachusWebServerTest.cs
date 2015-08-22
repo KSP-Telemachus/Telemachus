@@ -1,5 +1,4 @@
 ﻿//Author: Richard Bunt
-using Servers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -44,11 +43,6 @@ namespace TelemachusTest
             {
                 Console.WriteLine(d.Message);
             }
-        }
-
-        static void server_ServerNotify(object sender, NotifyEventArgs e)
-        {
-            Console.WriteLine(e.message);
         }
     }
 }
