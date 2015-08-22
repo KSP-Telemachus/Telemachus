@@ -1539,11 +1539,17 @@ namespace Telemachus
 
         #region Fields
 
+        protected event EventHandler<EventArgs> VesselPropertyChanged;
+
         private Vessel theVessel = null;
         public Vessel vessel
         {
             get { return theVessel; }
-            set { theVessel = value; }
+            set {
+                if (theVessel == value) return;
+                theVessel = value;
+                if (VesselPropertyChanged != null) VesselPropertyChanged(this, EventArgs.Empty);
+            }
         }
 
         protected Dictionary<string, List<T>> partModules = new Dictionary<string, List<T>>();
@@ -1701,6 +1707,7 @@ namespace Telemachus
         public SensorCache(VesselChangeDetector vesselChangeDetector)
         {
             vesselChangeDetector.UpdateNotify += update;
+            VesselPropertyChanged += update;
         }
 
         private void update(object sender, EventArgs eventArgs)
