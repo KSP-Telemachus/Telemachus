@@ -85,7 +85,7 @@ namespace Telemachus
                             
                             WebSocketFrame frame = new WebSocketFrame(Encoding.UTF8.GetBytes(SimpleJson.SimpleJson.SerializeObject(entries)));
                             byte[] bFrame = frame.AsBytes();
-                            dataRates.addDownLinkPoint(System.DateTime.Now, bFrame.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
+                            dataRates.SendDataToClient(bFrame.Length);
                             clientConnection.Send(bFrame);
                         }
                         else
@@ -120,8 +120,8 @@ namespace Telemachus
         public void OpCodeText(object sender, FrameEventArgs e)
         {
             string command = e.frame.PayloadAsUTF8();
-            
-            dataRates.addUpLinkPoint(System.DateTime.Now, command.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
+
+            dataRates.RecieveDataFromClient(command.Length);
             
             command = Regex.Replace(command, @"\s+", string.Empty);
 

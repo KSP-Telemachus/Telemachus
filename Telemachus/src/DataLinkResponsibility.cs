@@ -54,11 +54,11 @@ namespace Telemachus
             {
                 if (request.requestType == HTTPRequest.GET)
                 {
-                    dataRates.addUpLinkPoint(System.DateTime.Now, request.path.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
+                    dataRates.RecieveDataFromClient(request.path.Length);
                 }
                 else if (request.requestType == HTTPRequest.POST)
                 {
-                    dataRates.addUpLinkPoint(System.DateTime.Now, request.content.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
+                    dataRates.RecieveDataFromClient(request.content.Length);
                 }
 
                 try
@@ -73,22 +73,20 @@ namespace Telemachus
                 try {
                     if (request.requestType == HTTPRequest.GET)
                     {
-                        dataRates.addDownLinkPoint(
-                            System.DateTime.Now,
+                        dataRates.SendDataToClient(
                             ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
                                 argumentsParse(request.path.Remove(0,
                                     request.path.IndexOf(ARGUMENTS_START) + 1),
                                     dataSources)
-                            )) * UpLinkDownLinkRate.BITS_PER_BYTE);
+                            )));
                     }
                     else if (request.requestType == HTTPRequest.POST)
                     {
-                        dataRates.addDownLinkPoint(
-                            System.DateTime.Now,
+                        dataRates.SendDataToClient(
                             ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
                                 argumentsParse(request.content,
                                     dataSources)
-                            )) * UpLinkDownLinkRate.BITS_PER_BYTE);
+                            )));
                     }
                 } catch (IKSPAPI.UnknownAPIException ex)
                 {
