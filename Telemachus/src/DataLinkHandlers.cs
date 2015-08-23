@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Reflection;
 using Servers.AsynchronousServer;
 using System.Threading;
@@ -1728,25 +1729,15 @@ namespace Telemachus
                 partModules.Clear();
 
                 List<Part> partsWithSensors = vessel.parts.FindAll(p => p.Modules.Contains("ModuleEnviroSensor"));
-
                 foreach (Part part in partsWithSensors)
                 {
-                    foreach (var module in part.Modules)
+                    foreach (var module in part.Modules.OfType<ModuleEnviroSensor>())
                     {
-                        if (module.GetType().Equals(typeof(ModuleEnviroSensor)))
+                        if (!partModules.ContainsKey(module.sensorType))
                         {
-                            List<ModuleEnviroSensor> list = null;
-                            partModules.TryGetValue(((ModuleEnviroSensor)module).sensorType, out list);
-                            if (list == null)
-                            {
-                                PluginLogger.debug(((ModuleEnviroSensor)module).sensorType);
-                                list = new List<ModuleEnviroSensor>();
-                                partModules[((ModuleEnviroSensor)module).sensorType] = list;
-
-                            }
-
-                            list.Add((ModuleEnviroSensor)module);
+                            partModules[module.sensorType] = new List<ModuleEnviroSensor>();
                         }
+                        partModules[module.sensorType].Add(module);
                     }
                 }
             }
