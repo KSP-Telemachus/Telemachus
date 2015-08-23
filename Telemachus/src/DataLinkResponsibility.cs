@@ -3,147 +3,74 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Servers.MinimalHTTPServer;
+using System.Linq;
 using System.Threading;
 using System.Reflection;
+using WebSocketSharp.Net;
+using WebSocketSharp;
 
 namespace Telemachus
 {
-    public class DataLinkResponsibility : IHTTPRequestResponsibility
+    public class DataLinkResponsibility : IHTTPRequestResponder
     {
-        #region Constants
-
+        /// The page prefix that this class handles
         public const String PAGE_PREFIX = "/telemachus/datalink";
-        public const char ARGUMENTS_START = '?';
-        public const char ARGUMENTS_ASSIGN = '=';
-        public const char ARGUMENTS_DELIMETER = '&';
-        public const char ACCESS_DELIMITER = '.';
+        /// The KSP API to use to access variable data
+        private IKSPAPI kspAPI = null;
 
-        #endregion
-
-        #region Fields
-
-        //DataSources dataSources = null;
-        IKSPAPI kspAPI = null;
-
-        #endregion
-
-        #region Data Rate Fields
-
-        public const int RATE_AVERAGE_SAMPLE_SIZE = 20;
-        public UpLinkDownLinkRate dataRates { get { return itsDataRates; } set { itsDataRates = value; } }
-        private UpLinkDownLinkRate itsDataRates = new UpLinkDownLinkRate(RATE_AVERAGE_SAMPLE_SIZE);
-
-        #endregion
+        private UpLinkDownLinkRate dataRates = null;
 
         #region Initialisation
 
-        public DataLinkResponsibility(Servers.AsynchronousServer.ServerConfiguration serverConfiguration, IKSPAPI kspAPI)
+        public DataLinkResponsibility(IKSPAPI kspAPI, UpLinkDownLinkRate rateTracker)
         {
             this.kspAPI = kspAPI;
+            dataRates = rateTracker;
         }
 
         #endregion
 
-        #region IHTTPRequestResponsibility
-
-        public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
+        private static Dictionary<string,string> splitArguments(string argstring)
         {
-            DataSources dataSources = new DataSources();
+            var ret = new Dictionary<string, string>();
+            if (argstring.StartsWith("?")) argstring = argstring.Substring(1);
 
-            if (request.path.StartsWith(PAGE_PREFIX))
+            foreach (var part in argstring.Split('&'))
             {
-                if (request.requestType == HTTPRequest.GET)
-                {
-                    dataRates.RecieveDataFromClient(request.path.Length);
-                }
-                else if (request.requestType == HTTPRequest.POST)
-                {
-                    dataRates.RecieveDataFromClient(request.content.Length);
-                }
+                var subParts = part.Split('=');
+                if (subParts.Length != 2) continue;
+                var keyName = UnityEngine.WWW.UnEscapeURL(subParts[0]);
+                var apiName = UnityEngine.WWW.UnEscapeURL(subParts[1]);
+                ret[keyName] = apiName;
+            }
+            return ret;
+        }
 
-                try
-                {
-                    dataSources.vessel = kspAPI.getVessel();
-                }
-                catch (Exception e)
-                {
-                    PluginLogger.debug(e.Message + " " + e.StackTrace);
-                }
+        public bool process(HttpListenerRequest request, HttpListenerResponse response)
+        {
+            if (!request.RawUrl.StartsWith(PAGE_PREFIX)) return false;
 
-                try {
-                    if (request.requestType == HTTPRequest.GET)
-                    {
-                        dataRates.SendDataToClient(
-                            ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
-                                argumentsParse(request.path.Remove(0,
-                                    request.path.IndexOf(ARGUMENTS_START) + 1),
-                                    dataSources)
-                            )));
-                    }
-                    else if (request.requestType == HTTPRequest.POST)
-                    {
-                        dataRates.SendDataToClient(
-                            ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(new OKResponsePage(
-                                argumentsParse(request.content,
-                                    dataSources)
-                            )));
-                    }
-                } catch (IKSPAPI.UnknownAPIException ex)
-                {
-                    throw new ExceptionResponsePage("Bad data link reference: " + ex.apiString);
-                }
+            // Work out how big this request was
+            long byteCount = request.RawUrl.Length + request.ContentLength64;
+            // Don't count headers + request.Headers.AllKeys.Sum(x => x.Length + request.Headers[x].Length + 1);
+            dataRates.RecieveDataFromClient(Convert.ToInt32(byteCount));
 
-                return true;
+            var apiRequests = splitArguments(request.Url.Query);
+
+            var results = new Dictionary<string, object>();
+            foreach (var name in apiRequests.Keys)
+            {
+                results[name] = kspAPI.ProcessAPIString(apiRequests[name]);
             }
 
-            return false;
+            // Now, serialize the dictionary and write to the response
+            var returnData = Encoding.UTF8.GetBytes(SimpleJson.SimpleJson.SerializeObject(results));
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentType = "application/json";
+            response.WriteContent(returnData);
+            dataRates.SendDataToClient(returnData.Length);
+            return true;
         }
-
-        #endregion
-
-        #region IKSPAPI
-
-        public void getAPIList(ref List<APIEntry> APIList)
-        {
-            kspAPI.getAPIList(ref APIList);
-        }
-
-        public void getAPIEntry(string APIString, ref List<APIEntry> APIList)
-        {
-            kspAPI.getAPIEntry(APIString, ref APIList);
-        }
-
-        #endregion
-
-        #region Parse URL
-
-        private String argumentsParse(String args, DataSources dataSources)
-        {
-            var APIResults = new Dictionary<string,object>();
-            String[] argsSplit = args.Split(ARGUMENTS_DELIMETER);
-
-            foreach (String arg in argsSplit)
-            {
-                string refArg = arg;
-                PluginLogger.fine(refArg);
-
-                var nameAndAPI = SplitQueryParams(arg);
-                APIResults[nameAndAPI.Key] = kspAPI.ProcessAPIString(nameAndAPI.Value);
-            }
-
-            return SimpleJson.SimpleJson.SerializeObject(APIResults);
-        }
-
-        /// <summary>Splits and unescapes a URL query fragment in the form a=b into separate key and value</summary>
-        private static KeyValuePair<string,string> SplitQueryParams(string queryWithAssign)
-        {
-            string[] argsSplit = queryWithAssign.Split(ARGUMENTS_ASSIGN);
-            var keyName = UnityEngine.WWW.UnEscapeURL(argsSplit[0]);
-            var apiName = UnityEngine.WWW.UnEscapeURL(argsSplit[1]);
-            return new KeyValuePair<string, string>(keyName, apiName);
-        }
-
-        #endregion
     }
 
     public class DataSources
@@ -160,18 +87,7 @@ namespace Telemachus
             DataSources d = new DataSources();
             d.vessel = this.vessel;
             d.args = new List<string>(this.args);
-            d.varName = this.getVarName();
             return d;
-        }
-
-        public void setVarName(string varName)
-        {
-            this.varName = varName;
-        }
-
-        public string getVarName()
-        {
-            return varName;
         }
     }
 }

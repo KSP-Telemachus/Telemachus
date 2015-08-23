@@ -34,6 +34,9 @@ namespace Telemachus
         // Create a default plugin manager to handle registrations
         private static PluginManager pluginManager = new PluginManager();
 
+        // Keep a list of handlers of the data uplink/downlink rate
+        private static UpLinkDownLinkRate rateTracker = new UpLinkDownLinkRate();
+
         private static bool isPartless = false;
 
         static public string getServerPrimaryIPAddress()
@@ -62,13 +65,17 @@ namespace Telemachus
 
                     // Create the dispatcher and handlers. Handlers added in reverse priority order so that new ones are not ignored.
                     webDispatcher = new KSPWebServerDispatcher();
+                    webDispatcher.AddResponder(new ElseResponsibility());
+                    webDispatcher.AddResponder(new IOPageResponsibility());
+                    var dataLink = new DataLinkResponsibility(apiInstance, rateTracker);
+                    webDispatcher.AddResponder(dataLink);
 
                     // Create the server and associate the dispatcher
                     webServer = new HttpServer(8086);
                     webServer.OnGet += webDispatcher.DispatchGet;
 
                     // Create the websocket server and attach to the web server
-                    webServer.AddWebSocketService("/datalink", () => new KSPWebSocketService(apiInstance));
+                    webServer.AddWebSocketService("/datalink", () => new KSPWebSocketService(apiInstance, rateTracker));
 
                     // Finally, start serving requests!
                     try {
@@ -274,14 +281,12 @@ namespace Telemachus
 
         static public double getDownLinkRate()
         {
-            throw new NotImplementedException("Currently deimplemented");
-//            return dataLinkResponsibility.dataRates.getDownLinkRate() + KSPWebSocketService.dataRates.getDownLinkRate();
+            return rateTracker.getDownLinkRate();
         }
 
         static public double getUpLinkRate()
         {
-            throw new NotImplementedException("Currently deimplemented");
-            //            return dataLinkResponsibility.dataRates.getUpLinkRate() + KSPWebSocketService.dataRates.getUpLinkRate();
+            return rateTracker.getUpLinkRate();
         }
 
         #endregion
@@ -424,7 +429,6 @@ namespace Telemachus
                 this.apiString = apiString;
             }
         }
-
 
         protected List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
 

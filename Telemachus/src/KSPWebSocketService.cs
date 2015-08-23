@@ -19,14 +19,18 @@ namespace Telemachus
         ///  A lock to prevent simultaneous reading/updating of the client parameters
         readonly private object dataLock = new object();
 
+        /// Track how much data we are sending/receiving
+        private UpLinkDownLinkRate dataRates = null;
+
         /// Prevent trying to send more data when the last lot hasn't finished yet
         private bool readyToSend = true;
         private float lastUpdate = -500;
         private IKSPAPI api = null;
 
-        public KSPWebSocketService(IKSPAPI api)
+        public KSPWebSocketService(IKSPAPI api, UpLinkDownLinkRate rateTracker)
         {
             this.api = api;
+            dataRates = rateTracker;
         }
 
         /// Does this client connection need to be updated?
@@ -47,6 +51,7 @@ namespace Telemachus
         {
             // We only care about text messages, for now.
             if (e.Type != Opcode.Text) return;
+            dataRates.RecieveDataFromClient(e.RawData.Length);
 
             // deserialize the message as JSON
             var json = SimpleJson.SimpleJson.DeserializeObject(e.Data) as SimpleJson.JsonObject;
@@ -139,6 +144,7 @@ namespace Telemachus
             readyToSend = false;
             var data = SimpleJson.SimpleJson.SerializeObject(apiResults);
             SendAsync(data, (b) => readyToSend = true );
+            dataRates.SendDataToClient(data.Length);
         }
     }
 }
