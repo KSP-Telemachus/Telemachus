@@ -89,7 +89,10 @@ namespace Telemachus
         {
             var pluginType = toRegister.GetType();
             // Must conform at least to the minimal interface
-            if (!pluginType.DoesMatchInterfaceOf(typeof(IMinimalTelemachusPlugin))) throw new ArgumentException("Object " + toRegister.GetType().ToString() + " does not conform to the minimal interface");
+            if (!typeof(IMinimalTelemachusPlugin).IsAssignableFrom(pluginType) && !pluginType.DoesMatchInterfaceOf(typeof(IMinimalTelemachusPlugin)))
+            {
+                throw new ArgumentException("Object " + toRegister.GetType().ToString() + " does not conform to the minimal interface");
+            }
 
             var handler = new PluginHandler() { instance = toRegister };
             // Get a list of commands that this instance handles
@@ -99,7 +102,7 @@ namespace Telemachus
             handler.apiHandler = (APIHandler)Delegate.CreateDelegate(typeof(APIHandler), toRegister, apiMethod);
 
             // Does it match the Deregistration? If so, pass it the deregistration method
-            if (pluginType.DoesMatchInterfaceOf(typeof(IDeregisterableTelemachusPlugin)))
+            if (toRegister is IDeregisterableTelemachusPlugin || pluginType.DoesMatchInterfaceOf(typeof(IDeregisterableTelemachusPlugin)))
             {
                 Action deregistration = () => Deregister(handler);
                 pluginType.GetProperty("Deregister").SetValue(toRegister, deregistration, null);

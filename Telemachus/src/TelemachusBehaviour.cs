@@ -253,6 +253,27 @@ namespace Telemachus
                     }
                 }
             }
+            if (found == 0) foundMods += "  None\n";
+
+            foundMods += "Internal plugins loaded:\n";
+            found = 0;
+            // Look for any mods in THIS assembly that inherit ITelemachusMinimalPlugin...
+            foreach (var typ in Assembly.GetExecutingAssembly().GetTypes())
+            {
+                try {
+                    if (!typeof(IMinimalTelemachusPlugin).IsAssignableFrom(typ)) continue;
+                    // Make sure we have a default constructor
+                    if (typ.GetConstructor(Type.EmptyTypes) == null) continue;
+                    // We have found a plugin internally. Instantiate it 
+                    PluginRegistration.Register(Activator.CreateInstance(typ));
+
+                    foundMods += "  - " + typ.ToString() + "\n";
+                    found += 1;
+                } catch (Exception ex)
+                {
+                    PluginLogger.print("Exception caught whilst loading internal plugin " + typ.ToString() + "; " + ex.ToString());
+                }
+            }
             if (found == 0) foundMods += "  None";
             PluginLogger.print(foundMods);
         }
@@ -377,7 +398,6 @@ namespace Telemachus
                 return apiEntry.formatter.prepareForSerialization(result);
             } catch (UnknownAPIException)
             {
-                PluginLogger.print("No entry internally: Looking at plugins");
                 // Try looking in the pluginManager
                 var pluginAPI = _manager.GetAPIDelegate(name);
                 // If no entry, just continue the throwing of the exception
