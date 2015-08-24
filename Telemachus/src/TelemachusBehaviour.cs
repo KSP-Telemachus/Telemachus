@@ -35,6 +35,10 @@ namespace Telemachus
         private static VesselChangeDetector vesselChangeDetector = null;
         private static KSPWebSocketService kspWebSocketService = null;
         private static IterationToEvent<UpdateTimerEventArgs> kspWebSocketDataStreamer = new IterationToEvent<UpdateTimerEventArgs>();
+
+        // Create a default plugin manager to handle registrations
+        private static PluginManager pluginManager = new PluginManager();
+
         private static bool isPartless = false;
 
         static public string getServerPrimaryIPAddress()
@@ -65,14 +69,14 @@ namespace Telemachus
 
                     vesselChangeDetector = new VesselChangeDetector(isPartless);
 
-                    dataLinkResponsibility = new DataLinkResponsibility(serverConfig, new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig));
+                    dataLinkResponsibility = new DataLinkResponsibility(serverConfig, new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig, pluginManager));
                     server.addHTTPResponsibility(dataLinkResponsibility);
 
                     Servers.MinimalWebSocketServer.ServerConfiguration webSocketconfig = new Servers.MinimalWebSocketServer.ServerConfiguration();
                     webSocketconfig.bufferSize = 300;
                     webSocketServer = new Servers.MinimalWebSocketServer.Server(webSocketconfig);
                     webSocketServer.ServerNotify += WebSocketServerNotify;
-                    kspWebSocketService = new KSPWebSocketService(new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig), 
+                    kspWebSocketService = new KSPWebSocketService(new KSPAPI(JSONFormatterProvider.Instance, vesselChangeDetector, serverConfig, pluginManager), 
                         kspWebSocketDataStreamer);
                     webSocketServer.addWebSocketService("/datalink", kspWebSocketService);
                     webSocketServer.subscribeToHTTPForStealing(server);
@@ -272,9 +276,13 @@ namespace Telemachus
 
     public class KSPAPI : IKSPAPI
     {
+        private PluginManager _manager;
+
         public KSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector,
-            Servers.AsynchronousServer.ServerConfiguration serverConfiguration)
+            Servers.AsynchronousServer.ServerConfiguration serverConfiguration, PluginManager manager)
         {
+            _manager = manager;
+
             APIHandlers.Add(new PausedDataLinkHandler(formatters));
             APIHandlers.Add(new FlyByWireDataLinkHandler(formatters));
             APIHandlers.Add(new FlightDataLinkHandler(formatters));
@@ -308,15 +316,27 @@ namespace Telemachus
             // Extract any arguments/parameters in this API string
             var name = apistring;
             parseParams(ref name, ref data);
-            // Get the API entry
-            APIEntry apiEntry = null;
-            process(name, out apiEntry);
-            if (apiEntry == null) return null;
-            
-            // run the API entry
-            var result = apiEntry.function(data);
-            // And return the serialization-ready value
-            return apiEntry.formatter.prepareForSerialization(result);
+
+            try {
+                // Get the API entry
+                APIEntry apiEntry = null;
+                process(name, out apiEntry);
+                if (apiEntry == null) return null;
+
+                // run the API entry
+                var result = apiEntry.function(data);
+                // And return the serialization-ready value
+                return apiEntry.formatter.prepareForSerialization(result);
+            } catch (UnknownAPIException)
+            {
+                PluginLogger.print("No entry internally: Looking at plugins");
+                // Try looking in the pluginManager
+                var pluginAPI = _manager.GetAPIDelegate(name);
+                // If no entry, just continue the throwing of the exception
+                if (pluginAPI == null) throw;
+                // We found an API entry! Let's use that.
+                return pluginAPI(data.vessel, data.args.ToArray());
+            }
         }
     }
 
