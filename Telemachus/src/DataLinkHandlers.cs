@@ -1828,7 +1828,7 @@ namespace Telemachus
                 {
                     List<String> IPList = new List<String>();
 
-                    foreach (System.Net.IPAddress a in serverConfiguration.ipAddresses)
+                    foreach (System.Net.IPAddress a in serverConfiguration.ValidIpAddresses)
                     {
                         IPList.Add(a.ToString());
                     }

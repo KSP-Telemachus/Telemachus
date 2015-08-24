@@ -2,6 +2,7 @@
 using KSP.IO;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Reflection;
 using System.Linq;
 using System.Text;
@@ -40,7 +41,7 @@ namespace Telemachus
 
         static public string getServerPrimaryIPAddress()
         {
-            return serverConfig.ipAddresses[0].ToString();
+            return serverConfig.ValidIpAddresses.First().ToString();
         }
 
         static public string getServerPort()
@@ -70,7 +71,7 @@ namespace Telemachus
                     webDispatcher.AddResponder(dataLink);
 
                     // Create the server and associate the dispatcher
-                    webServer = new HttpServer(serverConfig.port);
+                    webServer = new HttpServer(serverConfig.ipAddress, serverConfig.port);
                     webServer.OnGet += webDispatcher.DispatchGet;
 
                     // Create the websocket server and attach to the web server
@@ -85,9 +86,9 @@ namespace Telemachus
                         throw;
                     }
 
-                    //PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
-                    //    + server.getIPsAsString() +
-                    //    "). Try putting them into your web browser, some of them might not work.");
+                    PluginLogger.print("Telemachus data link listening for requests on the following addresses: ("
+                        + string.Join(", ", serverConfig.ValidIpAddresses.Select(x => x.ToString() + ":" + serverConfig.port.ToString()).ToArray())
+                        + "). Try putting them into your web browser, some of them might not work.");
                 }
                 catch (Exception e)
                 {
@@ -108,38 +109,46 @@ namespace Telemachus
         {
             config.load();
 
+            // Read the port out of the config file
             int port = config.GetValue<int>("PORT");
-
-            if (port != 0)
-            {
+            if (port != 0 && port.IsPortNumber()) {
                 serverConfig.port = port;
-            }
-            else
-            {
-                PluginLogger.print("No port in configuration file.");
+            } else if (!port.IsPortNumber()) {
+                PluginLogger.print("Port specified in configuration file '" + serverConfig.port + "' must be a value between 1 and 65535 inclusive");
+            } else {
+                PluginLogger.print("No port in configuration file - using default of " + serverConfig.port.ToString());
             }
 
+            // Read a specific IP address to bind to
             string ip = config.GetValue<String>("IPADDRESS");
-
             if (ip != null)
             {
-                try
+                IPAddress ipAddress = null;
+                if (IPAddress.TryParse(ip, out ipAddress))
                 {
-                    serverConfig.addIPAddressAsString(ip);
-                }
-                catch
-                {
-                    PluginLogger.print("Invalid IP address in configuration file, falling back to find.");
+                    serverConfig.ipAddress = ipAddress;
+                } else {
+                    PluginLogger.print("Invalid IP address in configuration file, falling back to default");
                 }
             }
             else
             {
                 PluginLogger.print("No IP address in configuration file.");
             }
-            
-            serverConfig.version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            // Fill the serverconfig list of addresses.... if IPAddress.Any, then enumerate them
+            if (serverConfig.ipAddress == IPAddress.Any)
+            {
+                // Build a list of addresses we will be able to recieve at
+                serverConfig.ValidIpAddresses.Add(IPAddress.Loopback);
+                serverConfig.ValidIpAddresses.AddRange(Dns.GetHostAddresses(Dns.GetHostName()));
+            } else
+            {
+                serverConfig.ValidIpAddresses.Add(serverConfig.ipAddress);
+            }
+
+            serverConfig.version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             serverConfig.name = "Telemachus";
-            serverConfig.backLog = 1000;
 
             isPartless = config.GetValue<int>("PARTLESS") == 0 ? false : true;
             PluginLogger.print("Partless:" + isPartless);

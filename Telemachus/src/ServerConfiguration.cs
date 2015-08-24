@@ -13,42 +13,24 @@ namespace Telemachus
         public string version { get; set; }
         public string name { get; set; }
         public int port { get; set; }
-        public int backLog { get; set; }
-        public virtual int bufferSize { get; set; }
-        public List<IPAddress> ipAddresses { get; set; }
+        /// <summary>The IP Address configured in the Telemachus plugin configuration</summary>
+        public IPAddress ipAddress { get; set; }
+        /// <summary>A list of IP Addresses that the server should be accessible at</summary>
+        public List<IPAddress> ValidIpAddresses { get; set; }
 
         public ServerConfiguration()
         {
-            ipAddresses = new List<IPAddress>();
             port = 8085;
-            backLog = 100;
-            bufferSize = 512;
+            ipAddress = IPAddress.Any;
+            ValidIpAddresses = new List<IPAddress>();
         }
+    }
 
-        public String getIPsAsString()
+    internal static class ServerConfigExtensions
+    {
+        internal static bool IsPortNumber(this int value)
         {
-            const String CONCAT = " and ";
-            StringBuilder sb = new StringBuilder();
-
-            foreach (IPAddress ip in ipAddresses)
-            {
-                sb.Append(ip.ToString());
-                sb.Append(":");
-                sb.Append(port);
-                sb.Append(CONCAT);
-            }
-
-            if (sb.Length > 0)
-            {
-                sb.Remove(sb.Length - CONCAT.Length, CONCAT.Length);
-            }
-
-            return sb.ToString();
-        }
-
-        public void addIPAddressAsString(String ip)
-        {
-            ipAddresses.Insert(0, IPAddress.Parse(ip));
+            return value > 0 && value < 65536;
         }
     }
 }
