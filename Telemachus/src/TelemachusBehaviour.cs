@@ -70,7 +70,7 @@ namespace Telemachus
                     webDispatcher.AddResponder(dataLink);
 
                     // Create the server and associate the dispatcher
-                    webServer = new HttpServer(8086);
+                    webServer = new HttpServer(serverConfig.port);
                     webServer.OnGet += webDispatcher.DispatchGet;
 
                     // Create the websocket server and attach to the web server
