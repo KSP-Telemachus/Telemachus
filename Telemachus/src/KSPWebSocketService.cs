@@ -119,6 +119,8 @@ namespace Telemachus
 
             // Now, process them all into a data dictionary
             var apiResults = new Dictionary<string, object>();
+            var unknowns = new List<string>();
+            var errors = new Dictionary<string, string>();
             foreach (var apiString in allVariables)
             {
                 try {
@@ -126,15 +128,14 @@ namespace Telemachus
                 } catch (IKSPAPI.UnknownAPIException)
                 {
                     // IF we get this message, we know it was because no variable was found
-                    PluginLogger.print("Could not read variable " + apiString);
-                } catch (NullReferenceException)
-                {
-                    PluginLogger.debug("Swallowing null reference exception, potentially due to async game state change.");
+                    unknowns.Add(apiString);
                 } catch (Exception ex)
                 {
-                    PluginLogger.print("Unrecognised exception processing API: " + ex.ToString());
+                    errors[apiString] = ex.ToString();
                 }
             }
+            if (unknowns.Count > 0) apiResults["unknown"] = unknowns;
+            if (errors.Count > 0)   apiResults["errors"] = errors;
 
             // Now, if we have data send a message, otherwise send a null message
             readyToSend = false;

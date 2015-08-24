@@ -57,10 +57,23 @@ namespace Telemachus
             var apiRequests = splitArguments(request.Url.Query);
 
             var results = new Dictionary<string, object>();
+            var unknowns = new List<string>();
+            var errors = new Dictionary<string, string>();
             foreach (var name in apiRequests.Keys)
             {
-                results[name] = kspAPI.ProcessAPIString(apiRequests[name]);
+                try {
+                    results[name] = kspAPI.ProcessAPIString(apiRequests[name]);
+                } catch (IKSPAPI.UnknownAPIException)
+                {
+                    unknowns.Add(apiRequests[name]);
+                } catch (Exception ex)
+                {
+                    errors[apiRequests[name]] = ex.ToString();
+                }
             }
+            // If we had any unrecognised API keys, let the user know
+            if (unknowns.Count > 0) results["unknown"] = unknowns;
+            if (errors.Count > 0)   results["errors"]  = errors;
 
             // Now, serialize the dictionary and write to the response
             var returnData = Encoding.UTF8.GetBytes(SimpleJson.SimpleJson.SerializeObject(results));
