@@ -7,6 +7,7 @@ using System.Text;
 
 namespace Telemachus
 {
+    using System.Reflection;
     using System.Text.RegularExpressions;
     // Aliases for the important return types. This is so that the code is actually readable.
     using APIDelegate = Func<Vessel, string[], object>;
@@ -19,14 +20,14 @@ namespace Telemachus
     {
         public static PluginManager Manager { get; set; }
 
-        public static Action Register(object toRegister)
+        public static void Register(object toRegister)
         {
             if (Manager == null) throw new NullReferenceException("Telemachus Plugin infrastructure not yet intialised!");
-
-            return Manager.Register(toRegister);
+            Manager.Register(toRegister);
         }
     }
 
+    /// <summary>A minimal interface that any instances being registered must match</summary>
     public interface IMinimalTelemachusPlugin
     {
         /// <summary>
@@ -34,16 +35,22 @@ namespace Telemachus
         /// </summary>
         string[] Commands { get; }
         /// <summary>
-        /// Called to retrieve a delegate for calling a particular API, which 
+        /// Called to retrieve a delegate for calling a particular API
         /// </summary>
-        /// <param name="API"></param>
-        /// <returns></returns>
-        APIDelegate GetAPIHandler(string API);
+        /// <param name="API">The API string, excluding parameters</param>
+        /// <returns>null if the API string is not handled, otherwise a delegate to evaluate the API</returns>
+        Func<Vessel, string[], object> GetAPIHandler(string API);
+    }
+
+    /// <summary>An optional interface, which if plugin instances match, will be able to deregister themselves</summary>
+    public interface IDeregisterableTelemachusPlugin : IMinimalTelemachusPlugin
+    {
+        /// <summary>An action delegate to deregister the instance from the Telemachus API</summary>
+        Action Deregister { set; }
     }
 
     public class PluginManager
     {
-
         /// <summary>
         /// Records information about a particular plugin instance
         /// </summary>
@@ -56,10 +63,13 @@ namespace Telemachus
             // Set of handlers that we have already evaluated as coming from this plugin.
             // Used in case we want to remove the plugin and clear out API entries.
             public HashSet<string> known_handlers = new HashSet<string>();
+            /// <summary>Has this interface been given the ability to deregister itself?</summary>
+            public bool is_deregisterable = false;
         }
 
         // List of registered plugin instances
         private List<PluginHandler> registeredPlugins = new List<PluginHandler>();
+        // List of API handlers that we already asked for
         private Dictionary<string, APIDelegate> handlers = new Dictionary<string, APIDelegate>();
         private object _dataLock = new object();
 
@@ -75,18 +85,31 @@ namespace Telemachus
         /// <param name="toRegister">An instance of a Plugin object, that conforms to the TelemachusPlugin interface. 
         /// NOTE: Does NOT have to be a physical instance of the interface.</param>
         /// <returns>An Action, calling of which Deregisters the plugin. This is disposeable.</returns>
-        public Action Register(object toRegister)
+        public void Register(object toRegister)
         {
+            var pluginType = toRegister.GetType();
+            // Must conform at least to the minimal interface
+            if (!pluginType.DoesMatchInterfaceOf(typeof(IMinimalTelemachusPlugin))) throw new ArgumentException("Object " + toRegister.GetType().ToString() + " does not conform to the minimal interface");
+
             var handler = new PluginHandler() { instance = toRegister };
             // Get a list of commands that this instance handles
             var commands = ReadCommandList(toRegister);
             // Get the plugin handler function
             var apiMethod = toRegister.GetType().GetMethod("GetAPIHandler", new Type[] { typeof(string) });
-            if (apiMethod.ReturnType != typeof(APIDelegate))
-                throw new ArgumentException("Telemachus could not find the API handler 'Func<Vessel, string[], object> GetAPIHandler(string)' on the provided interface");
             handler.apiHandler = (APIHandler)Delegate.CreateDelegate(typeof(APIHandler), toRegister, apiMethod);
-            PluginLogger.print("Got plugin registration call for " + toRegister.GetType());
 
+            // Does it match the Deregistration? If so, pass it the deregistration method
+            if (pluginType.DoesMatchInterfaceOf(typeof(IDeregisterableTelemachusPlugin)))
+            {
+                Action deregistration = () => Deregister(handler);
+                pluginType.GetProperty("Deregister").SetValue(toRegister, deregistration, null);
+                handler.is_deregisterable = true;
+            }
+
+            var optional_interfaces = new List<string>();
+            if (handler.is_deregisterable) optional_interfaces.Add("Deregister");
+            PluginLogger.print("Got plugin registration call for " + toRegister.GetType() + ".\n  Optional interfaces enabled: " + (optional_interfaces.Count == 0 ? "None" : string.Join(", ", optional_interfaces.ToArray())));
+            
             // Make a simple hashset of basic commands
             handler.commands = new HashSet<string>(commands.Where(x => !x.Contains("*")));
             // Now, deal with any wildcard plugin strings by building a regex
@@ -96,9 +119,6 @@ namespace Telemachus
 
             lock(_dataLock)
                 registeredPlugins.Add(handler);
-
-            // Return a method to call to deregister this from the plugin system.
-            return () => { Deregister(handler); };
         }
 
         /// <summary>
@@ -117,43 +137,6 @@ namespace Telemachus
                 }
                 registeredPlugins.Remove(handler);
             }
-        }
-
-        private static string[] ReadCommandList(object pluginInstance)
-        {
-            var objType = pluginInstance.GetType();
-            object returnValue = null;
-
-            // Attempt to read from either a property, or a field, or a member function, named 'Commands'
-            var prop = objType.GetProperty("Commands");
-            var field = objType.GetField("Commands");
-            var method = objType.GetMethod("Commands");
-            if (prop != null)
-            {
-                returnValue = prop.GetValue(pluginInstance, null);
-            }
-            else if (field != null)
-            {
-                returnValue = field.GetValue(pluginInstance);
-            }
-            else if (method != null && method.ReturnType != typeof(void) && method.GetParameters().Length == 0)
-            {
-                returnValue = method.Invoke(pluginInstance, null);
-            }
-            // Did we read anything?
-            if (returnValue == null) throw new ArgumentException("Telemachus could not read 'Commands' member from object " + pluginInstance.ToString());
-
-            // Now, determine the type, and return the command list.
-            if (returnValue is string)
-            {
-                return new string[] { (string)returnValue };
-            }
-            else if (returnValue is IEnumerable)
-            {
-                return ((IEnumerable)returnValue).OfType<string>().ToArray();
-            }
-            // Unrecognised format.
-            throw new ArgumentException("Telemachus got unknown type '" + returnValue.GetType().ToString() + "' as Command list, expecting string[]");
         }
 
         /// <summary>
@@ -195,5 +178,104 @@ namespace Telemachus
             }
             return null;
         }
+        
+        private static string[] ReadCommandList(object pluginInstance)
+        {
+            var objType = pluginInstance.GetType();
+            // Attempt to read from either a property, or a field, or a member function, named 'Commands'
+            var prop = objType.GetProperty("Commands");
+            var returnValue = (string[])prop.GetValue(pluginInstance, null);
+            // Did we read anything?
+            if (returnValue == null) throw new NullReferenceException("Telemachus could not read 'Commands' member from object " + pluginInstance.ToString());
+            return returnValue;
+        }
     }
+
+    /// <summary>Contains extension methods for checking interface equivalence</summary>
+    internal static class TypeCheckingExtensions
+    {
+        /// <summary>
+        /// Tests two lists of parameters for length and type equivalence
+        /// </summary>
+        public static bool IsEquivalentTo(this ParameterInfo[] first, ParameterInfo[] second)
+        {
+            if (first.Length != second.Length) return false;
+            for (int i = 0; i < first.Length; ++i)
+            {
+                if (first[i].ParameterType != second[i].ParameterType) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Tests two MethodInfo's for return, public and parameter list equivalence
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
+        public static bool IsEquivalentTo(this MethodInfo first, MethodInfo second)
+        {
+            if (first.ReturnType != second.ReturnType) return false;
+            if (first.IsPublic != second.IsPublic) return false;
+            if (!first.GetParameters().IsEquivalentTo(second.GetParameters())) return false;
+            return true;
+        }
+
+        /// <summary>Tests if a property is the superset of another one e.g. the same type and at least the same accessors</summary>
+        /// <param name="target">The property to test. This can have more accessible accessors than the baseline.</param>
+        /// <param name="baseline">The baseline, which specifies the type and minimum access levels.</param>
+        public static bool IsSupersetOf(this PropertyInfo target, PropertyInfo baseline)
+        {
+            // Make sure the return value is the same
+            if (target.PropertyType != baseline.PropertyType) return false;
+            // Make sure that if there is a get/set method on the baseline, the target posesses it
+            var canRead = baseline.GetGetMethod() != null;
+            var canWrite = baseline.GetSetMethod() != null;
+            if (canRead && target.GetGetMethod() == null) return false;
+            if (canWrite && target.GetSetMethod() == null) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Tests all members of the target against a supplied interface to determine if it implements it 'In spirit' if not physically.
+        /// </summary>
+        /// <param name="target">The type to test</param>
+        /// <param name="thisInterface">The interface to test against</param>
+        /// <returns></returns>
+        public static bool DoesMatchInterfaceOf(this Type target, Type thisInterface)
+        {
+            foreach (var ifcMember in thisInterface.GetMembers())
+            {
+                bool found = false;
+
+                // Look for this member on the type. Check all with the same name.
+                foreach (var tgtMember in target.GetMember(ifcMember.Name))
+                {
+                    if (tgtMember.MemberType != ifcMember.MemberType) continue;
+
+                    if (tgtMember.MemberType == MemberTypes.Property)
+                    {
+                        var tgtProp = (PropertyInfo)tgtMember;
+                        var ifcProp = (PropertyInfo)ifcMember;
+                        found = tgtProp.IsSupersetOf(ifcProp);
+                    }
+                    else if (tgtMember.MemberType == MemberTypes.Method)
+                    {
+                        var tgtMethod = (MethodInfo)tgtMember;
+                        var ifcMethod = (MethodInfo)ifcMember;
+                        found = tgtMethod.IsEquivalentTo(ifcMethod);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("Cannot handle non-member/non-property interface compatability");
+                    }
+                    if (found) break;
+                }
+                if (!found) return false;
+            }
+            // If here, we passed all the tests. We found a match.
+            return true;
+        }
+    }
+
 }

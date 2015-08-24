@@ -3,6 +3,7 @@ using KSP.IO;
 using Servers.MinimalHTTPServer;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Timers;
 using UnityEngine;
@@ -184,6 +185,7 @@ namespace Telemachus
 
         public void Awake()
         {
+            LookForModsToInject();
             DontDestroyOnLoad(this);
             startDataLink();
         }
@@ -208,6 +210,52 @@ namespace Telemachus
             }
         }
 
+
+        void LookForModsToInject()
+        {
+            string foundMods = "Loading; Looking for compatible mods to inject registration....\nTelemachus compatible modules Found:\n";
+            int found = 0;
+            foreach (var asm in AssemblyLoader.loadedAssemblies)
+            {
+                foreach (var type in asm.assembly.GetTypes())
+                {
+                    if (type.IsSubclassOf(typeof(MonoBehaviour)))
+                    {
+                        // Does this have a static property named "Func<string> TelemachusPluginRegister { get; set; }?
+                        var prop = type.GetProperty("TelemachusPluginRegister", BindingFlags.Static | BindingFlags.Public);
+                        if (prop == null) continue;
+                        found += 1;
+                        foundMods += "  - " + type.ToString() + " ";
+                        if (prop.PropertyType != typeof(Action<object>))
+                        {
+                            foundMods += "(Fail - Invalid property type)\n";
+                            continue;
+                        }
+
+                        if (!prop.CanWrite)
+                        {
+                            foundMods += "(Fail - Property not writeable)\n";
+                            continue;
+                        }
+                        // Can we read it - if so, only write if it is not null.
+                        if (prop.CanRead)
+                        {
+                            if (prop.GetValue(null, null) != null)
+                            {
+                                foundMods += "(Fail - Property not null)\n";
+                                continue;
+                            }
+                        }
+                        // Write the value here
+                        Action<object> pluginRegister = PluginRegistration.Register;
+                        prop.SetValue(null, pluginRegister, null);
+                        foundMods += "(Success)\n";
+                    }
+                }
+            }
+            if (found == 0) foundMods += "  None";
+            PluginLogger.print(foundMods);
+        }
         #endregion
 
         #region DataRate
