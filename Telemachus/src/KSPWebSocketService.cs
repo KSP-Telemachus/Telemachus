@@ -135,13 +135,25 @@ namespace Telemachus
                 }
             }
             if (unknowns.Count > 0) apiResults["unknown"] = unknowns;
-            if (errors.Count > 0)   apiResults["errors"] = errors;
+            if (errors.Count > 0) apiResults["errors"] = errors;
+
+            var data = SimpleJson.SimpleJson.SerializeObject(apiResults);
 
             // Now, if we have data send a message, otherwise send a null message
             readyToSend = false;
-            var data = SimpleJson.SimpleJson.SerializeObject(apiResults);
-            SendAsync(data, (b) => readyToSend = true );
-            dataRates.SendDataToClient(data.Length);
+            try
+            {
+               SendAsync(data, (b) => readyToSend = true);
+                dataRates.SendDataToClient(data.Length);
+            }
+            catch (Exception ex)
+            {
+                PluginLogger.print("Caught " + ex.ToString());
+            }
+            finally
+            {
+                readyToSend = true;
+            }
         }
     }
 }
