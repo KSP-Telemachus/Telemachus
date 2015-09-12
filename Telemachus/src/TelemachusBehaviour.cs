@@ -170,6 +170,8 @@ namespace Telemachus
 
         public void Awake()
         {
+            SimpleJson.SimpleJson.CurrentJsonSerializerStrategy = new SimpleJson.InfinityAsStringJsonSerializerStrategy();
+            
             LookForModsToInject();
             DontDestroyOnLoad(this);
             startDataLink();
@@ -192,7 +194,6 @@ namespace Telemachus
                 {
                     if (client.UpdateRequired(Time.time))
                     {
-                        PluginLogger.print("Updating client " + client.ID);
                         client.SendDataUpdate();
                     }
                 }
