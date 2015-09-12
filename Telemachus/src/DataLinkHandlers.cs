@@ -1772,10 +1772,17 @@ namespace Telemachus
             bool result = FlightDriver.Pause ||
                 !TelemachusPowerDrain.isActive ||
                 !TelemachusPowerDrain.activeToggle ||
-                !VesselChangeDetector.hasTelemachusPart;
-
+                !VesselChangeDetector.hasTelemachusPart ||
+                !HighLogic.LoadedSceneIsFlight;
+            
             if (result)
             {
+                // If we aren't even in the flight scene, say so
+                if (!HighLogic.LoadedSceneIsFlight)
+                {
+                    return 5;
+                }
+
                 if (FlightDriver.Pause)
                 {
                     return 1;
