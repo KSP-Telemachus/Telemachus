@@ -123,12 +123,17 @@ namespace Telemachus
             var errors = new Dictionary<string, string>();
             foreach (var apiString in allVariables)
             {
-                try {
+                try
+                {
                     apiResults[apiString] = api.ProcessAPIString(apiString);
-                } catch (IKSPAPI.UnknownAPIException)
+                }
+                catch (IKSPAPI.UnknownAPIException)
                 {
                     // IF we get this message, we know it was because no variable was found
                     unknowns.Add(apiString);
+                } catch (IKSPAPI.VariableNotEvaluable)
+                {
+                    // We can't evaluate this at the moment. Just ignore until we can.
                 } catch (Exception ex)
                 {
                     errors[apiString] = ex.ToString();

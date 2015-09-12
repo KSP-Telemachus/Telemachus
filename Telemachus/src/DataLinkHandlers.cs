@@ -679,7 +679,7 @@ namespace Telemachus
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return Planetarium.GetUniversalTime(); },
-                "t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.DATE));
+                "t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.DATE, true));
 
             registerAPI(new ActionAPIEntry(
                dataSources =>
@@ -1760,7 +1760,7 @@ namespace Telemachus
                 dataSources => { return partPaused(); },
                 "p.paused", 
                 "Returns an integer indicating the state of antenna. 0 - Flight scene; 1 - Paused; 2 - No power; 3 - Off; 4 - Not found.", 
-                formatters.Default, APIEntry.UnitType.UNITLESS));
+                formatters.Default, APIEntry.UnitType.UNITLESS, true));
         }
 
         #endregion
@@ -1828,7 +1828,7 @@ namespace Telemachus
                     List<APIEntry> APIList = new List<APIEntry>();
                     kspAPI.getAPIList(ref APIList); return APIList;
                 },
-                "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.UNITLESS));
+                "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.UNITLESS, true));
 
             registerAPI(new APIEntry(
                 dataSources =>
@@ -1842,7 +1842,7 @@ namespace Telemachus
 
                     return IPList;
                 },
-                "a.ip", "IP Addresses", formatters.StringArray, APIEntry.UnitType.UNITLESS));
+                "a.ip", "IP Addresses", formatters.StringArray, APIEntry.UnitType.UNITLESS, true));
 
             registerAPI(new APIEntry(
                 dataSources =>
@@ -1857,11 +1857,11 @@ namespace Telemachus
                 },
                 "a.apiSubSet",
                 "Subset of the API Listing [string api1, string api2, ... , string apiN]",
-                formatters.APIEntry, APIEntry.UnitType.STRING));
+                formatters.APIEntry, APIEntry.UnitType.STRING, true));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(); },
-                "a.version", "Telemachus Version", formatters.Default, APIEntry.UnitType.UNITLESS));
+                "a.version", "Telemachus Version", formatters.Default, APIEntry.UnitType.UNITLESS, true));
         }
 
         #endregion
@@ -1991,19 +1991,20 @@ namespace Telemachus
         public UnitType units { get; set; }
         public bool plotable { get; set; }
         public DataSourceResultFormatter formatter { get; set; }
-
+        public bool alwaysEvaluable { get; set; }
         #endregion
 
         #region Initialisation
 
         public APIEntry(DataLinkHandler.APIDelegate function, string APIString,
-            string name, DataSourceResultFormatter formatter, UnitType units)
+            string name, DataSourceResultFormatter formatter, UnitType units, bool alwaysEvaluable = false)
         {
             this.function = function;
             this.APIString = APIString;
             this.name = name;
             this.formatter = formatter;
             this.units = units;
+            this.alwaysEvaluable = alwaysEvaluable;
         }
 
         #endregion
@@ -2028,8 +2029,8 @@ namespace Telemachus
         #region Initialisation
 
         public PlotableAPIEntry(DataLinkHandler.APIDelegate function, string APIString, string name,
-           DataSourceResultFormatter formatter, UnitType units)
-            : base(function, APIString, name, formatter, units)
+           DataSourceResultFormatter formatter, UnitType units, bool alwaysEvaluable = false)
+            : base(function, APIString, name, formatter, units, alwaysEvaluable)
         {
             this.plotable = true;
         }

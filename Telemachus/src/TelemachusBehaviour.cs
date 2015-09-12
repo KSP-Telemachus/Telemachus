@@ -380,11 +380,20 @@ namespace Telemachus
             var name = apistring;
             parseParams(ref name, ref data);
 
+            // Are we in flight mode, with a vessel?
+            var cleanFlightMode = HighLogic.LoadedSceneIsFlight && data.vessel != null;
+
             try {
                 // Get the API entry
                 APIEntry apiEntry = null;
                 process(name, out apiEntry);
                 if (apiEntry == null) return null;
+
+                // Can we run this variable at the moment?
+                if (!apiEntry.alwaysEvaluable && !cleanFlightMode) {
+                    if (data.vessel == null) throw new VariableNotEvaluable(apistring, "No vessel!");
+                    throw new VariableNotEvaluable(apistring, "Not in flight mode");
+                }
 
                 // run the API entry
                 var result = apiEntry.function(data);
@@ -392,10 +401,13 @@ namespace Telemachus
                 return apiEntry.formatter.prepareForSerialization(result);
             } catch (UnknownAPIException)
             {
+                if (!cleanFlightMode) throw new VariableNotEvaluable(apistring, "Plugin variables not evaluable outside flight scene with vessel");
+
                 // Try looking in the pluginManager
                 var pluginAPI = _manager.GetAPIDelegate(name);
                 // If no entry, just continue the throwing of the exception
                 if (pluginAPI == null) throw;
+
                 // We found an API entry! Let's use that.
                 return pluginAPI(data.vessel, data.args.ToArray());
             }
@@ -426,6 +438,15 @@ namespace Telemachus
             }
         }
 
+        public class VariableNotEvaluable : Exception
+        {
+            public VariableNotEvaluable(string apiString, string reason)
+                : base("Cannot run " + apiString + ";" + reason)
+            {
+
+            }
+        }
+        
         protected List<DataLinkHandler> APIHandlers = new List<DataLinkHandler>();
 
         public void getAPIList(ref List<APIEntry> APIList)
