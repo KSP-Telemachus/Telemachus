@@ -117,7 +117,7 @@ namespace Telemachus
         private String argumentsParse(String args, DataSources dataSources)
         {
             APIEntry currentEntry = null;
-            List<string> APIResults = new List<string>();
+            var APIResults = new Dictionary<string,object>();
             String[] argsSplit = args.Split(ARGUMENTS_DELIMETER);
 
             foreach (String arg in argsSplit)
@@ -126,7 +126,7 @@ namespace Telemachus
                 PluginLogger.fine(refArg);
                 kspAPI.parseParams(ref refArg, ref dataSources);
                 currentEntry = argumentParse(refArg, dataSources);
-                APIResults.Add(currentEntry.formatter.format(currentEntry.function(dataSources), dataSources.getVarName()));
+                APIResults[dataSources.getVarName()] = currentEntry.formatter.prepareForSerialization(currentEntry.function(dataSources));
 
                 //Only parse the paused argument if the active vessel is null
                 if (dataSources.vessel == null)
@@ -135,7 +135,7 @@ namespace Telemachus
                 }
             }
 
-            return currentEntry.formatter.pack(APIResults);
+            return SimpleJson.SimpleJson.SerializeObject(APIResults);
         }
 
         
@@ -174,7 +174,7 @@ namespace Telemachus
 
         public void setVarName(string varName)
         {
-            this.varName = "\"" + varName + "\"";
+            this.varName = varName;
         }
 
         public string getVarName()

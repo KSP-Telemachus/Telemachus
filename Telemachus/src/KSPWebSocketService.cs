@@ -63,7 +63,7 @@ namespace Telemachus
                 {
                     try
                     {
-                        List<string> entries = new List<string>();
+                        var entries = new Dictionary<string,object>();
 
                         APIEntry entry = null;
 
@@ -86,19 +86,16 @@ namespace Telemachus
                                 if (entry != null)
                                 {
                                     dataSourcesClone.setVarName(trimedQuotes);
-                                    entries.Add(entry.formatter.format(entry.function(dataSourcesClone), dataSourcesClone.getVarName()));
+                                    entries[dataSourcesClone.getVarName()] = entry.formatter.prepareForSerialization(entry.function(dataSourcesClone));
                                 }
                             }
 
                             toRun.Clear();
-
-                            if (entry != null)
-                            {
-                                WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes(entry.formatter.pack(entries)));
-                                byte[] bFrame = frame.AsBytes();
-                                dataRates.addDownLinkPoint(System.DateTime.Now, bFrame.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
-                                clientConnection.Send(bFrame);
-                            }
+                            
+                            WebSocketFrame frame = new WebSocketFrame(Encoding.UTF8.GetBytes(SimpleJson.SimpleJson.SerializeObject(entries)));
+                            byte[] bFrame = frame.AsBytes();
+                            dataRates.addDownLinkPoint(System.DateTime.Now, bFrame.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
+                            clientConnection.Send(bFrame);
                         }
                         else
                         {
