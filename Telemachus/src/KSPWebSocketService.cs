@@ -15,6 +15,8 @@ namespace Telemachus
         private HashSet<string> subscriptions = new HashSet<string>();
         /// A list of variables to evaluate ONLY the next time we are triggered
         private HashSet<string> oneShotRuns   = new HashSet<string>();
+        /// A list of variables that the user has subscribed to binary updates of
+        private string[] binarySubscriptions = new string[] { };
         ///  A lock to prevent simultaneous reading/updating of the client parameters
         readonly private object dataLock = new object();
 
@@ -91,8 +93,11 @@ namespace Telemachus
                     {
                         streamRate = Convert.ToInt32(entry.Value);
                         PluginLogger.print(string.Format("Client {0} setting rate {1}", ID, streamRate));
-                    }
-                    else
+                    } else if (entry.Key == "binary")
+                    {
+                        binarySubscriptions = listContents;
+                        PluginLogger.print(string.Format("Client {0} requests binary packets {1}", ID, string.Join(", ", listContents)));
+                    } else
                     {
                         PluginLogger.print(String.Format("Client {0} send unrecognised key {1}", ID, entry.Key));
                     }
@@ -111,7 +116,7 @@ namespace Telemachus
             string[] allVariables;
             lock (dataLock)
             {
-                allVariables = subscriptions.Union(oneShotRuns).ToArray();
+                allVariables = subscriptions.Union(oneShotRuns).Union(binarySubscriptions).ToArray();
                 oneShotRuns.Clear();
             }
 
@@ -142,8 +147,58 @@ namespace Telemachus
             if (unknowns.Count > 0) apiResults["unknown"] = unknowns;
             if (errors.Count > 0) apiResults["errors"] = errors;
 
-            var data = SimpleJson.SimpleJson.SerializeObject(apiResults);
+            // Handle sending a binary packet if requested
+            if (binarySubscriptions.Length > 0)
+            {
+                var variableValues = new List<float>();
+                // Read every binary value
+                foreach (var name in binarySubscriptions) {
+                    try {
+                        variableValues.Add(Convert.ToSingle(apiResults[name]));
+                    } catch (Exception ex)
+                    {
+                        variableValues.Add(0);
+                        if (apiResults.ContainsKey(name))
+                        {
+                            errors[name] = "Error streaming to binary " + name + "='" + apiResults[name] + "'; " + ex.ToString();
+                        } else
+                        {
+                            errors[name] = "Error streaming to binary: value for " + name + " not found; " + ex.ToString();
+                        }
+                    }
+                }
+                // Which byte translation?
+                Func<float, IEnumerable<byte>> reverser = x => BitConverter.GetBytes(x).Reverse();
+                var byteTranslation = BitConverter.IsLittleEndian ? reverser : BitConverter.GetBytes;
 
+                // Now translate these to binary bytes
+                var byteData = new List<byte>();
+                byteData.Add(1);
+                byteData.AddRange(variableValues.SelectMany(x => byteTranslation(x)));
+                SendAsync(byteData.ToArray(), x => { });
+            }
+
+            //if (allVariables.Contains("binaryNavigation"))
+            //{
+            //    allVariables = allVariables.Where(x => x != "binaryNavigation").ToArray();
+            //    // Build and dispatch the binary information, here and quickly....
+            //    var pitch = Convert.ToSingle(api.ProcessAPIString("n.pitch"));
+            //    var roll = Convert.ToSingle(api.ProcessAPIString("n.roll"));
+            //    var heading = Convert.ToSingle(api.ProcessAPIString("n.heading"));
+            //    var deltaV = Convert.ToSingle(api.ProcessAPIString("v.verticalSpeed"));
+            //    var parts = new List<byte[]>();
+            //    parts.Add(new byte[] { 1 });
+            //    parts.Add(BitConverter.GetBytes(heading));
+            //    parts.Add(BitConverter.GetBytes(pitch));
+            //    parts.Add(BitConverter.GetBytes(roll));
+            //    parts.Add(BitConverter.GetBytes(deltaV));
+            //    if (BitConverter.IsLittleEndian) parts = parts.Select(x => x.Reverse().ToArray()).ToList();
+            //    var byteData = parts.SelectMany(x => x).ToArray();
+            //    SendAsync(byteData, x => { });
+            //    PluginLogger.print(string.Format("Send byte data for {0}, {1}, {2}, {3}", heading, pitch, roll, deltaV));
+            //}
+
+            var data = SimpleJson.SimpleJson.SerializeObject(apiResults);
             // Now, if we have data send a message, otherwise send a null message
             readyToSend = false;
             try
