@@ -232,6 +232,9 @@ namespace Telemachus
             public override object prepareForSerialization(object input)
             {
                 var simuluation = input as MechJebDataLinkHandler.MechJebSimulation;
+
+                if(simuluation == null) { return null; }
+
                 var simulationData = new Dictionary<string, object>();
 
                 simulationData["atmo"] = this.convertStageList(simuluation.atmoStats);
