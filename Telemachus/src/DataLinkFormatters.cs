@@ -21,6 +21,7 @@ namespace Telemachus
         public DataSourceResultFormatter ActiveResourceList { get; set; }
         public DataSourceResultFormatter MaxResourceList { get; set; }
         public DataSourceResultFormatter MaxCurrentResourceList { get; set; }
+        public DataSourceResultFormatter MechJebSimulation { get; set; }
         public DataSourceResultFormatter APIEntry { get; set; }
         public DataSourceResultFormatter Vector3d { get; set; }
         public DataSourceResultFormatter Default { get; set; }
@@ -51,6 +52,7 @@ namespace Telemachus
             CurrentResourceList = new CurrentResourceListJSONFormatter();
             MaxCurrentResourceList = new ActiveResourceTotalListJSONFormatter();
             APIEntry = new APIEntryJSONFormatter();
+            MechJebSimulation = new MechJebSimulationJSONFormatter();
             Vector3d = new Vector3dJSONFormatter();
             StringArray = new APIEntryStringArrayFormatter();
             Default = new DefaultJSONFormatter();
@@ -222,6 +224,42 @@ namespace Telemachus
                     sensorValues.Add(0);
                 }
                 return new object[] { sensorNames, sensorValues };
+            }
+        }
+
+        public class MechJebSimulationJSONFormatter : JSONFormatter
+        {
+            public override object prepareForSerialization(object input)
+            {
+                var simuluation = input as MechJebDataLinkHandler.MechJebSimulation;
+                var simulationData = new Dictionary<string, object>();
+
+                simulationData["atmo"] = this.convertStageList(simuluation.atmoStats);
+                simulationData["vacuum"] = this.convertStageList(simuluation.vacuumStats);
+                return simulationData;
+            }
+
+            private List<Dictionary<string, object>> convertStageList(List<MechJebDataLinkHandler.MechJebStageSimulationStats> stats)
+            {
+                var result = new List<Dictionary<string, object>>();
+
+                foreach(var stat in stats)
+                {
+                    var stage = new Dictionary<string, object>();
+                    stage["startMass"] = stat.startMass;
+                    stage["endMass"] = stat.endMass;
+                    stage["startThrust"] = stat.startThrust;
+                    stage["maxAccel"] = stat.maxAccel;
+                    stage["deltaTime"] = stat.deltaTime;
+                    stage["deltaV"] = stat.deltaV;
+                    stage["resourceMass"] = stat.resourceMass;
+                    stage["isp"] = stat.isp;
+                    stage["stagedMass"] = stat.stagedMass;
+
+                    result.Add(stage);
+                }
+
+                return result;
             }
         }
     }
