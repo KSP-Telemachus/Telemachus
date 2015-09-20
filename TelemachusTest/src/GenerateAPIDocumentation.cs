@@ -21,7 +21,7 @@ namespace TelemachusTest
         {
             Servers.AsynchronousServer.ServerConfiguration config = new Servers.AsynchronousServer.ServerConfiguration();
             Telemachus.VesselChangeDetector vesselChangeDetector = new Telemachus.VesselChangeDetector(false);
-            Telemachus.KSPAPI api = new Telemachus.KSPAPI(Telemachus.JSONFormatterProvider.Instance, vesselChangeDetector, config);
+            Telemachus.KSPAPI api = new Telemachus.KSPAPI(Telemachus.JSONFormatterProvider.Instance, vesselChangeDetector, config, null);
 
             List<Telemachus.APIEntry> apiList = new List<Telemachus.APIEntry>();
             api.getAPIList(ref apiList);
