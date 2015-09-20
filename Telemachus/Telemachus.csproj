@@ -47,6 +47,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ksp-telemachus-dev\KSP_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="websocket-sharp">
+      <HintPath>..\websocket-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\Resources.Designer.cs">
@@ -91,6 +94,8 @@ rd /s /q "$(ProjectDir)..\ksp-telemachus-dev\GameData\Telemachus"
 
 xcopy "$(TargetDir)Servers.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
 xcopy "$(TargetDir)Telemachus.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
+xcopy "$(TargetDir)websocket-sharp.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
+
 xcopy "$(ProjectDir)..\Parts\*" "$(ProjectDir)..\publish\GameData\Telemachus\Parts\"  /e /y /i /r
 xcopy "$(ProjectDir)..\WebPages\WebPages\src\*" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\PluginData\Telemachus\" /e /y /i /r
 xcopy "$(ProjectDir)..\licences\*" "$(ProjectDir)..\publish\GameData\Telemachus\" /e /y /i /r
