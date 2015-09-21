@@ -1,34 +1,73 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Telemachus.Plugins
 {
     /// <summary>
+    /// Allows reference types to be checked as a dictionary key via reference equality
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class IdentityEqualityComparer<T> : IEqualityComparer<T>
+    where T : class
+    {
+        public int GetHashCode(T value)
+        {
+            return RuntimeHelpers.GetHashCode(value);
+        }
+
+        public bool Equals(T left, T right)
+        {
+            return left == right; // Reference identity comparison
+        }
+    }
+
+
+    /// <summary>
     /// Handles interfacing with RasterPropMonitor
     /// </summary>
     class RasterPropMonitorPlugin : IMinimalTelemachusPlugin
     {
+        protected class RPMVesselComputer
+        {
+            public VesselModule parent { get; private set; }
+            private Type typ;
+
+            public Func<string,object> ProcessVariable { get; private set; }
+
+            public RPMVesselComputer(VesselModule parent)
+            {
+                this.parent = parent;
+                this.typ = parent.GetType();
+
+                var pV = typ.GetMethod("ProcessVariable");
+                ProcessVariable = (x) => pV.Invoke(parent, new object[] { x, null });
+            }
+        }
+
         public string[] Commands { get { return new[] { "rpm.available", "rpm.*" }; } }
+
+        Dictionary<VesselModule, RPMVesselComputer> rpmComputers = new Dictionary<VesselModule, RPMVesselComputer>(new IdentityEqualityComparer<VesselModule>());
 
         public Func<Vessel, string[], object> GetAPIHandler(string API)
         {
-            if (API == "rpm.available") return (v, a) => { return true; };
+            if (API == "rpm.available") return (v, a) => { return FindRPMModule(v) != null; };
 
             return (vessel, args) => {
                 var module = FindRPMModule(vessel);
-                if (module) { return ReadRPMString(module, API.Substring(4)); }
+                if (module != null) { return module.ProcessVariable(API.Substring(4)); }
                 return null;
             };
         }
         
         /// <summary>
-        /// Scans all attached modules to a vessel, and returns the RasterPropMonitor vessel computer
+        /// Scans all attached modules to a vessel, and returns the RasterPropMonitor vessel computer.
         /// </summary>
         /// <param name="vessel">The vessel to scan</param>
-        /// <returns>The RPMVesselComputer VesselModule, or null</returns>
-        private VesselModule FindRPMModule(Vessel vessel)
+        /// <returns>The RPMVesselComputer proxy class, or null</returns>
+        private RPMVesselComputer FindRPMModule(Vessel vessel)
         {
             if (vessel)
             {
@@ -36,28 +75,18 @@ namespace Telemachus.Plugins
                 {
                     if (vm.GetType().Name == "RPMVesselComputer")
                     {
-                        return vm;
+                        RPMVesselComputer cmp;
+                        if (rpmComputers.TryGetValue(vm, out cmp))
+                        {
+                            return cmp;
+                        }
+                        cmp = new RPMVesselComputer(vm);
+                        rpmComputers[vm] = cmp;
+                        return cmp;
                     }
                 }
             }
             return null;
         }
-
-        /// <summary>
-        /// Evaluates an API string using the VesselModule representing the RPMVesselComputer
-        /// </summary>
-        /// <param name="rpmComputer">The RPMVesselComputer VesselModule</param>
-        /// <param name="apiString">The RPM API-string to evaluate</param>
-        /// <returns>Whatever the RPM API returns</returns>
-        private object ReadRPMString(VesselModule rpmComputer, string apiString)
-        {
-            var methInfo = rpmComputer.GetType().GetMethod("ProcessVariable");
-            if (methInfo == null) {
-                throw new FieldAccessException("Could not access variable processing field on RPM. Wrong version?");
-            }
-            var ret = methInfo.Invoke(rpmComputer, new object[] { apiString, null });
-            return ret;
-        }
-
     }
 }
