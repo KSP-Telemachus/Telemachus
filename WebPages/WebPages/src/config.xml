@@ -2,4 +2,5 @@
 <config>
   <int name="PORT">8085</int>
   <string name="IPADDRESS">-1</string>
+<int name="PARTLESS">1</int>
 </config>
