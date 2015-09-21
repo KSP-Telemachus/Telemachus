@@ -36,6 +36,8 @@ namespace Telemachus.Plugins
             private Type typ;
 
             public Func<string,object> ProcessVariable { get; private set; }
+            //public Action FixedUpdate { get; private set; }
+            public Action Update { get; private set; }
 
             public RPMVesselComputer(VesselModule parent)
             {
@@ -44,6 +46,14 @@ namespace Telemachus.Plugins
 
                 var pV = typ.GetMethod("ProcessVariable");
                 ProcessVariable = (x) => pV.Invoke(parent, new object[] { x, null });
+
+                var fU = typ.GetMethod("DoFixedUpdate");
+                var up = typ.GetMethod("Update");
+                Update = () =>
+                {
+                    up.Invoke(parent, null);
+                    fU.Invoke(parent, new object[] { true });
+                };
             }
         }
 
@@ -57,7 +67,10 @@ namespace Telemachus.Plugins
 
             return (vessel, args) => {
                 var module = FindRPMModule(vessel);
-                if (module != null) { return module.ProcessVariable(API.Substring(4)); }
+                if (module != null) {
+                    module.Update();
+                    return module.ProcessVariable(API.Substring(4));
+                }
                 return null;
             };
         }
