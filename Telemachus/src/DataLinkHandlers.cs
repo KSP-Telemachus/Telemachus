@@ -1132,6 +1132,14 @@ namespace Telemachus
                       UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
               },
               "m.exitMapView", " Exit Map View", formatters.Default));
+
+            registerAPI(new APIEntry(
+                dataSources => {
+                    PluginLogger.debug("Start GET");
+                    return dataSources.vessel.patchedConicSolver.maneuverNodes;
+                },
+                "o.maneuverNodes", "Maneuver Nodes  [object maneuverNodes]",
+                formatters.ManeuverNodeList, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
