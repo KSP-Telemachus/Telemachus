@@ -934,6 +934,54 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().referenceBody.name : ""; },
                "tar.o.orbitingBody", "Target Orbiting Body", formatters.Default, APIEntry.UnitType.STRING));
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    if (FlightGlobals.fetch.VesselTarget == null)
+                    {
+                        return null;
+                    }
+                    return OrbitPatches.getPatchesForOrbit(FlightGlobals.fetch.VesselTarget.GetOrbit());
+                },
+                "tar.o.orbitPatches", "Detailed Orbit Patches Info [object orbitPatchInfo]",
+                formatters.OrbitPatchList, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    if (FlightGlobals.fetch.VesselTarget == null) { return null; }
+                    int index = int.Parse(dataSources.args[0]);
+                    float ut = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(FlightGlobals.fetch.VesselTarget.GetOrbit(), index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.TrueAnomalyAtUT(ut);
+                },
+                "tar.o.trueAnomalyAtUTForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    if (FlightGlobals.fetch.VesselTarget == null) { return null; }
+                    int index = int.Parse(dataSources.args[0]);
+                    float trueAnomaly = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(FlightGlobals.fetch.VesselTarget.GetOrbit(), index);
+                    if (orbitPatch == null) { return null; }
+
+                    double now = Planetarium.GetUniversalTime();
+                    return orbitPatch.GetUTforTrueAnomaly(trueAnomaly, now);
+                },
+                "o.UTForTrueAnomalyForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new APIEntry(
+                dataSources => {
+                    if (FlightGlobals.fetch.VesselTarget == null) { return null; }
+                    int index = int.Parse(dataSources.args[0]);
+                    float trueAnomaly = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(FlightGlobals.fetch.VesselTarget.GetOrbit(), index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "o.relativePositionAtTrueAnomalyForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given true anomaly [orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
@@ -1351,6 +1399,14 @@ namespace Telemachus
                     return (phaseAngle < 0) ? phaseAngle + 360 : phaseAngle;
                 },
                 "b.o.phaseAngle", "Phase Angle [body id]", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new APIEntry(
+                dataSources => {
+                    int bodyId = int.Parse(dataSources.args[0]);
+                    float universalTime = float.Parse(dataSources.args[1]);
+                    return FlightGlobals.Bodies[bodyId].orbit.getTruePositionAtUT(universalTime);
+                },
+                "b.o.truePositionAtUT", "True Position at the given UT [body id, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
@@ -1644,6 +1700,47 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI); },
                 "o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new APIEntry(
+                dataSources => {
+                    return OrbitPatches.getPatchesForOrbit(dataSources.vessel.orbit);
+                },
+                "o.orbitPatches", "Detailed Orbit Patches Info [object orbitPatchInfo]",
+                formatters.OrbitPatchList, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    int index = int.Parse(dataSources.args[0]);
+                    float ut = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(dataSources.vessel.orbit, index);
+                    if(orbitPatch == null) { return null; }
+                    return orbitPatch.TrueAnomalyAtUT(ut);
+                },
+                "o.trueAnomalyAtUTForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    int index = int.Parse(dataSources.args[0]);
+                    float trueAnomaly = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(dataSources.vessel.orbit, index);
+                    if (orbitPatch == null) { return null; }
+
+                    double now = Planetarium.GetUniversalTime();
+                    return orbitPatch.GetUTforTrueAnomaly(trueAnomaly, now);
+                },
+                "o.UTForTrueAnomalyForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    int index = int.Parse(dataSources.args[0]);
+                    float trueAnomaly = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(dataSources.vessel.orbit, index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "o.relativePositionAtTrueAnomalyForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given true anomaly [orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+
+
         }
 
         #endregion
