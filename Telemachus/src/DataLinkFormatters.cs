@@ -80,6 +80,7 @@ namespace Telemachus
             public override object prepareForSerialization(object input)
             {
                 var vec = (Vector3d)input;
+                if(vec == null) { return null; }
                 return new[] { vec.x, vec.y, vec.z };
             }
         }
