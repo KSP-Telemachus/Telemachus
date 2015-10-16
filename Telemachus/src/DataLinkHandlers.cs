@@ -2269,6 +2269,31 @@ namespace Telemachus
         #endregion
     }
 
+    public class OrbitPatches
+    {
+        public static List<Orbit> getPatchesForOrbit(Orbit orbit)
+        {
+            List<Orbit> orbitPatches = new List<Orbit>();
+            //the "next" orbit patch is the root patch, to make the method cleaner
+            var nextOrbitPatch = orbit;
+
+            while(nextOrbitPatch != null && nextOrbitPatch.activePatch)
+            {
+                orbitPatches.Add(nextOrbitPatch);
+                nextOrbitPatch = nextOrbitPatch.nextPatch;
+            }
+
+            return orbitPatches;
+        }
+
+        public static Orbit getOrbitPatch(Orbit orbit, int index)
+        {
+            List<Orbit> orbitPatches = getPatchesForOrbit(orbit);
+            if(index >= orbitPatches.Count) { return null; }
+            return orbitPatches[index];
+        }
+    }
+
     public class ActionAPIEntry : APIEntry
     {
         #region Initialisation

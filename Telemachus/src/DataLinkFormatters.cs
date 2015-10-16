@@ -22,6 +22,7 @@ namespace Telemachus
         public DataSourceResultFormatter MaxResourceList { get; set; }
         public DataSourceResultFormatter MaxCurrentResourceList { get; set; }
         public DataSourceResultFormatter MechJebSimulation { get; set; }
+        public DataSourceResultFormatter OrbitPatchList { get; set; }
         public DataSourceResultFormatter ManeuverNode { get; set; }
         public DataSourceResultFormatter ManeuverNodeList { get; set; }
         public DataSourceResultFormatter APIEntry { get; set; }
@@ -57,6 +58,7 @@ namespace Telemachus
             MechJebSimulation = new MechJebSimulationJSONFormatter();
             ManeuverNode = new ManeuverNodeJSONFormatter();
             ManeuverNodeList = new ManeuverNodeListJSONFormatter();
+            OrbitPatchList = new OrbitPatchListJSONFormatter();
             Vector3d = new Vector3dJSONFormatter();
             StringArray = new APIEntryStringArrayFormatter();
             Default = new DefaultJSONFormatter();
@@ -275,6 +277,7 @@ namespace Telemachus
         public class ManeuverNodeJSONFormatter : JSONFormatter
         {
             private Vector3dJSONFormatter vectorFormatter = new Vector3dJSONFormatter();
+            private OrbitPatchListJSONFormatter orbitPatchesFormatter = new OrbitPatchListJSONFormatter();
             public override object prepareForSerialization(object input)
             {
                 var maneuverNode = input as ManeuverNode;
@@ -307,6 +310,17 @@ namespace Telemachus
                     maneuverNodeData["closestEncounterBody"] = null;
                 }
 
+                List<Orbit> orbitPatches = OrbitPatches.getPatchesForOrbit(orbit);
+
+                if(orbitPatches != null)
+                {
+                    maneuverNodeData["orbitPatches"] = orbitPatchesFormatter.prepareForSerialization(orbitPatches);
+                }
+                else
+                {
+                    maneuverNodeData["orbitPatches"] = null;
+                }
+
                 return maneuverNodeData;
             }
         }
@@ -327,6 +341,65 @@ namespace Telemachus
                 }
 
                 return maneuverNodeListData;
+            }
+        }
+
+        // the formatter that can convert a single maneuver node to JSON
+        public class OrbitPatchJSONFormatter : JSONFormatter
+        {
+            public override object prepareForSerialization(object input)
+            {
+                Orbit orbit = input as Orbit;
+                if (orbit == null) { return null; }
+
+                var orbitPatchData = new Dictionary<string, object>();
+                
+                orbitPatchData["startUT"] = orbit.StartUT;
+                orbitPatchData["endUT"] = orbit.EndUT;
+                orbitPatchData["patchEndTransition"] = orbit.patchEndTransition.ToString();
+                orbitPatchData["PeA"] = orbit.PeA;
+                orbitPatchData["ApA"] = orbit.ApA;
+                orbitPatchData["inclination"] = orbit.inclination;
+                orbitPatchData["eccentricAnomaly"] = orbit.eccentricity;
+                orbitPatchData["eccentricity"] = orbit.eccentricity;
+                orbitPatchData["epoch"] = orbit.epoch;
+                orbitPatchData["period"] = orbit.period;
+                orbitPatchData["argumentOfPeriapsis"] = orbit.argumentOfPeriapsis;
+                orbitPatchData["sma"] = orbit.semiMajorAxis;
+                orbitPatchData["lan"] = orbit.LAN;
+                orbitPatchData["maae"] = orbit.meanAnomalyAtEpoch;
+                orbitPatchData["referenceBody"] = orbit.referenceBody.name;
+                orbitPatchData["semiLatusRectum"] = orbit.semiLatusRectum;
+                orbitPatchData["semiMinorAxis"] = orbit.semiMinorAxis;
+                if (orbit.closestEncounterBody != null)
+                {
+                    orbitPatchData["closestEncounterBody"] = orbit.closestEncounterBody.name;
+                }
+                else
+                {
+                    orbitPatchData["closestEncounterBody"] = null;
+                }
+
+                return orbitPatchData;
+            }
+        }
+
+        //the formatter that can convert a list of maneuver nodes to JSON
+        public class OrbitPatchListJSONFormatter : JSONFormatter
+        {
+            private OrbitPatchJSONFormatter orbitFormatter = new OrbitPatchJSONFormatter();
+            public override object prepareForSerialization(object input)
+            {
+                var orbitPatchList = input as List<Orbit>;
+
+                var orbitPatchListData = new List<Dictionary<string, object>>();
+
+                foreach (Orbit orbit in orbitPatchList)
+                {
+                    orbitPatchListData.Add((Dictionary<string, object>)orbitFormatter.prepareForSerialization(orbit));
+                }
+
+                return orbitPatchListData;
             }
         }
     }
