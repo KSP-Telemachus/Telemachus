@@ -47,6 +47,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ksp-telemachus-dev\KSP_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>
+    <Reference Include="websocket-sharp">
+      <HintPath>..\websocket-sharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\Resources.Designer.cs">
@@ -59,22 +62,18 @@
     <Compile Include="src\DataLinkResponsibility.cs" />
     <Compile Include="src\ElseResponsibility.cs" />
     <Compile Include="src\IOPageResponsibility.cs" />
-    <Compile Include="src\IterationToEvent.cs" />
-    <Compile Include="src\KSPWebSocketService.cs" />
+    <Compile Include="src\KSPWebServerDispatcher.cs" />
     <Compile Include="src\PluginLogger.cs" />
+    <Compile Include="src\PluginRegistration.cs" />
+    <Compile Include="src\Plugins\RasterPropMonitorPlugin.cs" />
+    <Compile Include="src\ServerConfiguration.cs" />
     <Compile Include="src\SimpleJSON.cs" />
     <Compile Include="src\TelemachusBehaviour.cs" />
     <Compile Include="src\TelemachusPartModules.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="src\UpdateTimer.cs" />
     <Compile Include="src\UpLinkDownLinkRate.cs" />
     <Compile Include="src\VesselChangeDetector.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Servers\Servers\Servers.csproj">
-      <Project>{57e9f7c0-db25-4b6d-aa53-c44d95b47468}</Project>
-      <Name>Servers</Name>
-    </ProjectReference>
+    <Compile Include="src\KSPWebSocketService.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -89,6 +88,8 @@ rd /s /q "$(ProjectDir)..\ksp-telemachus-dev\GameData\Telemachus"
 
 xcopy "$(TargetDir)Servers.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
 xcopy "$(TargetDir)Telemachus.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
+xcopy "$(TargetDir)websocket-sharp.dll" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\" /e /y /i /r
+
 xcopy "$(ProjectDir)..\Parts\*" "$(ProjectDir)..\publish\GameData\Telemachus\Parts\"  /e /y /i /r
 xcopy "$(ProjectDir)..\WebPages\WebPages\src\*" "$(ProjectDir)..\publish\GameData\Telemachus\Plugins\PluginData\Telemachus\" /e /y /i /r
 xcopy "$(ProjectDir)..\licences\*" "$(ProjectDir)..\publish\GameData\Telemachus\" /e /y /i /r

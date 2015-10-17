@@ -428,7 +428,11 @@
           api: "a.api"
         }, "json").then(function(data, textStatus, jqXHR) {
           var api, i, r, resourceApi, _i, _j, _k, _len, _len1, _ref, _ref1, _ref2;
-          _ref = JSON.parse(data).api;
+          if (typeof(data) == "string") {
+            _ref = JSON.parse(data).api;
+          } else {
+            _ref = data.api;
+          }
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             api = _ref[_i];
             if (api.apistring.match(/^b\./)) {
@@ -489,14 +493,17 @@
       })()).join("&"));
       return $.get(url).done(function(data, textStatus, jqXHR) {
         var value;
-        try {
-          data = JSON.parse(data);
-        } catch (error) {
-          _this.$alertSubscribers.trigger("telemetryAlert", ["Bad Data"]);
-          setTimeout((function() {
-            return _this.downlink();
-          }), 5000);
-          return;
+        // Don't convert if we were given pre-parsed JSON
+        if (!typeof(data) == "object") {
+          try {
+            data = JSON.parse(data);
+          } catch (error) {
+            _this.$alertSubscribers.trigger("telemetryAlert", ["Bad Data"]);
+            setTimeout((function() {
+              return _this.downlink();
+            }), 5000);
+            return;
+          }
         }
         _this.telemetry["p.paused"] = data.p;
         switch (data.p) {

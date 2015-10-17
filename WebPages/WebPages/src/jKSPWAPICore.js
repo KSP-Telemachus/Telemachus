@@ -172,8 +172,11 @@ var jKSPWAPI = {
             var callback = function (response, status) {
                 if (status == "success") {
                     try{
-
-                        d = $.parseJSON(sanitise(response));
+                        if (typeof(response) == "string") {
+                            d = $.parseJSON(sanitise(response));
+                        } else {
+                            d = response;
+                        }
                     }
                     catch (e) {
                         console.log(e.message + " " + response)
@@ -247,7 +250,11 @@ var jKSPWAPI = {
     call: function (APIString, postUpdate) {
         d = new Object();
         var callback = function (response, status) {
-            d = $.parseJSON(response);
+            if (typeof(response) == "string") {
+                d = $.parseJSON(response);
+            } else {
+                d = response;
+            }
             postUpdate(d);
         };
 

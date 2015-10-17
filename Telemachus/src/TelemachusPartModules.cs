@@ -6,7 +6,6 @@ using System.Net;
 using System.Text;
 using System.Collections.Generic;
 using System.Collections;
-using Servers.MinimalHTTPServer;
 
 namespace Telemachus
 {
@@ -139,6 +138,9 @@ namespace Telemachus
 
         public override void OnUpdate()
         {
+            if (part.vessel != FlightGlobals.ActiveVessel) {
+                return;
+            }
             if (activeToggle)
             {
                 float requiredPower = powerConsumption * TimeWarp.deltaTime;
