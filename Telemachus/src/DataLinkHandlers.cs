@@ -970,7 +970,7 @@ namespace Telemachus
                     double now = Planetarium.GetUniversalTime();
                     return orbitPatch.GetUTforTrueAnomaly(trueAnomaly, now);
                 },
-                "o.UTForTrueAnomalyForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DATE));
+                "tar.o.UTForTrueAnomalyForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DATE));
             registerAPI(new APIEntry(
                 dataSources => {
                     if (FlightGlobals.fetch.VesselTarget == null) { return null; }
@@ -981,7 +981,7 @@ namespace Telemachus
                     if (orbitPatch == null) { return null; }
                     return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
                 },
-                "o.relativePositionAtTrueAnomalyForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given true anomaly [orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+                "tar.o.relativePositionAtTrueAnomalyForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given true anomaly [orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
