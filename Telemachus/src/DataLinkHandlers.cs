@@ -1192,6 +1192,49 @@ namespace Telemachus
                 "o.maneuverNodes", "Maneuver Nodes  [object maneuverNodes]",
                 formatters.ManeuverNodeList, APIEntry.UnitType.UNITLESS));
 
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float ut = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.TrueAnomalyAtUT(ut);
+                },
+                "o.maneuverNodes.trueAnomalyAtUTForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's True Anomaly at Universal Time [int id, orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float trueAnomaly = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+
+                    double now = Planetarium.GetUniversalTime();
+                    return orbitPatch.GetUTforTrueAnomaly(trueAnomaly, now);
+                },
+                "o.maneuverNodes.UTForTrueAnomalyForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's True Anomaly at Universal Time [int id, orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float trueAnomaly = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "o.maneuverNodes.relativePositionAtTrueAnomalyForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's predicted displacement from the center of the main body at the given true anomaly [int id, orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+
             registerAPI(new ActionAPIEntry(
                 dataSources =>
                 {
