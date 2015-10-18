@@ -29,9 +29,9 @@ namespace Telemachus
 
         #endregion
 
-        private static Dictionary<string,string> splitArguments(string argstring)
+        private static Dictionary<string,object> splitArguments(string argstring)
         {
-            var ret = new Dictionary<string, string>();
+            var ret = new Dictionary<string, object>();
             if (argstring.StartsWith("?")) argstring = argstring.Substring(1);
 
             foreach (var part in argstring.Split('&'))
@@ -45,6 +45,11 @@ namespace Telemachus
             return ret;
         }
 
+        private static IDictionary<string, object> parseJSONBody(string jsonBody)
+        {
+            return (IDictionary<string, object>)SimpleJson.SimpleJson.DeserializeObject(jsonBody);
+        }
+
         public bool process(HttpListenerRequest request, HttpListenerResponse response)
         {
             if (!request.RawUrl.StartsWith(PAGE_PREFIX)) return false;
@@ -54,21 +59,31 @@ namespace Telemachus
             // Don't count headers + request.Headers.AllKeys.Sum(x => x.Length + request.Headers[x].Length + 1);
             dataRates.RecieveDataFromClient(Convert.ToInt32(byteCount));
 
-            var apiRequests = splitArguments(request.Url.Query);
+            IDictionary<string, object> apiRequests;
+            if (request.HttpMethod.ToUpper() == "POST" && request.HasEntityBody)
+            {
+                System.IO.StreamReader streamReader = new System.IO.StreamReader(request.InputStream);
+                apiRequests = parseJSONBody(streamReader.ReadToEnd());
+            }
+            else
+            {
+                apiRequests = splitArguments(request.Url.Query);
+            }
 
             var results = new Dictionary<string, object>();
             var unknowns = new List<string>();
             var errors = new Dictionary<string, string>();
+            
             foreach (var name in apiRequests.Keys)
             {
                 try {
-                    results[name] = kspAPI.ProcessAPIString(apiRequests[name]);
+                    results[name] = kspAPI.ProcessAPIString(apiRequests[name].ToString());
                 } catch (IKSPAPI.UnknownAPIException)
                 {
-                    unknowns.Add(apiRequests[name]);
+                    unknowns.Add(apiRequests[name].ToString());
                 } catch (Exception ex)
                 {
-                    errors[apiRequests[name]] = ex.ToString();
+                    errors[apiRequests[name].ToString()] = ex.ToString();
                 }
             }
             // If we had any unrecognised API keys, let the user know

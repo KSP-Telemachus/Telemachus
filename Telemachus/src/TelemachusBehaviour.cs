@@ -72,7 +72,8 @@ namespace Telemachus
 
                     // Create the server and associate the dispatcher
                     webServer = new HttpServer(serverConfig.ipAddress, serverConfig.port);
-                    webServer.OnGet += webDispatcher.DispatchGet;
+                    webServer.OnGet += webDispatcher.DispatchRequest;
+                    webServer.OnPost += webDispatcher.DispatchRequest;
 
                     // Create the websocket server and attach to the web server
                     webServer.AddWebSocketService("/datalink", () => new KSPWebSocketService(apiInstance, rateTracker));

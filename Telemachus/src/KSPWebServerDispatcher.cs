@@ -17,7 +17,7 @@ namespace Telemachus
         private List<IHTTPRequestResponder> responderChain = new List<IHTTPRequestResponder>();
 
         /// Iterate over all responders to find one that works
-        public void DispatchGet(object sender, HttpRequestEventArgs request)
+        public void DispatchRequest(object sender, HttpRequestEventArgs request)
         {
             foreach (var responder in responderChain.Reverse<IHTTPRequestResponder>())
             {
