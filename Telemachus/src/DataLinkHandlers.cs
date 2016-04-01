@@ -526,6 +526,23 @@ namespace Telemachus
                 "f.abort", "Abort [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
+                dataSources => 
+                {
+                    bool pMode = dataSources.args.Count == 0 ? !FlightInputHandler.state.precisionMode : dataSources.args[0];
+                    
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources.Clone(),
+                        (x) => {
+                            FlightInputHandler.state.precisionMode = pMode;
+                            foreach ( Renderer renderer  in FlightInputHandler.inputGaugeRenderers)
+                                renderer.material.color = (!FlightInputHandler.state.precisionMode) ? XKCDColors.Orange : XKCDColors.BrightCyan;
+                            return 0d;
+                        }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver);
+                        return predictFailure(dataSources.vessel);
+                },
+                "f.precision", "Precision controls [optional bool on/off]", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom01),
                 "f.ag1", "Action Group 1 [optional bool on/off]", formatters.Default));
 
@@ -584,6 +601,10 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.Gear]; },
                 "v.gearValue", "Query gear value", formatters.Default, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightInputHandler.state.precisionMode; },
+                "v.precisionValue", "Query precision controls value", formatters.Default, APIEntry.UnitType.UNITLESS));
         }
 
         private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
