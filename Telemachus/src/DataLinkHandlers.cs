@@ -528,13 +528,13 @@ namespace Telemachus
             registerAPI(new ActionAPIEntry(
                 dataSources => 
                 {
-                    bool pMode = dataSources.args.Count == 0 ? !FlightInputHandler.state.precisionMode : dataSources.args[0];
+                    bool pMode = dataSources.args.Count == 0 ? bool.Parse(dataSources.args[0]) : !FlightInputHandler.fetch.precisionMode;
                     
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources.Clone(),
                         (x) => {
-                            FlightInputHandler.state.precisionMode = pMode;
-                            foreach ( Renderer renderer  in FlightInputHandler.inputGaugeRenderers)
-                                renderer.material.color = (!FlightInputHandler.state.precisionMode) ? XKCDColors.Orange : XKCDColors.BrightCyan;
+                            FlightInputHandler.fetch.precisionMode = pMode;
+                            foreach ( Renderer renderer  in FlightInputHandler.fetch.inputGaugeRenderers)
+                                renderer.material.color = (!FlightInputHandler.fetch.precisionMode) ? XKCDColors.Orange : XKCDColors.BrightCyan;
                             return 0d;
                         }),
                         UnityEngine.SendMessageOptions.DontRequireReceiver);
@@ -603,7 +603,7 @@ namespace Telemachus
                 "v.gearValue", "Query gear value", formatters.Default, APIEntry.UnitType.UNITLESS));
 
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return FlightInputHandler.state.precisionMode; },
+                dataSources => { return FlightInputHandler.fetch.precisionMode; },
                 "v.precisionValue", "Query precision controls value", formatters.Default, APIEntry.UnitType.UNITLESS));
         }
 
