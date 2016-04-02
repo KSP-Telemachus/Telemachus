@@ -528,7 +528,7 @@ namespace Telemachus
             registerAPI(new ActionAPIEntry(
                 dataSources => 
                 {
-                    bool pMode = dataSources.args.Count == 0 ? bool.Parse(dataSources.args[0]) : !FlightInputHandler.fetch.precisionMode;
+                    bool pMode = dataSources.args.Count > 0 ? bool.Parse(dataSources.args[0]) : !FlightInputHandler.fetch.precisionMode;
                     
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources.Clone(),
                         (x) => {
