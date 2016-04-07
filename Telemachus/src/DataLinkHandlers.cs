@@ -1447,11 +1447,7 @@ namespace Telemachus
                 dataSources => {
                     int bodyId = int.Parse(dataSources.args[0]);
                     float universalTime = float.Parse(dataSources.args[1]);
-                    if(bodyId == 0)
-                    {
-                        return Vector3d.zero;
-                    }
-                    return FlightGlobals.Bodies[bodyId].orbit.getTruePositionAtUT(universalTime);
+                    return FlightGlobals.Bodies[bodyId].getTruePositionAtUT(universalTime);
                 },
                 "b.o.truePositionAtUT", "True Position at the given UT [body id, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
