@@ -394,6 +394,8 @@ namespace Telemachus
 
                 var orbitPatchListData = new List<Dictionary<string, object>>();
 
+                if(orbitPatchList == null) { return orbitPatchListData; }
+
                 foreach (Orbit orbit in orbitPatchList)
                 {
                     orbitPatchListData.Add((Dictionary<string, object>)orbitFormatter.prepareForSerialization(orbit));
