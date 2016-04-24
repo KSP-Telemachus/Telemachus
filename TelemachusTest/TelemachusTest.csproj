@@ -74,7 +74,6 @@
     </Compile>
     <Compile Include="src\GenerateAPIDocumentation.cs" />
     <Compile Include="src\DummyKSPAPI.cs" />
-    <Compile Include="src\TelemachusWebSocketServerTest.cs" />
     <Compile Include="src\TelemachusWebServerTest.cs" />
     <Compile Include="src\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -83,14 +82,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Servers\ServersTest\ServersTest.csproj">
-      <Project>{def5477e-ce26-45df-8316-f762d7f417c0}</Project>
-      <Name>ServersTest</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Servers\Servers\Servers.csproj">
-      <Project>{57e9f7c0-db25-4b6d-aa53-c44d95b47468}</Project>
-      <Name>Servers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Telemachus\Telemachus.csproj">
       <Project>{af7df6b2-7d88-4399-92fc-e21ec15231de}</Project>
       <Name>Telemachus</Name>

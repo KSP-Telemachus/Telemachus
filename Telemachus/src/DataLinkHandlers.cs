@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Reflection;
-using Servers.AsynchronousServer;
 using System.Threading;
 using System.Collections;
 using UnityEngine;
@@ -827,7 +827,7 @@ namespace Telemachus
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return Planetarium.GetUniversalTime(); },
-                "t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.DATE));
+                "t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.DATE, true));
 
             registerAPI(new ActionAPIEntry(
                dataSources =>
@@ -1192,6 +1192,49 @@ namespace Telemachus
                 "o.maneuverNodes", "Maneuver Nodes  [object maneuverNodes]",
                 formatters.ManeuverNodeList, APIEntry.UnitType.UNITLESS));
 
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float ut = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.TrueAnomalyAtUT(ut);
+                },
+                "o.maneuverNodes.trueAnomalyAtUTForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's True Anomaly at Universal Time [int id, orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float trueAnomaly = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+
+                    double now = Planetarium.GetUniversalTime();
+                    return orbitPatch.GetUTforTrueAnomaly(trueAnomaly, now);
+                },
+                "o.maneuverNodes.UTForTrueAnomalyForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's True Anomaly at Universal Time [int id, orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float trueAnomaly = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "o.maneuverNodes.relativePositionAtTrueAnomalyForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's predicted displacement from the center of the main body at the given true anomaly [int id, orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+
             registerAPI(new ActionAPIEntry(
                 dataSources =>
                 {
@@ -1404,7 +1447,7 @@ namespace Telemachus
                 dataSources => {
                     int bodyId = int.Parse(dataSources.args[0]);
                     float universalTime = float.Parse(dataSources.args[1]);
-                    return FlightGlobals.Bodies[bodyId].orbit.getTruePositionAtUT(universalTime);
+                    return FlightGlobals.Bodies[bodyId].getTruePositionAtUT(universalTime);
                 },
                 "b.o.truePositionAtUT", "True Position at the given UT [body id, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
@@ -2061,25 +2104,15 @@ namespace Telemachus
                 partModules.Clear();
 
                 List<Part> partsWithSensors = vessel.parts.FindAll(p => p.Modules.Contains("ModuleEnviroSensor"));
-
                 foreach (Part part in partsWithSensors)
                 {
-                    foreach (var module in part.Modules)
+                    foreach (var module in part.Modules.OfType<ModuleEnviroSensor>())
                     {
-                        if (module.GetType().Equals(typeof(ModuleEnviroSensor)))
+                        if (!partModules.ContainsKey(module.sensorType))
                         {
-                            List<ModuleEnviroSensor> list = null;
-                            partModules.TryGetValue(((ModuleEnviroSensor)module).sensorType, out list);
-                            if (list == null)
-                            {
-                                PluginLogger.debug(((ModuleEnviroSensor)module).sensorType);
-                                list = new List<ModuleEnviroSensor>();
-                                partModules[((ModuleEnviroSensor)module).sensorType] = list;
-
-                            }
-
-                            list.Add((ModuleEnviroSensor)module);
+                            partModules[module.sensorType] = new List<ModuleEnviroSensor>();
                         }
+                        partModules[module.sensorType].Add(module);
                     }
                 }
             }
@@ -2103,7 +2136,7 @@ namespace Telemachus
                 dataSources => { return partPaused(); },
                 "p.paused", 
                 "Returns an integer indicating the state of antenna. 0 - Flight scene; 1 - Paused; 2 - No power; 3 - Off; 4 - Not found.", 
-                formatters.Default, APIEntry.UnitType.UNITLESS));
+                formatters.Default, APIEntry.UnitType.UNITLESS, true));
         }
 
         #endregion
@@ -2115,10 +2148,17 @@ namespace Telemachus
             bool result = FlightDriver.Pause ||
                 !TelemachusPowerDrain.isActive ||
                 !TelemachusPowerDrain.activeToggle ||
-                !VesselChangeDetector.hasTelemachusPart;
-
+                !VesselChangeDetector.hasTelemachusPart ||
+                !HighLogic.LoadedSceneIsFlight;
+            
             if (result)
             {
+                // If we aren't even in the flight scene, say so
+                if (!HighLogic.LoadedSceneIsFlight)
+                {
+                    return 5;
+                }
+
                 if (FlightDriver.Pause)
                 {
                     return 1;
@@ -2164,21 +2204,21 @@ namespace Telemachus
                     List<APIEntry> APIList = new List<APIEntry>();
                     kspAPI.getAPIList(ref APIList); return APIList;
                 },
-                "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.UNITLESS));
+                "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.UNITLESS, true));
 
             registerAPI(new APIEntry(
                 dataSources =>
                 {
                     List<String> IPList = new List<String>();
 
-                    foreach (System.Net.IPAddress a in serverConfiguration.ipAddresses)
+                    foreach (System.Net.IPAddress a in serverConfiguration.ValidIpAddresses)
                     {
                         IPList.Add(a.ToString());
                     }
 
                     return IPList;
                 },
-                "a.ip", "IP Addresses", formatters.StringArray, APIEntry.UnitType.UNITLESS));
+                "a.ip", "IP Addresses", formatters.StringArray, APIEntry.UnitType.UNITLESS, true));
 
             registerAPI(new APIEntry(
                 dataSources =>
@@ -2193,11 +2233,11 @@ namespace Telemachus
                 },
                 "a.apiSubSet",
                 "Subset of the API Listing [string api1, string api2, ... , string apiN]",
-                formatters.APIEntry, APIEntry.UnitType.STRING));
+                formatters.APIEntry, APIEntry.UnitType.STRING, true));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(); },
-                "a.version", "Telemachus Version", formatters.Default, APIEntry.UnitType.UNITLESS));
+                "a.version", "Telemachus Version", formatters.Default, APIEntry.UnitType.UNITLESS, true));
         }
 
         #endregion
@@ -2217,27 +2257,6 @@ namespace Telemachus
                     registerAPI(entry.Value);
                 }
             }
-        }
-
-        #endregion
-    }
-
-    public class DefaultDataLinkHandler : DataLinkHandler
-    {
-        #region Initialisation
-
-        public DefaultDataLinkHandler(FormatterProvider formatters)
-            : base(formatters)
-        {
-        }
-
-        #endregion
-
-        #region DataLinkHandler
-
-        public override bool process(String API, out APIEntry result)
-        {
-            throw new Servers.MinimalHTTPServer.ExceptionResponsePage("Bad data link reference.");
         }
 
         #endregion
@@ -2348,19 +2367,20 @@ namespace Telemachus
         public UnitType units { get; set; }
         public bool plotable { get; set; }
         public DataSourceResultFormatter formatter { get; set; }
-
+        public bool alwaysEvaluable { get; set; }
         #endregion
 
         #region Initialisation
 
         public APIEntry(DataLinkHandler.APIDelegate function, string APIString,
-            string name, DataSourceResultFormatter formatter, UnitType units)
+            string name, DataSourceResultFormatter formatter, UnitType units, bool alwaysEvaluable = false)
         {
             this.function = function;
             this.APIString = APIString;
             this.name = name;
             this.formatter = formatter;
             this.units = units;
+            this.alwaysEvaluable = alwaysEvaluable;
         }
 
         #endregion
@@ -2410,8 +2430,8 @@ namespace Telemachus
         #region Initialisation
 
         public PlotableAPIEntry(DataLinkHandler.APIDelegate function, string APIString, string name,
-           DataSourceResultFormatter formatter, UnitType units)
-            : base(function, APIString, name, formatter, units)
+           DataSourceResultFormatter formatter, UnitType units, bool alwaysEvaluable = false)
+            : base(function, APIString, name, formatter, units, alwaysEvaluable)
         {
             this.plotable = true;
         }

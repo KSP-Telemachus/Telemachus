@@ -1,14 +1,16 @@
 ﻿//Author: Richard Bunt
-#define SYSTEMIO
 
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Servers.MinimalHTTPServer;
+using WebSocketSharp.Net;
+using WebSocketSharp;
+using KSP.IO;
+using System.IO;
 
 namespace Telemachus
 {
-    class IOPageResponsibility : IHTTPRequestResponsibility
+    class IOPageResponsibility : IHTTPRequestResponder
     {
         #region Constants
 
@@ -16,83 +18,84 @@ namespace Telemachus
 
         #endregion
 
-        #region Delegates
+        #region IHTTPRequestResponder
 
-        static OKResponsePage.ByteReader KSPByteReader = fileName =>
+        public bool process(HttpListenerRequest request, HttpListenerResponse response)
         {
-
-#if (KSPIO)
-            KSP.IO.BinaryReader binaryReader = null;
-            long fileLen = 0;
-            if (fileName.Length > 0)
-            {
-                fileLen = KSP.IO.FileInfo.CreateForType<TelemachusDataLink>(fileName).Length;
-
-                if (fileLen > int.MaxValue)
-                {
-                    throw new ExceptionResponsePage("Unable to serve file, too large.");
-                }
-
-                binaryReader = KSP.IO.BinaryReader.CreateForType<TelemachusDataLink>
-                   (fileName);
-            }
-            byte[] content = binaryReader.ReadBytes((int)fileLen);
-            binaryReader.Close();
-#endif
-
-#if(SYSTEMIO)
-            byte[] content = System.IO.File.ReadAllBytes(buildPath(escapeFileName(fileName)));
-#endif
-
-            return content;
-        };
-
-        static OKResponsePage.TextReader KSPTextReader = fileName =>
-        {
-
-            if (fileName.Length > 0)
-            {
-#if (KSPIO)
-                KSP.IO.TextReader textReader = KSP.IO.TextReader.CreateForType<TelemachusDataLink>
-                   (fileName);
-                string content = textReader.ReadToEnd();
-                textReader.Close();
-#endif
-
-#if(SYSTEMIO)
-                string content = System.IO.File.ReadAllText(buildPath(escapeFileName(fileName)));
-#endif
-
-                return content;
-            }
-
-            return "";
-        };
-
-        #endregion
-
-        #region IHTTPRequestResponsibility
-
-        public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
-        {
-            if (request.path.StartsWith(PAGE_PREFIX))
+            if (request.RawUrl.StartsWith(PAGE_PREFIX))
             {
                 try
                 {
-                    OKResponsePage page = new OKResponsePage(
-                            KSPByteReader, KSPTextReader,
-                            request.path.Substring(PAGE_PREFIX.Length));
-                    ((Servers.MinimalHTTPServer.ClientConnection)cc).Send(page);
+                    var requestedFile = request.RawUrl.Substring(PAGE_PREFIX.Length);
+                    var contentType = GetContentType(Path.GetExtension(requestedFile));
+                    // Set a mime type, if we have one for this extension
+                    if (!string.IsNullOrEmpty(contentType.mimeType))
+                    {
+                        response.ContentType = contentType.mimeType;
+                    }
+
+                    // Read the data, and set encoding type if text. Assume that any text encoding is UTF-8 (probably).
+                    byte[] contentData = System.IO.File.ReadAllBytes(buildPath(escapeFileName(requestedFile)));
+                    if (contentType.contentType == HTMLContentType.TextContent)
+                    {
+                        response.ContentEncoding = Encoding.UTF8;
+                    }
+                    // Write out the response to the client
+                    response.WriteContent(contentData);
 
                     return true;
                 }
                 catch
                 {
-                    return false;
+
                 }
             }
-
             return false;
+        }
+
+        #endregion
+
+        #region Content Type Determination
+
+        /// Retrieve whether a specific extension is text, binary, and what it's mimetype is.
+        private enum HTMLContentType
+        {
+            TextContent,
+            BinaryContent,
+        }
+        private struct HTMLResponseContentType
+        {
+            public HTMLContentType contentType;
+            public string mimeType;
+        }
+        private Dictionary<string, HTMLResponseContentType> contentTypes = null;
+        private HTMLResponseContentType GetContentType(string extension)
+        {
+            if (contentTypes == null)
+            {
+                contentTypes = new Dictionary<string, HTMLResponseContentType>();
+                contentTypes[".html"] = new HTMLResponseContentType { contentType = HTMLContentType.TextContent, mimeType = "text/html" };
+                contentTypes[".css"] = new HTMLResponseContentType { contentType = HTMLContentType.TextContent, mimeType = "text/css" };
+                contentTypes[".js"] = new HTMLResponseContentType { contentType = HTMLContentType.TextContent, mimeType = "application/x-javascript" };
+                contentTypes[".jpg"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "image/jpeg" };
+                contentTypes[".jpeg"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "image/jpeg" };
+                contentTypes[".png"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "image/png" };
+                contentTypes[".gif"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "image/gif" };
+                contentTypes[".svg"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "image/svg+xml" };
+                contentTypes[".eot"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "application/vnd.ms-fontobject" };
+                contentTypes[".ttf"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "application/font-sfnt" };
+                contentTypes[".woff"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "application/font-woff" };
+                contentTypes[".otf"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "application/font-sfnt" };
+                contentTypes[""] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = null };
+
+            }
+            if (contentTypes.ContainsKey(extension))
+            {
+                return contentTypes[extension];
+            } else
+            {
+                return contentTypes[""];
+            }
         }
 
         #endregion
