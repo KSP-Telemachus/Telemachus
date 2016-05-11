@@ -8,6 +8,8 @@ using System.Threading;
 using System.Collections;
 using UnityEngine;
 
+using KSP.UI.Screens;
+
 namespace Telemachus
 {
     public class MechJebDataLinkHandler : DataLinkHandler
@@ -444,7 +446,7 @@ namespace Telemachus
                 dataSources =>
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources.Clone(),
-                        (x) => { Staging.ActivateNextStage(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
+                        (x) => { StageManager.ActivateNextStage(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
                     return predictFailure(dataSources.vessel);
                 }, "f.stage", "Stage", formatters.Default));
 
