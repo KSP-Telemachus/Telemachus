@@ -40,7 +40,7 @@ namespace Telemachus
         /// <param name="time">The current time, in seconds.</param>
         public bool UpdateRequired(float time)
         {
-            if ((time-lastUpdate) > streamRate/1000)
+            if ((time-lastUpdate) > streamRate/1000f)
             {
                 return readyToSend;
             }
