@@ -983,6 +983,21 @@ namespace Telemachus
                     return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
                 },
                 "tar.o.relativePositionAtTrueAnomalyForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given true anomaly [orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new APIEntry(
+                dataSources => {
+                    if (FlightGlobals.fetch.VesselTarget == null) { return null; }
+                    int index = int.Parse(dataSources.args[0]);
+                    float ut = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(FlightGlobals.fetch.VesselTarget.GetOrbit(), index);
+                    if (orbitPatch == null) { return null; }
+
+                    double trueAnomaly = orbitPatch.TrueAnomalyAtUT(ut);
+
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "tar.o.relativePositionAtUTForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given universal time [orbit patch index, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
@@ -1784,6 +1799,18 @@ namespace Telemachus
                 },
                 "o.relativePositionAtTrueAnomalyForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given true anomaly [orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
 
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    int index = int.Parse(dataSources.args[0]);
+                    float ut = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(dataSources.vessel.orbit, index);
+                    if (orbitPatch == null) { return null; }
+
+                    double trueAnomaly = orbitPatch.TrueAnomalyAtUT(ut);
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "o.relativePositionAtUTForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given universal time [orbit patch index, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
 
         }
 
