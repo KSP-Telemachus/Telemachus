@@ -1250,6 +1250,23 @@ namespace Telemachus
                     return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
                 },
                 "o.maneuverNodes.relativePositionAtTrueAnomalyForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's predicted displacement from the center of the main body at the given true anomaly [int id, orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float ut = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+                    
+                    double trueAnomaly = orbitPatch.TrueAnomalyAtUT(ut);
+
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "o.maneuverNodes.relativePositionAtUTForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's predicted displacement from the center of the main body at the given universal time [int id, orbit patch index, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+
 
             registerAPI(new ActionAPIEntry(
                 dataSources =>
