@@ -988,14 +988,11 @@ namespace Telemachus
                 dataSources => {
                     if (FlightGlobals.fetch.VesselTarget == null) { return null; }
                     int index = int.Parse(dataSources.args[0]);
-                    float ut = float.Parse(dataSources.args[1]);
+                    double ut = double.Parse(dataSources.args[1]);
 
                     Orbit orbitPatch = OrbitPatches.getOrbitPatch(FlightGlobals.fetch.VesselTarget.GetOrbit(), index);
                     if (orbitPatch == null) { return null; }
-
-                    double trueAnomaly = orbitPatch.TrueAnomalyAtUT(ut);
-
-                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                    return orbitPatch.getRelativePositionAtUT(ut);
                 },
                 "tar.o.relativePositionAtUTForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given universal time [orbit patch index, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
@@ -1256,14 +1253,12 @@ namespace Telemachus
                     if (node == null) { return null; }
 
                     int index = int.Parse(dataSources.args[1]);
-                    float ut = float.Parse(dataSources.args[2]);
+                    double ut = double.Parse(dataSources.args[2]);
 
                     Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
                     if (orbitPatch == null) { return null; }
-                    
-                    double trueAnomaly = orbitPatch.TrueAnomalyAtUT(ut);
 
-                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                    return orbitPatch.getRelativePositionAtUT(ut);
                 },
                 "o.maneuverNodes.relativePositionAtUTForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's predicted displacement from the center of the main body at the given universal time [int id, orbit patch index, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
 
@@ -1664,7 +1659,13 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.geeForce; },
                 "v.geeForce", "G-Force", formatters.Default, APIEntry.UnitType.G));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return dataSources.vessel.atmDensity; },
+                dataSources => {
+                    double atmosphericPressure = FlightGlobals.getStaticPressure(dataSources.vessel.altitude, dataSources.vessel.mainBody);
+                    double temperature = FlightGlobals.getExternalTemperature(dataSources.vessel.altitude, dataSources.vessel.mainBody);
+                    double atmosphericDensityinKilograms = FlightGlobals.getAtmDensity(atmosphericPressure, temperature);
+                    return atmosphericDensityinKilograms * 1000;
+                    //return dataSources.vessel;
+                },
                 "v.atmosphericDensity", "Atmospheric Density", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.longitude > 180 ? dataSources.vessel.longitude - 360.0 : dataSources.vessel.longitude; },
@@ -1673,8 +1674,14 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.latitude; },
                 "v.lat", "Latitude", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return (dataSources.vessel.atmDensity * 0.5) * Math.Pow(dataSources.vessel.srf_velocity.magnitude, 2); },
+                dataSources => {return (dataSources.vessel.atmDensity * 0.5) * Math.Pow(dataSources.vessel.srf_velocity.magnitude, 2); },
                 "v.dynamicPressure", "Dynamic Pressure", formatters.Default, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.getStaticPressure(dataSources.vessel.altitude, dataSources.vessel.mainBody) * 1000; },
+                "v.atmosphericPressurePa", "Atmospheric Pressure (Pa)", formatters.Default, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.getStaticPressure(dataSources.vessel.altitude, dataSources.vessel.mainBody) * PhysicsGlobals.KpaToAtmospheres; },
+                "v.atmosphericPressure", "Atmospheric Pressure", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.name; },
                 "v.name", "Name", formatters.Default, APIEntry.UnitType.STRING));
@@ -1819,13 +1826,12 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => {
                     int index = int.Parse(dataSources.args[0]);
-                    float ut = float.Parse(dataSources.args[1]);
+                    double ut = double.Parse(dataSources.args[1]);
 
                     Orbit orbitPatch = OrbitPatches.getOrbitPatch(dataSources.vessel.orbit, index);
                     if (orbitPatch == null) { return null; }
 
-                    double trueAnomaly = orbitPatch.TrueAnomalyAtUT(ut);
-                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                    return orbitPatch.getRelativePositionAtUT(ut);
                 },
                 "o.relativePositionAtUTForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given universal time [orbit patch index, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
 
@@ -2442,7 +2448,14 @@ namespace Telemachus
             while(nextOrbitPatch != null && nextOrbitPatch.activePatch)
             {
                 orbitPatches.Add(nextOrbitPatch);
-                nextOrbitPatch = nextOrbitPatch.nextPatch;
+                if (nextOrbitPatch.patchEndTransition == Orbit.PatchTransitionType.MANEUVER)
+                {
+                    break;
+                }
+                else
+                {
+                    nextOrbitPatch = nextOrbitPatch.nextPatch;
+                }
             }
 
             return orbitPatches;
