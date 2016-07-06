@@ -356,6 +356,7 @@ namespace Telemachus
                 
                 orbitPatchData["startUT"] = orbit.StartUT;
                 orbitPatchData["endUT"] = orbit.EndUT;
+                orbitPatchData["patchStartTransition"] = orbit.patchStartTransition.ToString();
                 orbitPatchData["patchEndTransition"] = orbit.patchEndTransition.ToString();
                 orbitPatchData["PeA"] = orbit.PeA;
                 orbitPatchData["ApA"] = orbit.ApA;
