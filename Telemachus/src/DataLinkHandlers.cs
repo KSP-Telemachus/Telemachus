@@ -700,7 +700,7 @@ namespace Telemachus
                         UnityEngine.SendMessageOptions.DontRequireReceiver);
                         return predictFailure(dataSources.vessel);
                 },
-                "f.precision", "Precision controls [optional bool on/off]", formatters.Default));
+                "f.precisionControl", "Precision controls [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom01),
@@ -764,7 +764,7 @@ namespace Telemachus
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return FlightInputHandler.fetch.precisionMode; },
-                "v.precisionValue", "Query precision controls value", formatters.Default, APIEntry.UnitType.UNITLESS));
+                "v.precisionControlValue", "Query precision controls value", formatters.Default, APIEntry.UnitType.UNITLESS));
         }
 
         private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
