@@ -677,14 +677,25 @@ namespace Telemachus
             registerAPI(new ActionAPIEntry(
                 dataSources => 
                 {
-                    bool pMode = dataSources.args.Count > 0 ? bool.Parse(dataSources.args[0]) : !FlightInputHandler.fetch.precisionMode;
+                    bool state = dataSources.args.Count > 0 ? bool.Parse(dataSources.args[0]) : !FlightInputHandler.fetch.precisionMode;
                     
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources.Clone(),
                         (x) => {
-                            FlightInputHandler.fetch.precisionMode = pMode;
-                            foreach ( Renderer renderer  in FlightInputHandler.fetch.inputGaugeRenderers)
-                                renderer.material.color = (!FlightInputHandler.fetch.precisionMode) ? XKCDColors.Orange : XKCDColors.BrightCyan;
-                            return 0d;
+
+                            FlightInputHandler.fetch.precisionMode = state;
+                            // Update the UI.
+                            // MOARdV: In 1.1, this only affects the normal flight display,
+                            // not the docking mode display.
+                            var gauges = UnityEngine.Object.FindObjectOfType<KSP.UI.Screens.Flight.LinearControlGauges>();
+                            if (gauges != null)
+                            {
+                                //JUtil.LogMessage(this, "{0} input gauge images", gauges.inputGaugeImages.Count);
+                                for (int i = 0; i < gauges.inputGaugeImages.Count; ++i)
+                                {
+                                    gauges.inputGaugeImages[i].color = (state) ? XKCDColors.BrightCyan : XKCDColors.Orange;
+                                }
+                            }
+                            return Convert.ToInt32(state);
                         }),
                         UnityEngine.SendMessageOptions.DontRequireReceiver);
                         return predictFailure(dataSources.vessel);
