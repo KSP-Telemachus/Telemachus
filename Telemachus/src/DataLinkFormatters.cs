@@ -21,6 +21,10 @@ namespace Telemachus
         public DataSourceResultFormatter ActiveResourceList { get; set; }
         public DataSourceResultFormatter MaxResourceList { get; set; }
         public DataSourceResultFormatter MaxCurrentResourceList { get; set; }
+        public DataSourceResultFormatter MechJebSimulation { get; set; }
+        public DataSourceResultFormatter OrbitPatchList { get; set; }
+        public DataSourceResultFormatter ManeuverNode { get; set; }
+        public DataSourceResultFormatter ManeuverNodeList { get; set; }
         public DataSourceResultFormatter APIEntry { get; set; }
         public DataSourceResultFormatter Vector3d { get; set; }
         public DataSourceResultFormatter Default { get; set; }
@@ -51,6 +55,10 @@ namespace Telemachus
             CurrentResourceList = new CurrentResourceListJSONFormatter();
             MaxCurrentResourceList = new ActiveResourceTotalListJSONFormatter();
             APIEntry = new APIEntryJSONFormatter();
+            MechJebSimulation = new MechJebSimulationJSONFormatter();
+            ManeuverNode = new ManeuverNodeJSONFormatter();
+            ManeuverNodeList = new ManeuverNodeListJSONFormatter();
+            OrbitPatchList = new OrbitPatchListJSONFormatter();
             Vector3d = new Vector3dJSONFormatter();
             StringArray = new APIEntryStringArrayFormatter();
             Default = new DefaultJSONFormatter();
@@ -74,6 +82,7 @@ namespace Telemachus
             public override object prepareForSerialization(object input)
             {
                 var vec = (Vector3d)input;
+                if(vec == null) { return null; }
                 return new[] { vec.x, vec.y, vec.z };
             }
         }
@@ -222,6 +231,178 @@ namespace Telemachus
                     sensorValues.Add(0);
                 }
                 return new object[] { sensorNames, sensorValues };
+            }
+        }
+
+        public class MechJebSimulationJSONFormatter : JSONFormatter
+        {
+            public override object prepareForSerialization(object input)
+            {
+                var simuluation = input as MechJebDataLinkHandler.MechJebSimulation;
+
+                if(simuluation == null) { return null; }
+
+                var simulationData = new Dictionary<string, object>();
+
+                simulationData["atmo"] = this.convertStageList(simuluation.atmoStats);
+                simulationData["vacuum"] = this.convertStageList(simuluation.vacuumStats);
+                return simulationData;
+            }
+
+            private List<Dictionary<string, object>> convertStageList(List<MechJebDataLinkHandler.MechJebStageSimulationStats> stats)
+            {
+                var result = new List<Dictionary<string, object>>();
+
+                foreach(var stat in stats)
+                {
+                    var stage = new Dictionary<string, object>();
+                    stage["startMass"] = stat.startMass;
+                    stage["endMass"] = stat.endMass;
+                    stage["startThrust"] = stat.startThrust;
+                    stage["maxAccel"] = stat.maxAccel;
+                    stage["deltaTime"] = stat.deltaTime;
+                    stage["deltaV"] = stat.deltaV;
+                    stage["resourceMass"] = stat.resourceMass;
+                    stage["isp"] = stat.isp;
+                    stage["stagedMass"] = stat.stagedMass;
+
+                    result.Add(stage);
+                }
+
+                return result;
+            }
+        }
+
+        // the formatter that can convert a single maneuver node to JSON
+        public class ManeuverNodeJSONFormatter : JSONFormatter
+        {
+            private Vector3dJSONFormatter vectorFormatter = new Vector3dJSONFormatter();
+            private OrbitPatchListJSONFormatter orbitPatchesFormatter = new OrbitPatchListJSONFormatter();
+            public override object prepareForSerialization(object input)
+            {
+                var maneuverNode = input as ManeuverNode;
+
+                if (maneuverNode == null) { return null; }
+
+                var maneuverNodeData = new Dictionary<string, object>();
+
+                Orbit orbit = maneuverNode.nextPatch;
+
+                maneuverNodeData["UT"] = maneuverNode.UT;
+                maneuverNodeData["deltaV"] = vectorFormatter.prepareForSerialization(maneuverNode.DeltaV);
+                maneuverNodeData["PeA"] = orbit.PeA;
+                maneuverNodeData["ApA"] = orbit.ApA;
+                maneuverNodeData["inclination"] = orbit.inclination;
+                maneuverNodeData["eccentricity"] = orbit.eccentricity;
+                maneuverNodeData["epoch"] = orbit.epoch;
+                maneuverNodeData["period"] = orbit.period;
+                maneuverNodeData["argumentOfPeriapsis"] = orbit.argumentOfPeriapsis;
+                maneuverNodeData["sma"] = orbit.semiMajorAxis;
+                maneuverNodeData["lan"] = orbit.LAN;
+                maneuverNodeData["maae"] = orbit.meanAnomalyAtEpoch;
+                maneuverNodeData["referenceBody"] = orbit.referenceBody.name;
+                if (orbit.closestEncounterBody != null)
+                {
+                    maneuverNodeData["closestEncounterBody"] = orbit.closestEncounterBody.name;
+                }
+                else
+                {
+                    maneuverNodeData["closestEncounterBody"] = null;
+                }
+
+                List<Orbit> orbitPatches = OrbitPatches.getPatchesForOrbit(orbit);
+
+                if(orbitPatches != null)
+                {
+                    maneuverNodeData["orbitPatches"] = orbitPatchesFormatter.prepareForSerialization(orbitPatches);
+                }
+                else
+                {
+                    maneuverNodeData["orbitPatches"] = null;
+                }
+
+                return maneuverNodeData;
+            }
+        }
+
+        //the formatter that can convert a list of maneuver nodes to JSON
+        public class ManeuverNodeListJSONFormatter : JSONFormatter
+        {
+            private ManeuverNodeJSONFormatter nodeFormatter = new ManeuverNodeJSONFormatter();
+            public override object prepareForSerialization(object input)
+            {
+                var maneuverNodeList = input as List<ManeuverNode>;
+
+                var maneuverNodeListData = new List<Dictionary<string, object>>();
+                
+                foreach(ManeuverNode node in maneuverNodeList)
+                {
+                    maneuverNodeListData.Add((Dictionary<string, object>)nodeFormatter.prepareForSerialization(node));
+                }
+
+                return maneuverNodeListData;
+            }
+        }
+
+        // the formatter that can convert a single maneuver node to JSON
+        public class OrbitPatchJSONFormatter : JSONFormatter
+        {
+            public override object prepareForSerialization(object input)
+            {
+                Orbit orbit = input as Orbit;
+                if (orbit == null) { return null; }
+
+                var orbitPatchData = new Dictionary<string, object>();
+                
+                orbitPatchData["startUT"] = orbit.StartUT;
+                orbitPatchData["endUT"] = orbit.EndUT;
+                orbitPatchData["patchStartTransition"] = orbit.patchStartTransition.ToString();
+                orbitPatchData["patchEndTransition"] = orbit.patchEndTransition.ToString();
+                orbitPatchData["PeA"] = orbit.PeA;
+                orbitPatchData["ApA"] = orbit.ApA;
+                orbitPatchData["inclination"] = orbit.inclination;
+                orbitPatchData["eccentricAnomaly"] = orbit.eccentricity;
+                orbitPatchData["eccentricity"] = orbit.eccentricity;
+                orbitPatchData["epoch"] = orbit.epoch;
+                orbitPatchData["period"] = orbit.period;
+                orbitPatchData["argumentOfPeriapsis"] = orbit.argumentOfPeriapsis;
+                orbitPatchData["sma"] = orbit.semiMajorAxis;
+                orbitPatchData["lan"] = orbit.LAN;
+                orbitPatchData["maae"] = orbit.meanAnomalyAtEpoch;
+                orbitPatchData["referenceBody"] = orbit.referenceBody.name;
+                orbitPatchData["semiLatusRectum"] = orbit.semiLatusRectum;
+                orbitPatchData["semiMinorAxis"] = orbit.semiMinorAxis;
+                if (orbit.closestEncounterBody != null)
+                {
+                    orbitPatchData["closestEncounterBody"] = orbit.closestEncounterBody.name;
+                }
+                else
+                {
+                    orbitPatchData["closestEncounterBody"] = null;
+                }
+
+                return orbitPatchData;
+            }
+        }
+
+        //the formatter that can convert a list of maneuver nodes to JSON
+        public class OrbitPatchListJSONFormatter : JSONFormatter
+        {
+            private OrbitPatchJSONFormatter orbitFormatter = new OrbitPatchJSONFormatter();
+            public override object prepareForSerialization(object input)
+            {
+                var orbitPatchList = input as List<Orbit>;
+
+                var orbitPatchListData = new List<Dictionary<string, object>>();
+
+                if(orbitPatchList == null) { return orbitPatchListData; }
+
+                foreach (Orbit orbit in orbitPatchList)
+                {
+                    orbitPatchListData.Add((Dictionary<string, object>)orbitFormatter.prepareForSerialization(orbit));
+                }
+
+                return orbitPatchListData;
             }
         }
     }

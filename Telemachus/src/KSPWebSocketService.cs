@@ -1,261 +1,219 @@
-﻿//Author: Richard Bunt
-using Servers;
-using Servers.MinimalWebSocketServer;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Timers;
+using WebSocketSharp;
+using WebSocketSharp.Server;
 
 namespace Telemachus
 {
-    public class KSPWebSocketService : IWebSocketService
+    class KSPWebSocketService : WebSocketBehavior
     {
-        #region Data Rate Fields
-
-        public const int RATE_AVERAGE_SAMPLE_SIZE = 20;
-        static public UpLinkDownLinkRate dataRates { get { return itsDataRates; } set { itsDataRates = value; } }
-        private static UpLinkDownLinkRate itsDataRates = new UpLinkDownLinkRate(RATE_AVERAGE_SAMPLE_SIZE);
-
-        #endregion
-
-        private int MAX_STREAM_RATE = 0;
-
-        private IKSPAPI kspAPI = null;
-        private Servers.AsynchronousServer.ClientConnection clientConnection = null;
-
-        private Regex matchJSONAttributes = new Regex(@"[\{""|,""|,""]([^"":]*)"":([^:]*)[,|\}]");
-
-        private IterationToEvent<UpdateTimerEventArgs> gameLoopEvent = null;
-        private UpdateTimer streamTimer = new UpdateTimer();
-
+        /// How often we should send out reports to clients
         private int streamRate = 500;
-        HashSet<string> subscriptions = new HashSet<string>();
-        HashSet<string> toRun = new HashSet<string>();
-        readonly private System.Object subscriptionLock = new System.Object();
+        /// The list of variables to send out every time we communicate
+        private HashSet<string> subscriptions = new HashSet<string>();
+        /// A list of variables to evaluate ONLY the next time we are triggered
+        private HashSet<string> oneShotRuns   = new HashSet<string>();
+        /// A list of variables that the user has subscribed to binary updates of
+        private string[] binarySubscriptions = new string[] { };
+        ///  A lock to prevent simultaneous reading/updating of the client parameters
+        readonly private object dataLock = new object();
 
-        public KSPWebSocketService(IKSPAPI kspAPI, Servers.AsynchronousServer.ClientConnection clientConnection, IterationToEvent<UpdateTimerEventArgs> gameLoopEvent)
-            : this(kspAPI, gameLoopEvent)
+        /// Track how much data we are sending/receiving
+        private UpLinkDownLinkRate dataRates = null;
+
+        /// Prevent trying to send more data when the last lot hasn't finished yet
+        private bool readyToSend = true;
+        private float lastUpdate = -500;
+        private IKSPAPI api = null;
+
+        public KSPWebSocketService(IKSPAPI api, UpLinkDownLinkRate rateTracker)
         {
-            this.clientConnection = clientConnection;
-            streamTimer.Interval = streamRate;
-            streamTimer.Elapsed += streamData;
-            streamTimer.Enabled = true;
+            this.api = api;
+            dataRates = rateTracker;
         }
 
-        public KSPWebSocketService(IKSPAPI kspAPI, IterationToEvent<UpdateTimerEventArgs> gameLoopEvent)
+        /// Does this client connection need to be updated?
+        /// Checks the elapsed time, and the current sending state, to determine
+        /// if we want to be updated.
+        /// <param name="time">The current time, in seconds.</param>
+        public bool UpdateRequired(float time)
         {
-            this.kspAPI = kspAPI;
-            this.gameLoopEvent = gameLoopEvent;
-            gameLoopEvent.Iterated += streamTimer.update;
-        }
-
-        private void streamData(object sender, UpdateTimerEventArgs e)
-        {
-            DataSources dataSources = new DataSources();
-
-            lock (subscriptionLock)
+            if ((time-lastUpdate) > streamRate/1000f)
             {
-                streamTimer.Interval = streamRate;
-
-                if (toRun.Count + subscriptions.Count > 0)
-                {
-                    try
-                    {
-                        var entries = new Dictionary<string,object>();
-
-                        APIEntry entry = null;
-
-                        dataSources.vessel = kspAPI.getVessel();
-
-                        //Only parse the paused argument if the active vessel is null
-                        if (dataSources.vessel != null)
-                        {
-                            toRun.UnionWith(subscriptions);
-
-                            foreach (string s in toRun)
-                            {
-                                DataSources dataSourcesClone = dataSources.Clone();
-                                string trimedQuotes = s.Trim();
-                                string refArg = trimedQuotes;
-                                kspAPI.parseParams(ref refArg, ref dataSourcesClone);
-
-                                kspAPI.process(refArg, out entry);
-
-                                if (entry != null)
-                                {
-                                    dataSourcesClone.setVarName(trimedQuotes);
-                                    entries[dataSourcesClone.getVarName()] = entry.formatter.prepareForSerialization(entry.function(dataSourcesClone));
-                                }
-                            }
-
-                            toRun.Clear();
-                            
-                            WebSocketFrame frame = new WebSocketFrame(Encoding.UTF8.GetBytes(SimpleJson.SimpleJson.SerializeObject(entries)));
-                            byte[] bFrame = frame.AsBytes();
-                            dataRates.addDownLinkPoint(System.DateTime.Now, bFrame.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
-                            clientConnection.Send(bFrame);
-                        }
-                        else
-                        {
-                            sendNullMessage();
-                        }
-                    }
-                    catch(NullReferenceException)
-                    {
-                        PluginLogger.debug("Swallowing null reference exception, potentially due to async game state change.");
-                        sendNullMessage();
-                    }
-                    catch (Exception ex)
-                    {
-                        PluginLogger.debug("Closing socket due to potential client disconnect:" + ex.GetType().ToString());
-                        close();
-                    }
-                }
-                else
-                {
-                    sendNullMessage();
-                }
+                return readyToSend;
             }
+            return false;
         }
 
-        protected void sendNullMessage()
+        /// Process a message recieved from a client
+        protected override void OnMessage(MessageEventArgs e)
         {
-            WebSocketFrame frame = new WebSocketFrame(ASCIIEncoding.UTF8.GetBytes("{}"));
-            clientConnection.Send(frame.AsBytes());
-        }
+            // We only care about text messages, for now.
+            if (e.Type != Opcode.Text) return;
+            dataRates.RecieveDataFromClient(e.RawData.Length);
 
-        public void OpCodeText(object sender, FrameEventArgs e)
-        {
-            string command = e.frame.PayloadAsUTF8();
-            
-            dataRates.addUpLinkPoint(System.DateTime.Now, command.Length * UpLinkDownLinkRate.BITS_PER_BYTE);
-            
-            command = Regex.Replace(command, @"\s+", string.Empty);
+            // deserialize the message as JSON
+            var json = SimpleJson.SimpleJson.DeserializeObject(e.Data) as SimpleJson.JsonObject;
 
-            MatchCollection mc = matchJSONAttributes.Matches(command);
-
-            foreach (Match m in mc)
+            lock(dataLock)
             {
-                switch (m.Groups[1].ToString())
+                // Do any tasks requested here
+                foreach (var entry in json)
                 {
-                    case "+":
-                        subscribe(m.Groups[2].ToString());
-                        break;
-                    case "-":
-                        unsubscribe(m.Groups[2].ToString());
-                        break;
-                    case "run":
-                        run(m.Groups[2].ToString());
-                        break;
-                    case "rate":
-                        rate(m.Groups[2].ToString());
-                        break;
-                }
-            }
-        }
+                    // Try converting the item to a list - this is the most common expected.
+                    // If we got a string, then add it to the list to allow "one-shot" submission
+                    string[] listContents = new string[] { };
+                    if (entry.Value is SimpleJson.JsonArray)
+                    {
+                        listContents = (entry.Value as SimpleJson.JsonArray).OfType<string>().Select(x => x.Trim()).ToArray();
+                    } else if (entry.Value is string)
+                    {
+                        listContents = new[] { entry.Value as string };
+                    }
+                    
+                    // Process the possible API entries
+                    if (entry.Key == "+")
+                    {
+                        PluginLogger.print(string.Format("Client {0} added {1}", ID, string.Join(",", listContents)));
+                        subscriptions.UnionWith(listContents);
+                    }
+                    else if (entry.Key == "-")
+                    {
+                        PluginLogger.print(string.Format("Client {0} removed {1}", ID, string.Join(",", listContents)));
+                        subscriptions.ExceptWith(listContents);
+                    }
+                    else if (entry.Key == "run")
+                    {
+                        PluginLogger.print(string.Format("Client {0} running {1}", ID, string.Join(",", listContents)));
+                        oneShotRuns.UnionWith(listContents);
+                    }
+                    else if (entry.Key == "rate")
+                    {
+                        streamRate = Convert.ToInt32(entry.Value);
+                        PluginLogger.print(string.Format("Client {0} setting rate {1}", ID, streamRate));
+                    } else if (entry.Key == "binary")
+                    {
+                        binarySubscriptions = listContents;
+                        PluginLogger.print(string.Format("Client {0} requests binary packets {1}", ID, string.Join(", ", listContents)));
+                    } else
+                    {
+                        PluginLogger.print(String.Format("Client {0} send unrecognised key {1}", ID, entry.Key));
+                    }
+                } 
+            } // Lock
+        } // OnMessage
 
-        private void rate(string p)
+        /// Read all variables and send back the responses for just this client
+        public void SendDataUpdate()
         {
-            int proposedRate = 0;
-            lock (subscriptionLock)
+            // Don't do anything if we are e.g. still awaiting data to be fully set
+            if (!readyToSend) return;
+            lastUpdate = UnityEngine.Time.time;
+
+            // Grab all of the variables at once
+            string[] allVariables;
+            lock (dataLock)
+            {
+                allVariables = subscriptions.Union(oneShotRuns).Union(binarySubscriptions).ToArray();
+                oneShotRuns.Clear();
+            }
+
+            var vessel = api.getVessel();
+
+            // Now, process them all into a data dictionary
+            var apiResults = new Dictionary<string, object>();
+            var unknowns = new List<string>();
+            var errors = new Dictionary<string, string>();
+            foreach (var apiString in allVariables)
             {
                 try
                 {
-                    proposedRate = int.Parse(p);
+                    apiResults[apiString] = api.ProcessAPIString(apiString);
+                }
+                catch (IKSPAPI.UnknownAPIException)
+                {
+                    // IF we get this message, we know it was because no variable was found
+                    unknowns.Add(apiString);
+                } catch (IKSPAPI.VariableNotEvaluable)
+                {
+                    // We can't evaluate this at the moment. Just ignore until we can.
+                } catch (Exception ex)
+                {
+                    errors[apiString] = ex.ToString();
+                }
+            }
+            if (unknowns.Count > 0) apiResults["unknown"] = unknowns;
+            if (errors.Count > 0) apiResults["errors"] = errors;
 
-                    if (proposedRate >= MAX_STREAM_RATE)
+            // Handle sending a binary packet if requested
+            if (binarySubscriptions.Length > 0)
+            {
+                var variableValues = new List<float>();
+                // Read every binary value
+                foreach (var name in binarySubscriptions) {
+                    try {
+                        variableValues.Add(Convert.ToSingle(apiResults[name]));
+                    } catch (Exception ex)
                     {
-                        streamRate = proposedRate;
+                        variableValues.Add(0);
+                        if (apiResults.ContainsKey(name))
+                        {
+                            errors[name] = "Error streaming to binary " + name + "='" + apiResults[name] + "'; " + ex.ToString();
+                        } else
+                        {
+                            errors[name] = "Error streaming to binary: value for " + name + " not found; " + ex.ToString();
+                        }
                     }
                 }
-                catch (Exception)
-                {
-                    PluginLogger.debug("Swallowing integer parse failure when setting stream rate.");
-                }
+                // Which byte translation?
+                Func<float, IEnumerable<byte>> reverser = x => BitConverter.GetBytes(x).Reverse();
+                var byteTranslation = BitConverter.IsLittleEndian ? reverser : BitConverter.GetBytes;
+
+                // Now translate these to binary bytes
+                var byteData = new List<byte>();
+                byteData.Add(1);
+                byteData.AddRange(variableValues.SelectMany(x => byteTranslation(x)));
+                SendAsync(byteData.ToArray(), x => { });
             }
-        }
 
-        private string[] splitString(string p)
-        {
-            string[] strings = p.Substring(2, p.Length - 4).Split(new string[] {"\",\""}, StringSplitOptions.None);
+            //if (allVariables.Contains("binaryNavigation"))
+            //{
+            //    allVariables = allVariables.Where(x => x != "binaryNavigation").ToArray();
+            //    // Build and dispatch the binary information, here and quickly....
+            //    var pitch = Convert.ToSingle(api.ProcessAPIString("n.pitch"));
+            //    var roll = Convert.ToSingle(api.ProcessAPIString("n.roll"));
+            //    var heading = Convert.ToSingle(api.ProcessAPIString("n.heading"));
+            //    var deltaV = Convert.ToSingle(api.ProcessAPIString("v.verticalSpeed"));
+            //    var parts = new List<byte[]>();
+            //    parts.Add(new byte[] { 1 });
+            //    parts.Add(BitConverter.GetBytes(heading));
+            //    parts.Add(BitConverter.GetBytes(pitch));
+            //    parts.Add(BitConverter.GetBytes(roll));
+            //    parts.Add(BitConverter.GetBytes(deltaV));
+            //    if (BitConverter.IsLittleEndian) parts = parts.Select(x => x.Reverse().ToArray()).ToList();
+            //    var byteData = parts.SelectMany(x => x).ToArray();
+            //    SendAsync(byteData, x => { });
+            //    PluginLogger.print(string.Format("Send byte data for {0}, {1}, {2}, {3}", heading, pitch, roll, deltaV));
+            //}
 
-            for (int i = 0; i < strings.Length; i++)
+            var data = SimpleJson.SimpleJson.SerializeObject(apiResults);
+            // Now, if we have data send a message, otherwise send a null message
+            readyToSend = false;
+            try
             {
-                strings[i] = strings[i].Trim();
+               SendAsync(data, (b) => readyToSend = true);
+                dataRates.SendDataToClient(data.Length);
             }
-
-            return strings;
-        }
-
-        private void run(string p)
-        {
-            lock (subscriptionLock)
+            catch (Exception ex)
             {
-                toRun.UnionWith(splitString(p));
+                PluginLogger.print("Caught " + ex.ToString());
             }
-        }
-
-        private void unsubscribe(string p)
-        {
-            string[] toRemove = splitString(p);
-
-            lock (subscriptionLock)
+            finally
             {
-                foreach (string item in toRemove)
-                {
-                    subscriptions.Remove(item);
-                }
+                readyToSend = true;
             }
         }
-
-        private void subscribe(string p)
-        {
-            lock (subscriptionLock)
-            {
-                subscriptions.UnionWith(splitString(p));
-            }
-        }
-
-        public void OpCodeClose(object sender, FrameEventArgs frameEventArgs)
-        {
-            close();
-        }
-
-        public void Shutdown(EventArgs e)
-        {
-            close();
-        }
-
-        private void close()
-        {
-            gameLoopEvent.Iterated -= streamTimer.update;
-            clientConnection.tryShutdown();
-        }
-
-        public IWebSocketService buildService(Servers.AsynchronousServer.ClientConnection clientConnection)
-        {
-            return new KSPWebSocketService(kspAPI, clientConnection, gameLoopEvent);
-        }
-
-        #region Unused Callbacks
-
-        public void OpCodePing(object sender, FrameEventArgs e)
-        {
-
-        }
-
-        public void OpCodePong(object sender, FrameEventArgs e)
-        {
-
-        }
-
-        public void OpCodeBinary(object sender, FrameEventArgs frameEventArgs)
-        {
-
-        }
-
-        #endregion
     }
 }

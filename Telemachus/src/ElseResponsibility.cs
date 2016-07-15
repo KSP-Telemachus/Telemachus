@@ -1,12 +1,14 @@
 ﻿//Author: Richard Bunt
-using Servers.MinimalHTTPServer;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using WebSocketSharp;
+using WebSocketSharp.Net;
 
 namespace Telemachus
 {
-    class ElseResponsibility : IHTTPRequestResponsibility
+    class ElseResponsibility : IHTTPRequestResponder
     {
         #region Constants
 
@@ -14,21 +16,26 @@ namespace Telemachus
 
         #endregion
 
-        #region IHTTPRequestResponsibility
+        #region IHTTPRequestResponder
 
-        public bool process(Servers.AsynchronousServer.ClientConnection cc, HTTPRequest request)
+        public bool process(HttpListenerRequest request, HttpListenerResponse response)
         {
+            PluginLogger.print("Falling back on default handler");
+
+            // For now, copy the behaviour until we understand it more
             if (!KSP.IO.FileInfo.CreateForType<TelemachusDataLink>(INDEX_PAGE).Exists)
             {
-                throw new PageNotFoundResponsePage("Unable to find the Telemachus index page. Is it installed in the PluginData folder?");
+                throw new FileNotFoundException("Unable to find the Telemachus index page. Is it installed in the PluginData folder?");
             }
-            else
+            else if (request.RawUrl == "/" || request.RawUrl.ToLowerInvariant().StartsWith("/index"))
             {
-                throw new PageNotFoundResponsePage(
-                    "Did you mean to visit the <a href=\"/" + INDEX_PAGE + "\">index page</a>?");
+                // Just redirect them
+                var index = new Uri(request.Url, "/" + INDEX_PAGE);
+                response.Redirect(index.ToString());
+                return true;
             }
+            return false;
         }
-
         #endregion
     }
 }

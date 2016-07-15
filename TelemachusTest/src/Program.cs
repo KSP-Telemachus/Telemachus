@@ -28,7 +28,6 @@ namespace TelemachusTest
         private static void buildTests()
         {
             tests["HTTPTimeTest"] = new HTTPTimeTest(500);
-            tests["WebSocketServiceSubscriptionAndStream"] = new WebSocketServiceSubscriptionAndStream();
             tests["GenerateAPIDocumentation"] = new GenerateAPIDocumentation(); 
         }
     }
