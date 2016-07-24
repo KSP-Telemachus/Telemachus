@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using KSP.UI.Screens;
 
 namespace Telemachus
 {
@@ -153,7 +154,7 @@ namespace Telemachus
             {
                 return SumResources((List<PartResource>)input,
                     x => x.amount,
-                    x => x.part.inStageIndex == Staging.CurrentStage);
+                    x => x.part.inStageIndex == StageManager.CurrentStage);
             }
         }
 
