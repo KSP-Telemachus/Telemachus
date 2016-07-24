@@ -9,7 +9,7 @@ namespace Telemachus
     {
         #region Constants
 
-        public const int BITS_PER_BYTE = 8;
+        public const int DEFAULT_AVERAGE_SIZE = 20;
 
         #endregion
 
@@ -18,7 +18,7 @@ namespace Telemachus
         private static TimeSpan TIME_SPAN_5_SECONDS = new TimeSpan(0, 0, 5);
         private static DateTime TIME_ARBITRARY = System.DateTime.Now;
 
-        private int averageSize = 0;
+        private int averageSize = DEFAULT_AVERAGE_SIZE;
 
         private LinkedList<KeyValuePair<DateTime, int>> upLinkRate = new LinkedList<KeyValuePair<DateTime, int>>();
         private LinkedList<KeyValuePair<DateTime, int>> downLinkRate = new LinkedList<KeyValuePair<DateTime, int>>();
@@ -26,6 +26,11 @@ namespace Telemachus
         #endregion
 
         #region Constructors
+
+        public UpLinkDownLinkRate()
+        {
+
+        }
 
         public UpLinkDownLinkRate(int averageSize)
         {
@@ -36,14 +41,18 @@ namespace Telemachus
 
         #region Accessors
 
-        public void addUpLinkPoint(DateTime time, int bytes)
+        /// <summary>Add a data point for bytes recieved from the client (UPlink)</summary>
+        public void RecieveDataFromClient(int bytes)
         {
-            addGuardedPoint(time, bytes, upLinkRate);
+            // Convert to bits for the data rate
+            addGuardedPoint(DateTime.Now, bytes*8, upLinkRate);
         }
 
-        public void addDownLinkPoint(DateTime time, int bytes)
+        /// <summary>Add a data point for bytes sent to the client (DOWNlink)</summary>
+        public void SendDataToClient(int bytes)
         {
-            addGuardedPoint(time, bytes, downLinkRate);
+            // Convert to bits for the data rate
+            addGuardedPoint(DateTime.Now, bytes*8, downLinkRate);
         }
 
         public double getDownLinkRate()

@@ -9,7 +9,7 @@ namespace TelemachusTest
     public class DummyKSPAPI : IKSPAPI
     {
         public DummyKSPAPI(FormatterProvider formatters, VesselChangeDetector vesselChangeDetector,
-            Servers.AsynchronousServer.ServerConfiguration serverConfiguration)
+            ServerConfiguration serverConfiguration)
         {
             APIHandlers.Add(new DummyHandler(formatters));
         }
@@ -17,6 +17,11 @@ namespace TelemachusTest
         public override Vessel getVessel()
         {
             return null;
+        }
+
+        public override object ProcessAPIString(string apistring)
+        {
+            throw new NotImplementedException();
         }
     }
 

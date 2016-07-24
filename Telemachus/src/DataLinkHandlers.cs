@@ -2,11 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Reflection;
-using Servers.AsynchronousServer;
 using System.Threading;
 using System.Collections;
 using UnityEngine;
+using KSP.UI.Screens;
 
 namespace Telemachus
 {
@@ -166,6 +167,14 @@ namespace Telemachus
                     return predictFailure(dataSources.vessel);
                 },
                "mj.surface2", "Surface [double heading, double pitch, double roll]", formatters.Default));
+
+            registerAPI(new APIEntry(
+                dataSources => {
+                    PluginLogger.debug("Start GET");
+                    return getStagingInfo(dataSources);
+                },
+                "mj.stagingInfo", "Staging Info [object stagingInfo]",
+                formatters.MechJebSimulation, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
@@ -264,6 +273,64 @@ namespace Telemachus
             }
         }
 
+        private MechJebSimulation getStagingInfo(DataSources dataSources)
+        {
+            object stagingInfo = null;
+
+            PluginLogger.debug("Grabbing staging info");
+            Type stagingInfoType = getStagingInfoType(dataSources, ref stagingInfo);
+
+            MechJebSimulation stats = new MechJebSimulation();
+
+            if (stagingInfo != null)
+            {
+                PluginLogger.debug("Found the staging type, getting the staging info");
+
+                stats.convertMechJebData(stagingInfoType, stagingInfo);
+
+                return stats;
+            }
+
+            PluginLogger.debug("Could not get staging info");
+            return null;
+        }
+
+        private Type getStagingInfoType(DataSources dataSources, ref object stagingInfo)
+        {
+            PluginLogger.debug("Finding part for staging");
+            PartModule mechJebCore = findMechJeb(dataSources.vessel);
+
+            if (mechJebCore == null)
+            {
+                PluginLogger.debug("No Mechjeb part installed.");
+                return null;
+            }
+            else
+            {
+                try
+                {
+                    PluginLogger.debug("Mechjeb part installed, reflecting.");
+                    Type mechJebCoreType = mechJebCore.GetType();
+                    PluginLogger.debug("Trying to get computermodule Method info");
+                    MethodInfo mechJebCoreGetComputerModuleMethodInfo = mechJebCoreType.GetMethod("GetComputerModule", new[] {typeof(string) } );
+                    PluginLogger.debug("Trying to get calling computer method");
+                    stagingInfo = mechJebCoreGetComputerModuleMethodInfo.Invoke(mechJebCore, new object[] { "MechJebModuleStageStats" });
+
+                    PluginLogger.debug("Staging Info Type: " + stagingInfo.GetType().Name);
+                    PluginLogger.print("Staging Info Type: " + stagingInfo.GetType().Name);
+
+
+                    return stagingInfo.GetType();
+                }
+                catch (Exception e)
+                {
+                    PluginLogger.debug(e.Message + " " + e.StackTrace);
+                }
+
+                return null;
+            }
+        }
+
         private static int predictFailure(Vessel vessel)
         {
 
@@ -313,6 +380,88 @@ namespace Telemachus
             return PausedDataLinkHandler.partPaused();
         }
 
+        #endregion
+
+        #region Data Structures
+        public class MechJebSimulation
+        {
+            public List<MechJebStageSimulationStats> vacuumStats = new List<MechJebStageSimulationStats>();
+            public List<MechJebStageSimulationStats> atmoStats = new List<MechJebStageSimulationStats>();
+
+            public void convertMechJebData(Type stagingInfoType, object stagingInfo)
+            {
+                FieldInfo atmoStatsField = stagingInfoType.GetField("atmoStats", BindingFlags.Public | BindingFlags.Instance);
+                PluginLogger.debug("Getting Atmo Stats");
+                Array atmoStats = (Array)atmoStatsField.GetValue(stagingInfo);
+
+                this.populateStats(atmoStats, this.atmoStats);
+
+                FieldInfo vacStatsField = stagingInfoType.GetField("vacStats", BindingFlags.Public | BindingFlags.Instance);
+                PluginLogger.debug("Getting Vac Stats");
+                Array vacStats = (Array)vacStatsField.GetValue(stagingInfo);
+
+                this.populateStats(vacStats, this.vacuumStats);
+
+            }
+
+            private void populateStats(Array mechJebStatsArray, List<MechJebStageSimulationStats> destinationStats) {
+                PluginLogger.debug("Building stats object. Size: " + mechJebStatsArray.Length);
+                foreach (object mechJebStat in mechJebStatsArray)
+                {
+                    MechJebStageSimulationStats stat = new MechJebStageSimulationStats();
+
+                    //PluginLogger.debug("Getting Type");
+                    Type statType = mechJebStat.GetType();
+                    //PluginLogger.debug("Get start mass");
+                    stat.startMass = (float)statType.GetField("startMass").GetValue(mechJebStat);
+
+                    //PluginLogger.debug("Get end mass");
+                    stat.endMass = (float)statType.GetField("endMass").GetValue(mechJebStat);
+
+                    //PluginLogger.debug("Get start Thrust");
+                    stat.startThrust = (float)statType.GetField("startThrust").GetValue(mechJebStat);
+                    //PluginLogger.debug("startThrust: " + statType.GetField("startThrust").GetValue(mechJebStat).ToString());
+
+                    //PluginLogger.debug("Get max Accel");
+                    stat.maxAccel = (float)statType.GetField("maxAccel").GetValue(mechJebStat);
+
+                    //PluginLogger.debug("Get deltaTime");
+                    stat.deltaTime = (float)statType.GetField("deltaTime").GetValue(mechJebStat);
+
+                    //PluginLogger.debug("Get deltaV");
+                    stat.deltaV = (float)statType.GetField("deltaV").GetValue(mechJebStat);
+
+                    //PluginLogger.debug("Get resourceMass");
+                    stat.resourceMass = (float)statType.GetField("resourceMass").GetValue(mechJebStat);
+
+                    //PluginLogger.debug("Get isp");
+                    stat.isp = (float)statType.GetField("isp").GetValue(mechJebStat);
+                    //PluginLogger.debug("ISP: " + stat.stagedMass.ToString());
+
+                    //PluginLogger.debug("Get stagedMass");
+                    stat.stagedMass = (float)statType.GetField("stagedMass").GetValue(mechJebStat);
+                    //PluginLogger.debug("stagedMass: " + stat.stagedMass.ToString());
+
+                    destinationStats.AddUnique(stat);
+
+                    //PluginLogger.debug("Start Mass: " + stat.startMass.ToString());
+                }
+            }
+        }
+
+        public class MechJebStageSimulationStats
+        {
+            public float startMass;
+            public float endMass;
+            public float startThrust;
+            public float maxAccel;
+            public float deltaTime;
+            public float deltaV;
+
+            public float resourceMass;
+            public float isp;
+            public float stagedMass;
+        }
         #endregion
     }
 
@@ -444,7 +593,7 @@ namespace Telemachus
                 dataSources =>
                 {
                     TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources.Clone(),
-                        (x) => { Staging.ActivateNextStage(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
+						(x) => { StageManager.ActivateNextStage(); return 0d; }), UnityEngine.SendMessageOptions.DontRequireReceiver);
                     return predictFailure(dataSources.vessel);
                 }, "f.stage", "Stage", formatters.Default));
 
@@ -679,7 +828,7 @@ namespace Telemachus
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return Planetarium.GetUniversalTime(); },
-                "t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.DATE));
+                "t.universalTime", "Universal Time", formatters.Default, APIEntry.UnitType.DATE, true));
 
             registerAPI(new ActionAPIEntry(
                dataSources =>
@@ -786,6 +935,66 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources => { return FlightGlobals.fetch.VesselTarget != null ? FlightGlobals.fetch.VesselTarget.GetOrbit().referenceBody.name : ""; },
                "tar.o.orbitingBody", "Target Orbiting Body", formatters.Default, APIEntry.UnitType.STRING));
+            registerAPI(new APIEntry(
+                dataSources =>
+                {
+                    if (FlightGlobals.fetch.VesselTarget == null)
+                    {
+                        return null;
+                    }
+                    return OrbitPatches.getPatchesForOrbit(FlightGlobals.fetch.VesselTarget.GetOrbit());
+                },
+                "tar.o.orbitPatches", "Detailed Orbit Patches Info [object orbitPatchInfo]",
+                formatters.OrbitPatchList, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    if (FlightGlobals.fetch.VesselTarget == null) { return null; }
+                    int index = int.Parse(dataSources.args[0]);
+                    float ut = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(FlightGlobals.fetch.VesselTarget.GetOrbit(), index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.TrueAnomalyAtUT(ut);
+                },
+                "tar.o.trueAnomalyAtUTForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    if (FlightGlobals.fetch.VesselTarget == null) { return null; }
+                    int index = int.Parse(dataSources.args[0]);
+                    float trueAnomaly = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(FlightGlobals.fetch.VesselTarget.GetOrbit(), index);
+                    if (orbitPatch == null) { return null; }
+
+                    double now = Planetarium.GetUniversalTime();
+                    return orbitPatch.GetUTforTrueAnomaly(trueAnomaly, now);
+                },
+                "tar.o.UTForTrueAnomalyForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new APIEntry(
+                dataSources => {
+                    if (FlightGlobals.fetch.VesselTarget == null) { return null; }
+                    int index = int.Parse(dataSources.args[0]);
+                    float trueAnomaly = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(FlightGlobals.fetch.VesselTarget.GetOrbit(), index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "tar.o.relativePositionAtTrueAnomalyForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given true anomaly [orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new APIEntry(
+                dataSources => {
+                    if (FlightGlobals.fetch.VesselTarget == null) { return null; }
+                    int index = int.Parse(dataSources.args[0]);
+                    double ut = double.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(FlightGlobals.fetch.VesselTarget.GetOrbit(), index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.getRelativePositionAtUT(ut);
+                },
+                "tar.o.relativePositionAtUTForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given universal time [orbit patch index, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
@@ -942,6 +1151,9 @@ namespace Telemachus
 
     public class MapViewDataLinkHandler : DataLinkHandler
     {
+
+        static float ut = 0, x = 0, y = 0, z = 0;
+        static int maneuver_node_id = 0;
         #region Initialisation
 
         public MapViewDataLinkHandler(FormatterProvider formatters)
@@ -984,6 +1196,149 @@ namespace Telemachus
                       UnityEngine.SendMessageOptions.DontRequireReceiver); return false;
               },
               "m.exitMapView", " Exit Map View", formatters.Default));
+
+            registerAPI(new APIEntry(
+                dataSources => {
+                    PluginLogger.debug("Start GET");
+                    return dataSources.vessel.patchedConicSolver.maneuverNodes;
+                },
+                "o.maneuverNodes", "Maneuver Nodes  [object maneuverNodes]",
+                formatters.ManeuverNodeList, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float ut = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.TrueAnomalyAtUT(ut);
+                },
+                "o.maneuverNodes.trueAnomalyAtUTForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's True Anomaly at Universal Time [int id, orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float trueAnomaly = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+
+                    double now = Planetarium.GetUniversalTime();
+                    return orbitPatch.GetUTforTrueAnomaly(trueAnomaly, now);
+                },
+                "o.maneuverNodes.UTForTrueAnomalyForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's True Anomaly at Universal Time [int id, orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    float trueAnomaly = float.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "o.maneuverNodes.relativePositionAtTrueAnomalyForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's predicted displacement from the center of the main body at the given true anomaly [int id, orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                    int index = int.Parse(dataSources.args[1]);
+                    double ut = double.Parse(dataSources.args[2]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(node.nextPatch, index);
+                    if (orbitPatch == null) { return null; }
+
+                    return orbitPatch.getRelativePositionAtUT(ut);
+                },
+                "o.maneuverNodes.relativePositionAtUTForManeuverNodesOrbitPatch", "For a maneuver node, The orbit patch's predicted displacement from the center of the main body at the given universal time [int id, orbit patch index, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+
+
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+
+                    ut = float.Parse(dataSources.args[0]);
+                    ManeuverNode node = dataSources.vessel.patchedConicSolver.AddManeuverNode(ut);
+
+                    x = float.Parse(dataSources.args[1]);
+                    y = float.Parse(dataSources.args[2]);
+                    z = float.Parse(dataSources.args[3]);
+
+                    PluginLogger.debug("x: " + x + "y: " + y + "z: " + z);
+
+                    Vector3d deltaV = new Vector3d(x,y,z);
+                    node.OnGizmoUpdated(deltaV, ut);
+
+                    return node;
+                },
+                "o.addManeuverNode", "Add a manuever based on a UT and DeltaV X, Y and Z [float ut, float x, y, z]", formatters.ManeuverNode));
+
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return null; }
+
+                            
+                    ut = float.Parse(dataSources.args[1]);
+
+                    x = float.Parse(dataSources.args[2]);
+                    y = float.Parse(dataSources.args[3]);
+                    z = float.Parse(dataSources.args[4]);
+
+                    Vector3d deltaV = new Vector3d(x, y, z);
+                    node.OnGizmoUpdated(deltaV, ut);
+                    return node;
+                        
+                },
+                "o.updateManeuverNode", "Set a manuever node's UT and DeltaV X, Y and Z [int id, float ut, float x, y, z]", formatters.ManeuverNode));
+
+            registerAPI(new ActionAPIEntry(
+                dataSources =>
+                {
+                    ManeuverNode node = getManueverNode(dataSources, int.Parse(dataSources.args[0]));
+                    if (node == null) { return false; }
+
+                    dataSources.vessel.patchedConicSolver.RemoveManeuverNode(node);
+                    return true;
+                },
+                "o.removeManeuverNode", "Remove a manuever node [int id]", formatters.Default));
+        }
+
+
+
+        private ManeuverNode getManueverNode(DataSources datasources, int id)
+        {
+            PluginLogger.debug("GETTING NODE");
+            //return null if the count is less than the ID or the ID is negative
+            if(datasources.vessel.patchedConicSolver.maneuverNodes.Count <= id || id < 0)
+            {
+                return null;
+            }
+
+            PluginLogger.debug("FINDING THE RIGHT NODE. ID: " + id);
+            ManeuverNode[] nodes = datasources.vessel.patchedConicSolver.maneuverNodes.ToArray();
+            return (ManeuverNode) nodes.GetValue(id);
+        }
+
+        private float checkFlightStateParameters(float f)
+        {
+            if (float.IsNaN(f))
+            {
+                f = 0;
+            }
+
+            return Mathf.Clamp(f, -1f, 1f);
         }
 
         #endregion
@@ -1115,6 +1470,14 @@ namespace Telemachus
                     return (phaseAngle < 0) ? phaseAngle + 360 : phaseAngle;
                 },
                 "b.o.phaseAngle", "Phase Angle [body id]", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new APIEntry(
+                dataSources => {
+                    int bodyId = int.Parse(dataSources.args[0]);
+                    float universalTime = float.Parse(dataSources.args[1]);
+                    return FlightGlobals.Bodies[bodyId].getTruePositionAtUT(universalTime);
+                },
+                "b.o.truePositionAtUT", "True Position at the given UT [body id, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
         }
 
         #endregion
@@ -1296,7 +1659,13 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.geeForce; },
                 "v.geeForce", "G-Force", formatters.Default, APIEntry.UnitType.G));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return dataSources.vessel.atmDensity; },
+                dataSources => {
+                    double atmosphericPressure = FlightGlobals.getStaticPressure(dataSources.vessel.altitude, dataSources.vessel.mainBody);
+                    double temperature = FlightGlobals.getExternalTemperature(dataSources.vessel.altitude, dataSources.vessel.mainBody);
+                    double atmosphericDensityinKilograms = FlightGlobals.getAtmDensity(atmosphericPressure, temperature);
+                    return atmosphericDensityinKilograms * 1000;
+                    //return dataSources.vessel;
+                },
                 "v.atmosphericDensity", "Atmospheric Density", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.longitude > 180 ? dataSources.vessel.longitude - 360.0 : dataSources.vessel.longitude; },
@@ -1305,8 +1674,14 @@ namespace Telemachus
                 dataSources => { return dataSources.vessel.latitude; },
                 "v.lat", "Latitude", formatters.Default, APIEntry.UnitType.DEG));
             registerAPI(new PlotableAPIEntry(
-                dataSources => { return (dataSources.vessel.atmDensity * 0.5) * Math.Pow(dataSources.vessel.srf_velocity.magnitude, 2); },
+                dataSources => {return (dataSources.vessel.atmDensity * 0.5) * Math.Pow(dataSources.vessel.srf_velocity.magnitude, 2); },
                 "v.dynamicPressure", "Dynamic Pressure", formatters.Default, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.getStaticPressure(dataSources.vessel.altitude, dataSources.vessel.mainBody) * 1000; },
+                "v.atmosphericPressurePa", "Atmospheric Pressure (Pa)", formatters.Default, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightGlobals.getStaticPressure(dataSources.vessel.altitude, dataSources.vessel.mainBody) * PhysicsGlobals.KpaToAtmospheres; },
+                "v.atmosphericPressure", "Atmospheric Pressure", formatters.Default, APIEntry.UnitType.UNITLESS));
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.name; },
                 "v.name", "Name", formatters.Default, APIEntry.UnitType.STRING));
@@ -1408,6 +1783,58 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.orbit.TrueAnomalyAtUT(Planetarium.GetUniversalTime()) * (180.0 / Math.PI); },
                 "o.trueAnomaly", "True Anomaly", formatters.Default, APIEntry.UnitType.DEG));
+            registerAPI(new APIEntry(
+                dataSources => {
+                    return OrbitPatches.getPatchesForOrbit(dataSources.vessel.orbit);
+                },
+                "o.orbitPatches", "Detailed Orbit Patches Info [object orbitPatchInfo]",
+                formatters.OrbitPatchList, APIEntry.UnitType.UNITLESS));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    int index = int.Parse(dataSources.args[0]);
+                    float ut = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(dataSources.vessel.orbit, index);
+                    if(orbitPatch == null) { return null; }
+                    return orbitPatch.TrueAnomalyAtUT(ut);
+                },
+                "o.trueAnomalyAtUTForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DEG));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    int index = int.Parse(dataSources.args[0]);
+                    float trueAnomaly = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(dataSources.vessel.orbit, index);
+                    if (orbitPatch == null) { return null; }
+
+                    double now = Planetarium.GetUniversalTime();
+                    return orbitPatch.GetUTforTrueAnomaly(trueAnomaly, now);
+                },
+                "o.UTForTrueAnomalyForOrbitPatch", "The orbit patch's True Anomaly at Universal Time [orbit patch index, universal time]", formatters.Default, APIEntry.UnitType.DATE));
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    int index = int.Parse(dataSources.args[0]);
+                    float trueAnomaly = float.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(dataSources.vessel.orbit, index);
+                    if (orbitPatch == null) { return null; }
+                    return orbitPatch.getRelativePositionFromTrueAnomaly(trueAnomaly);
+                },
+                "o.relativePositionAtTrueAnomalyForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given true anomaly [orbit patch index, true anomaly]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => {
+                    int index = int.Parse(dataSources.args[0]);
+                    double ut = double.Parse(dataSources.args[1]);
+
+                    Orbit orbitPatch = OrbitPatches.getOrbitPatch(dataSources.vessel.orbit, index);
+                    if (orbitPatch == null) { return null; }
+
+                    return orbitPatch.getRelativePositionAtUT(ut);
+                },
+                "o.relativePositionAtUTForOrbitPatch", "The orbit patch's predicted displacement from the center of the main body at the given universal time [orbit patch index, universal time]", formatters.Vector3d, APIEntry.UnitType.UNITLESS));
+
         }
 
         #endregion
@@ -1728,25 +2155,15 @@ namespace Telemachus
                 partModules.Clear();
 
                 List<Part> partsWithSensors = vessel.parts.FindAll(p => p.Modules.Contains("ModuleEnviroSensor"));
-
                 foreach (Part part in partsWithSensors)
                 {
-                    foreach (var module in part.Modules)
+                    foreach (var module in part.Modules.OfType<ModuleEnviroSensor>())
                     {
-                        if (module.GetType().Equals(typeof(ModuleEnviroSensor)))
+                        if (!partModules.ContainsKey(module.sensorType))
                         {
-                            List<ModuleEnviroSensor> list = null;
-                            partModules.TryGetValue(((ModuleEnviroSensor)module).sensorType, out list);
-                            if (list == null)
-                            {
-                                PluginLogger.debug(((ModuleEnviroSensor)module).sensorType);
-                                list = new List<ModuleEnviroSensor>();
-                                partModules[((ModuleEnviroSensor)module).sensorType] = list;
-
-                            }
-
-                            list.Add((ModuleEnviroSensor)module);
+                            partModules[module.sensorType] = new List<ModuleEnviroSensor>();
                         }
+                        partModules[module.sensorType].Add(module);
                     }
                 }
             }
@@ -1770,7 +2187,7 @@ namespace Telemachus
                 dataSources => { return partPaused(); },
                 "p.paused", 
                 "Returns an integer indicating the state of antenna. 0 - Flight scene; 1 - Paused; 2 - No power; 3 - Off; 4 - Not found.", 
-                formatters.Default, APIEntry.UnitType.UNITLESS));
+                formatters.Default, APIEntry.UnitType.UNITLESS, true));
         }
 
         #endregion
@@ -1782,10 +2199,17 @@ namespace Telemachus
             bool result = FlightDriver.Pause ||
                 !TelemachusPowerDrain.isActive ||
                 !TelemachusPowerDrain.activeToggle ||
-                !VesselChangeDetector.hasTelemachusPart;
-
+                !VesselChangeDetector.hasTelemachusPart ||
+                !HighLogic.LoadedSceneIsFlight;
+            
             if (result)
             {
+                // If we aren't even in the flight scene, say so
+                if (!HighLogic.LoadedSceneIsFlight)
+                {
+                    return 5;
+                }
+
                 if (FlightDriver.Pause)
                 {
                     return 1;
@@ -1831,21 +2255,21 @@ namespace Telemachus
                     List<APIEntry> APIList = new List<APIEntry>();
                     kspAPI.getAPIList(ref APIList); return APIList;
                 },
-                "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.UNITLESS));
+                "a.api", "API Listing", formatters.APIEntry, APIEntry.UnitType.UNITLESS, true));
 
             registerAPI(new APIEntry(
                 dataSources =>
                 {
                     List<String> IPList = new List<String>();
 
-                    foreach (System.Net.IPAddress a in serverConfiguration.ipAddresses)
+                    foreach (System.Net.IPAddress a in serverConfiguration.ValidIpAddresses)
                     {
                         IPList.Add(a.ToString());
                     }
 
                     return IPList;
                 },
-                "a.ip", "IP Addresses", formatters.StringArray, APIEntry.UnitType.UNITLESS));
+                "a.ip", "IP Addresses", formatters.StringArray, APIEntry.UnitType.UNITLESS, true));
 
             registerAPI(new APIEntry(
                 dataSources =>
@@ -1860,11 +2284,11 @@ namespace Telemachus
                 },
                 "a.apiSubSet",
                 "Subset of the API Listing [string api1, string api2, ... , string apiN]",
-                formatters.APIEntry, APIEntry.UnitType.STRING));
+                formatters.APIEntry, APIEntry.UnitType.STRING, true));
 
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(); },
-                "a.version", "Telemachus Version", formatters.Default, APIEntry.UnitType.UNITLESS));
+                "a.version", "Telemachus Version", formatters.Default, APIEntry.UnitType.UNITLESS, true));
         }
 
         #endregion
@@ -1884,27 +2308,6 @@ namespace Telemachus
                     registerAPI(entry.Value);
                 }
             }
-        }
-
-        #endregion
-    }
-
-    public class DefaultDataLinkHandler : DataLinkHandler
-    {
-        #region Initialisation
-
-        public DefaultDataLinkHandler(FormatterProvider formatters)
-            : base(formatters)
-        {
-        }
-
-        #endregion
-
-        #region DataLinkHandler
-
-        public override bool process(String API, out APIEntry result)
-        {
-            throw new Servers.MinimalHTTPServer.ExceptionResponsePage("Bad data link reference.");
         }
 
         #endregion
@@ -2015,22 +2418,55 @@ namespace Telemachus
         public UnitType units { get; set; }
         public bool plotable { get; set; }
         public DataSourceResultFormatter formatter { get; set; }
-
+        public bool alwaysEvaluable { get; set; }
         #endregion
 
         #region Initialisation
 
         public APIEntry(DataLinkHandler.APIDelegate function, string APIString,
-            string name, DataSourceResultFormatter formatter, UnitType units)
+            string name, DataSourceResultFormatter formatter, UnitType units, bool alwaysEvaluable = false)
         {
             this.function = function;
             this.APIString = APIString;
             this.name = name;
             this.formatter = formatter;
             this.units = units;
+            this.alwaysEvaluable = alwaysEvaluable;
         }
 
         #endregion
+    }
+
+    public class OrbitPatches
+    {
+        public static List<Orbit> getPatchesForOrbit(Orbit orbit)
+        {
+            List<Orbit> orbitPatches = new List<Orbit>();
+            //the "next" orbit patch is the root patch, to make the method cleaner
+            var nextOrbitPatch = orbit;
+
+            while(nextOrbitPatch != null && nextOrbitPatch.activePatch)
+            {
+                orbitPatches.Add(nextOrbitPatch);
+                if (nextOrbitPatch.patchEndTransition == Orbit.PatchTransitionType.MANEUVER)
+                {
+                    break;
+                }
+                else
+                {
+                    nextOrbitPatch = nextOrbitPatch.nextPatch;
+                }
+            }
+
+            return orbitPatches;
+        }
+
+        public static Orbit getOrbitPatch(Orbit orbit, int index)
+        {
+            List<Orbit> orbitPatches = getPatchesForOrbit(orbit);
+            if(index >= orbitPatches.Count) { return null; }
+            return orbitPatches[index];
+        }
     }
 
     public class ActionAPIEntry : APIEntry
@@ -2052,8 +2488,8 @@ namespace Telemachus
         #region Initialisation
 
         public PlotableAPIEntry(DataLinkHandler.APIDelegate function, string APIString, string name,
-           DataSourceResultFormatter formatter, UnitType units)
-            : base(function, APIString, name, formatter, units)
+           DataSourceResultFormatter formatter, UnitType units, bool alwaysEvaluable = false)
+            : base(function, APIString, name, formatter, units, alwaysEvaluable)
         {
             this.plotable = true;
         }
