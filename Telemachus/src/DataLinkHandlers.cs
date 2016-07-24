@@ -675,6 +675,34 @@ namespace Telemachus
                 "f.abort", "Abort [optional bool on/off]", formatters.Default));
 
             registerAPI(new ActionAPIEntry(
+                dataSources => 
+                {
+                    bool state = dataSources.args.Count > 0 ? bool.Parse(dataSources.args[0]) : !FlightInputHandler.fetch.precisionMode;
+                    
+                    TelemachusBehaviour.instance.BroadcastMessage("queueDelayedAPI", new DelayedAPIEntry(dataSources.Clone(),
+                        (x) => {
+
+                            FlightInputHandler.fetch.precisionMode = state;
+                            // Update the UI.
+                            // MOARdV: In 1.1, this only affects the normal flight display,
+                            // not the docking mode display.
+                            var gauges = UnityEngine.Object.FindObjectOfType<KSP.UI.Screens.Flight.LinearControlGauges>();
+                            if (gauges != null)
+                            {
+                                //JUtil.LogMessage(this, "{0} input gauge images", gauges.inputGaugeImages.Count);
+                                for (int i = 0; i < gauges.inputGaugeImages.Count; ++i)
+                                {
+                                    gauges.inputGaugeImages[i].color = (state) ? XKCDColors.BrightCyan : XKCDColors.Orange;
+                                }
+                            }
+                            return Convert.ToInt32(state);
+                        }),
+                        UnityEngine.SendMessageOptions.DontRequireReceiver);
+                        return predictFailure(dataSources.vessel);
+                },
+                "f.precisionControl", "Precision controls [optional bool on/off]", formatters.Default));
+
+            registerAPI(new ActionAPIEntry(
                buildActionGroupToggleDelayedLamda(KSPActionGroup.Custom01),
                 "f.ag1", "Action Group 1 [optional bool on/off]", formatters.Default));
 
@@ -733,6 +761,10 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources => { return dataSources.vessel.ActionGroups[KSPActionGroup.Gear]; },
                 "v.gearValue", "Query gear value", formatters.Default, APIEntry.UnitType.UNITLESS));
+
+            registerAPI(new PlotableAPIEntry(
+                dataSources => { return FlightInputHandler.fetch.precisionMode; },
+                "v.precisionControlValue", "Query precision controls value", formatters.Default, APIEntry.UnitType.UNITLESS));
         }
 
         private DataLinkHandler.APIDelegate buildActionGroupToggleDelayedLamda(KSPActionGroup actionGroup)
