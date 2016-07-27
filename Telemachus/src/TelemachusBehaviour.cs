@@ -67,6 +67,8 @@ namespace Telemachus
                     webDispatcher = new KSPWebServerDispatcher();
                     webDispatcher.AddResponder(new ElseResponsibility());
                     webDispatcher.AddResponder(new IOPageResponsibility());
+                    var cameraLink = new CameraResponsibility(apiInstance, rateTracker);
+                    webDispatcher.AddResponder(cameraLink);
                     var dataLink = new DataLinkResponsibility(apiInstance, rateTracker);
                     webDispatcher.AddResponder(dataLink);
 

@@ -65,8 +65,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="src\CameraCapture.cs" />
     <Compile Include="src\DataLinkFormatters.cs" />
     <Compile Include="src\DataLinkHandlers.cs" />
+    <Compile Include="src\CameraResponsibility.cs" />
     <Compile Include="src\DataLinkResponsibility.cs" />
     <Compile Include="src\ElseResponsibility.cs" />
     <Compile Include="src\IOPageResponsibility.cs" />
