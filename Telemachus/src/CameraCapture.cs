@@ -99,6 +99,7 @@ namespace Telemachus
 
             foreach (Camera cam in Camera.allCameras)
             {
+                debugCameraDetails(cam);
                 if (cam.name == "Camera 00") { sourceNearCam = cam; }
                 else if (cam.name == "Camera 01") { sourceFarCam = cam; }
                 else if (cam.name == "Camera ScaledSpace") { sourceSkyCam = cam; }
