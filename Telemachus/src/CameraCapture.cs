@@ -14,7 +14,7 @@ namespace Telemachus
 
         protected Dictionary<string, Camera> cameraDuplicates = new Dictionary<string, Camera>();
         protected List<string> activeCameras;
-        protected static readonly string[] skippedCameras = { "UIMainCamera" };
+        protected static readonly string[] skippedCameras = { "UIMainCamera", "UIVectorCamera" };
         protected static string cameraContainerNamePrefix = "Telemachus Camera Container - ";
         
         private const float fovAngle = 60f;
