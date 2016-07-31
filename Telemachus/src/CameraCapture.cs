@@ -133,86 +133,7 @@ namespace Telemachus
         {
             PluginLogger.debug("CAMERA: " + cam.name + " ; FAR: " + cam.far + "; FAR CLIP PLANE: " + cam.farClipPlane);
         }
-
-        /*public IEnumerator TakeFlightCameraScreenshot()
-        {
-            if (mutex)
-            {
-                yield return true;
-            }
-
-            PluginLogger.debug("BYPASSED MUTEX");
-            mutex = true;
-            PluginLogger.debug("WAITING FOR END OF FRAME");
-            yield return new WaitForEndOfFrame();
-
-            PluginLogger.debug("BUILDING RENDER TEXTURE");
-            RenderTexture rt = new RenderTexture(256, 256, 24);
-            //rt.Create();
-
-            PluginLogger.debug("BUILDING 2D TEXTURE");
-            Texture2D imageOverview = new Texture2D(256, 256, TextureFormat.RGB24, false);
-
-            if (FlightCamera.fetch == null)
-            {
-                PluginLogger.debug("NO CAMERA");
-                yield return true;
-            }
-
-            PluginLogger.debug("GETTING CAMERAS:" + FlightCamera.fetch.cameras.Length);
-
-            var cameraContainer = new GameObject();
-            cameraContainer.name = "CameraCaptureTest" + cameraContainer.GetInstanceID();
-            Camera camOV = cameraContainer.AddComponent<Camera>();
-
-            RenderTexture currentRT = RenderTexture.active;
-
-            foreach (Camera camera in Camera.allCameras)
-            {
-                debugCameraDetails(camera);
-
-                // Just in case to support JSITransparentPod.
-                camOV.cullingMask &= ~(1 << 16 | 1 << 20);
-
-                camOV.CopyFrom(camera);
-                camOV.enabled = false;
-
-                float oldAspect = camOV.aspect;
-
-                camOV.aspect = 1.0f;
-
-                camOV.targetTexture = rt;
-
-                PluginLogger.debug("RENDERING");
-                camOV.Render();
-
-                PluginLogger.debug("RETURNING TEXTURE");
-                //RenderTexture.active = currentRT;
-                //camOV.targetTexture = currentCameraTexture;
-                //camOV.aspect = oldAspect;
-            }
-
-            PluginLogger.debug("READ APPLY 2");
-            imageOverview.ReadPixels(new Rect(0, 0, 256, 256), 0, 0);
-            PluginLogger.debug("READ APPLY 3");
-            RenderTexture.active = rt;
-            imageOverview.Apply();
-
-            PluginLogger.debug("ENCODING TO PNG");
-            // Encode texture into PNG
-            this.imageBytes = imageOverview.EncodeToPNG();
-            this.didRender = true;
-            mutex = false;
-
-            PluginLogger.debug("SWAP BACK");
-            RenderTexture.active = currentRT;
-
-            Destroy(imageOverview);
-            Destroy(rt);
-            Destroy(cameraContainer);
-        }
-        */
-
+        
         public IEnumerator NewScreenshot()
         {
             if (mutex)
@@ -243,10 +164,10 @@ namespace Telemachus
             RenderTexture.active = rt;
             screenShot.ReadPixels(new Rect(0, 0, camerares, camerares), 0, 0);
 
-            /*NearCamera.targetTexture = null;
+            NearCamera.targetTexture = null;
             FarCamera.targetTexture = null;
             SkyboxCamera.targetTexture = null;
-            GalaxyCamera.targetTexture = null;*/
+            GalaxyCamera.targetTexture = null;
 
             RenderTexture.active = backupRenderTexture;
 
@@ -258,88 +179,5 @@ namespace Telemachus
             Destroy(rt);
         }
 
-        public IEnumerator TakeScreenShot()
-        {
-            if (mutex)
-            {
-                yield return true;
-            }
-            PluginLogger.debug("BYPASSED MUTEX");
-            mutex = true;
-            PluginLogger.debug("WAITING FOR END OF FRAME");
-            yield return new WaitForEndOfFrame();
-
-            int camerares = 256;
-
-            RenderTexture rt = new RenderTexture(camerares, camerares, 24);
-            rt.Create();
-
-            PluginLogger.debug("READ APPLY 1");
-            Texture2D imageOverview = new Texture2D(camerares, camerares, TextureFormat.RGB24, false);
-
-
-            PluginLogger.debug("GETTING CAMERA");
-            //Camera camOV = OVcamera;
-
-            var cameraContainer = new GameObject();
-            cameraContainer.name = "CameraCaptureTest" + cameraContainer.GetInstanceID();
-            Camera camOV = cameraContainer.AddComponent<Camera>();
-
-            // Just in case to support JSITransparentPod.
-
-
-            RenderTexture currentRT = RenderTexture.active;
-            foreach (Camera cam in Camera.allCameras)
-            {
-                if(cam == camOV) { continue; }
-                if(cam.name == "UIMainCamera" || cam.name == "UIVectorCamera" || cam.name == "Camera 00" || cam.name == "Camera 01") { continue; }
-                debugCameraDetails(cam);
-
-                //camOV.cullingMask &= ~(1 << 16 | 1 << 20);
-
-                camOV.CopyFrom(OVcamera);
-                camOV.enabled = false;
-
-                //PluginLogger.debug("Swapping Textures");
-                
-                RenderTexture currentCameraTexture = camOV.targetTexture;
-
-
-
-                float oldAspect = camOV.aspect;
-
-                camOV.aspect = 1.0f;
-
-                camOV.targetTexture = rt;
-                //PluginLogger.debug("RENDERING");
-                camOV.Render();
-            }
-
-            //PluginLogger.debug("MYCAM BELOW");
-            //debugCameraDetails(camOV);
-
-
-
-            RenderTexture.active = rt;
-            PluginLogger.debug("READ APPLY 2");
-            imageOverview.ReadPixels(new Rect(0, 0, camerares, camerares), 0, 0);
-            PluginLogger.debug("READ APPLY 3");
-            imageOverview.Apply();
-
-            PluginLogger.debug("RETURNING TEXTURE");
-            RenderTexture.active = currentRT;
-            //camOV.targetTexture = currentCameraTexture;
-            //camOV.aspect = oldAspect;
-
-            PluginLogger.debug("ENCODING TO PNG");
-            // Encode texture into PNG
-            this.imageBytes = imageOverview.EncodeToPNG();
-            this.didRender = true;
-            mutex = false;
-
-            Destroy(imageOverview);
-            Destroy(rt);
-            Destroy(cameraContainer);
-        }
     }
 }
