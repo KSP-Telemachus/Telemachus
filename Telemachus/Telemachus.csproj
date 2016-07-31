@@ -65,7 +65,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="src\CameraSnapshots\CameraCapture.cs" />
+    <Compile Include="src\CameraSnapshots\CurrentFlightCameraCapture.cs" />
     <Compile Include="src\CameraSnapshots\SnapshotRenderer.cs" />
     <Compile Include="src\DataLinkFormatters.cs" />
     <Compile Include="src\DataLinkHandlers.cs" />

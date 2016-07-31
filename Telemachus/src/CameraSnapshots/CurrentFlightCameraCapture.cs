@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Telemachus.CameraSnapshots
 {
-    public class CameraCapture : MonoBehaviour
+    public class CurrentFlightCameraCapture : MonoBehaviour
     {
         public RenderTexture overviewTexture;
         public bool didRender;

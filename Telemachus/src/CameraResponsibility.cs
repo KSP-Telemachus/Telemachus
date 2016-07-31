@@ -22,7 +22,7 @@ namespace Telemachus
 
         private UpLinkDownLinkRate dataRates = null;
 
-        private CameraCapture cameraCaptureTest = null;
+        private CurrentFlightCameraCapture cameraCaptureTest = null;
 
         #region Initialisation
 
@@ -36,8 +36,8 @@ namespace Telemachus
         public void setCameraCapture()
         {
             PluginLogger.debug("START CAMERA CATPURE");
-            GameObject obj = new GameObject("CameraCapture", typeof(CameraCapture));
-            this.cameraCaptureTest = (CameraCapture)obj.GetComponent(typeof(CameraCapture));
+            GameObject obj = new GameObject("CurrentFlightCameraCapture", typeof(CurrentFlightCameraCapture));
+            this.cameraCaptureTest = (CurrentFlightCameraCapture)obj.GetComponent(typeof(CurrentFlightCameraCapture));
             PluginLogger.debug("CAM CAMPTURE CREATED");
         }
 
@@ -181,7 +181,7 @@ namespace Telemachus
             return true;
             */
 
-            if (GameObject.Find("CameraCapture") == null)
+            if (GameObject.Find("CurrentFlightCameraCapture") == null)
             {
                 PluginLogger.debug("REBUILDING CAMERA CAPTURE");
                 this.setCameraCapture();
