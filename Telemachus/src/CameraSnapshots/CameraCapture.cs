@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 
-namespace Telemachus
+namespace Telemachus.CameraSnapshots
 {
     public class CameraCapture : MonoBehaviour
     {

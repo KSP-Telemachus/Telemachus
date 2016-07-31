@@ -9,6 +9,7 @@ using WebSocketSharp.Net;
 using WebSocketSharp;
 using UnityEngine;
 using System.Collections;
+using Telemachus.CameraSnapshots;
 
 namespace Telemachus
 {
