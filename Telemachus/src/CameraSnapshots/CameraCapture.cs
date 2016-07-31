@@ -90,40 +90,16 @@ namespace Telemachus.CameraSnapshots
 
             UpdateCameras();
 
-            RenderTexture rt = new RenderTexture(camerares, camerares, 24);
-
-            foreach(string cameraName in activeCameras)
+            List<Camera> renderingCameras = new List<Camera>();
+            foreach (string cameraName in activeCameras)
             {
                 PluginLogger.debug("GETTING CAMERA" + cameraName);
-                Camera activeCamera = cameraDuplicates[cameraName];
-                activeCamera.targetTexture = rt;
+                renderingCameras.Add(cameraDuplicates[cameraName]);
             }
 
-            foreach (string cameraName in activeCameras)
-            {
-                Camera activeCamera = cameraDuplicates[cameraName];
-                activeCamera.Render();
-            }
-
-            Texture2D screenShot = new Texture2D(camerares, camerares, TextureFormat.RGB24, false);
-            RenderTexture backupRenderTexture = RenderTexture.active;
-            RenderTexture.active = rt;
-            screenShot.ReadPixels(new Rect(0, 0, camerares, camerares), 0, 0);
-
-            foreach (string cameraName in activeCameras)
-            {
-                Camera activeCamera = cameraDuplicates[cameraName];
-                activeCamera.targetTexture = null;
-            }
-
-            RenderTexture.active = backupRenderTexture;
-
-
-            this.imageBytes = screenShot.EncodeToPNG();
+            this.imageBytes = SnapshotRenderer.renderSnaphot(renderingCameras, camerares, camerares);
             this.didRender = true;
             mutex = false;
-            Destroy(screenShot);
-            Destroy(rt);
         }
 
     }
