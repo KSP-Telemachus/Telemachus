@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Collections.Generic;
 
 namespace Telemachus
 {
@@ -11,13 +12,14 @@ namespace Telemachus
         public byte[] imageBytes = null;
         public bool mutex = false;
 
-        private Camera NearCamera;
-        private Camera FarCamera;
-        private Camera SkyboxCamera;
-        private Camera GalaxyCamera;
+        protected Dictionary<string, Camera> cameraDuplicates = new Dictionary<string, Camera>();
+        protected List<string> activeCameras;
+        protected static readonly string[] skippedCameras = { "UIMainCamera" };
+        protected static string cameraContainerNamePrefix = "Telemachus Camera Container - ";
+        
         private const float fovAngle = 60f;
         private const float aspect = 1.0f;
-        private  int camerares = 256;
+        private  int camerares = 300;
 
         void LateUpdate()
         {
@@ -31,69 +33,43 @@ namespace Telemachus
 
         public void UpdateCameras()
         {
-            if (NearCamera == null)
-            {
-                var NearCameraGameObject = new GameObject("Telemachus Camera 00");
-                NearCamera = NearCameraGameObject.AddComponent<Camera>();
-            }
-
-            if (FarCamera == null)
-            {
-                var FarCameraGameObject = new GameObject("Telemachus Camera 01");
-                FarCamera = FarCameraGameObject.AddComponent<Camera>();
-            }
-
-            if (SkyboxCamera == null)
-            {
-                var SkyboxCameraGameObject = new GameObject("Telemachus Camera ScaledSpace");
-                SkyboxCamera = SkyboxCameraGameObject.AddComponent<Camera>();
-            }
-
-            if (GalaxyCamera == null)
-            {
-                var GalaxyCameraGameObject = new GameObject("Telemachus GalaxyCamera");
-                GalaxyCamera = GalaxyCameraGameObject.AddComponent<Camera>();
-            }
-
-            Camera sourceNearCam = null;
-            Camera sourceFarCam = null;
-            Camera sourceSkyCam = null;
-            Camera sourceGalaxyCam = null;
-
             if (CameraManager.Instance != null)
             {
                 PluginLogger.debug("CURRENT CAMERA MODE: " + CameraManager.Instance.currentCameraMode);
             }
-            foreach (Camera cam in Camera.allCameras)
+
+            activeCameras = new List<string>();
+
+            foreach (Camera camera in Camera.allCameras)
             {
-                debugCameraDetails(cam);
-                if (cam.name == "Camera 00") { sourceNearCam = cam; }
-                else if (cam.name == "Camera 01") { sourceFarCam = cam; }
-                else if (cam.name == "Camera ScaledSpace") { sourceSkyCam = cam; }
-                else if (cam.name == "GalaxyCamera") { sourceGalaxyCam = cam; }
+                debugCameraDetails(camera);
+                // Don't duplicate any cameras we're going to skip
+                if (skippedCameras.IndexOf(camera.name) != -1)
+                {
+                    continue;
+                }
+
+                Camera cameraDuplicate;
+
+                if (!cameraDuplicates.ContainsKey(camera.name))
+                {
+                    var cameraDuplicateGameObject = new GameObject(cameraContainerNamePrefix + camera.name);
+                    cameraDuplicate = cameraDuplicateGameObject.AddComponent<Camera>();
+                    cameraDuplicates[camera.name] = cameraDuplicate;
+                }
+                else
+                {
+                    cameraDuplicate = cameraDuplicates[camera.name];
+                }
+
+                cameraDuplicate.CopyFrom(camera);
+                cameraDuplicate.enabled = false;
+                cameraDuplicate.fieldOfView = fovAngle;
+                cameraDuplicate.aspect = aspect;
+
+                //Now that the camera has been duplicated, add it to the list of active cameras
+                activeCameras.Add(camera.name);
             }
-
-            NearCamera.CopyFrom(sourceNearCam);
-            NearCamera.enabled = false;
-            NearCamera.fieldOfView = fovAngle;
-            NearCamera.aspect = aspect;
-
-            FarCamera.CopyFrom(sourceFarCam);
-            FarCamera.enabled = false;
-            FarCamera.fieldOfView = fovAngle;
-            FarCamera.aspect = aspect;
-
-            SkyboxCamera.transform.position = sourceSkyCam.transform.position;
-            SkyboxCamera.CopyFrom(sourceSkyCam);
-            SkyboxCamera.enabled = false;
-            SkyboxCamera.fieldOfView = fovAngle;
-            SkyboxCamera.aspect = aspect;
-
-            GalaxyCamera.transform.position = sourceGalaxyCam.transform.position;
-            GalaxyCamera.CopyFrom(sourceGalaxyCam);
-            GalaxyCamera.enabled = false;
-            GalaxyCamera.fieldOfView = fovAngle;
-            GalaxyCamera.aspect = aspect;
         }
 
         public void debugCameraDetails(Camera cam)
@@ -116,25 +92,29 @@ namespace Telemachus
 
             RenderTexture rt = new RenderTexture(camerares, camerares, 24);
 
-            NearCamera.targetTexture = rt;
-            FarCamera.targetTexture = rt;
-            SkyboxCamera.targetTexture = rt;
-            GalaxyCamera.targetTexture = rt;
+            foreach(string cameraName in activeCameras)
+            {
+                PluginLogger.debug("GETTING CAMERA" + cameraName);
+                Camera activeCamera = cameraDuplicates[cameraName];
+                activeCamera.targetTexture = rt;
+            }
 
-            GalaxyCamera.Render();
-            SkyboxCamera.Render();
-            FarCamera.Render();
-            NearCamera.Render();
+            foreach (string cameraName in activeCameras)
+            {
+                Camera activeCamera = cameraDuplicates[cameraName];
+                activeCamera.Render();
+            }
 
             Texture2D screenShot = new Texture2D(camerares, camerares, TextureFormat.RGB24, false);
             RenderTexture backupRenderTexture = RenderTexture.active;
             RenderTexture.active = rt;
             screenShot.ReadPixels(new Rect(0, 0, camerares, camerares), 0, 0);
 
-            NearCamera.targetTexture = null;
-            FarCamera.targetTexture = null;
-            SkyboxCamera.targetTexture = null;
-            GalaxyCamera.targetTexture = null;
+            foreach (string cameraName in activeCameras)
+            {
+                Camera activeCamera = cameraDuplicates[cameraName];
+                activeCamera.targetTexture = null;
+            }
 
             RenderTexture.active = backupRenderTexture;
 
