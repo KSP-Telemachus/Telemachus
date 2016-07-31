@@ -37,7 +37,6 @@ namespace Telemachus
             PluginLogger.debug("START CAMERA CATPURE");
             GameObject obj = new GameObject("CameraCapture", typeof(CameraCapture));
             this.cameraCaptureTest = (CameraCapture)obj.GetComponent(typeof(CameraCapture));
-            this.cameraCaptureTest.cameraName = "Camera 00";
             PluginLogger.debug("CAM CAMPTURE CREATED");
         }
 

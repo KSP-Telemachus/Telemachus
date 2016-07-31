@@ -7,8 +7,6 @@ namespace Telemachus
     public class CameraCapture : MonoBehaviour
     {
         public RenderTexture overviewTexture;
-        Camera OVcamera = null;
-        public string cameraName = "";
         public bool didRender;
         public byte[] imageBytes = null;
         public bool mutex = false;
@@ -21,45 +19,10 @@ namespace Telemachus
         private const float aspect = 1.0f;
         private  int camerares = 256;
 
-        void Start()
-        {
-            PluginLogger.debug("CAMERA CAPTURE STARTED");
-        }
-
-        void OnDisable()
-        {
-            PluginLogger.debug("WHY DISABLED?");
-        }
-
-        void OnDestroy()
-        {
-            PluginLogger.debug("WHY DESTROY?");
-        }
-
-        void Update()
-        {
-            PluginLogger.debug("UPDATE CAMERA");
-        }
-
         void LateUpdate()
         {
             PluginLogger.debug("LATEUPDATE FOR CAMERA");
-            if (OVcamera == null)
-            {
-                PluginLogger.debug("NO CAMERA YET, FINDING: " + this.cameraName);
-                if(FlightCamera.fetch != null)
-                {
-                    //OVcamera = FlightCamera.fetch.mainCamera;
-                }
-
-                
-                foreach (Camera cam in Camera.allCameras)
-                {
-                    if (cam.name == this.cameraName) { OVcamera = cam; }
-                }
-            }
-
-            if (OVcamera != null)
+            if(CameraManager.Instance != null)
             {
                 PluginLogger.debug("CAMERA FOUND, TAKING SCREENSHOT");
                 StartCoroutine(NewScreenshot());
@@ -70,25 +33,25 @@ namespace Telemachus
         {
             if (NearCamera == null)
             {
-                var NearCameraGameObject = new GameObject("GATU Camera 00");
+                var NearCameraGameObject = new GameObject("Telemachus Camera 00");
                 NearCamera = NearCameraGameObject.AddComponent<Camera>();
             }
 
             if (FarCamera == null)
             {
-                var FarCameraGameObject = new GameObject("GATU Camera 01");
+                var FarCameraGameObject = new GameObject("Telemachus Camera 01");
                 FarCamera = FarCameraGameObject.AddComponent<Camera>();
             }
 
             if (SkyboxCamera == null)
             {
-                var SkyboxCameraGameObject = new GameObject("GATU Camera ScaledSpace");
+                var SkyboxCameraGameObject = new GameObject("Telemachus Camera ScaledSpace");
                 SkyboxCamera = SkyboxCameraGameObject.AddComponent<Camera>();
             }
 
             if (GalaxyCamera == null)
             {
-                var GalaxyCameraGameObject = new GameObject("GATU GalaxyCamera");
+                var GalaxyCameraGameObject = new GameObject("Telemachus GalaxyCamera");
                 GalaxyCamera = GalaxyCameraGameObject.AddComponent<Camera>();
             }
 
