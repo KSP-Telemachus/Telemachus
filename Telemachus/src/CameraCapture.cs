@@ -97,6 +97,10 @@ namespace Telemachus
             Camera sourceSkyCam = null;
             Camera sourceGalaxyCam = null;
 
+            if (CameraManager.Instance != null)
+            {
+                PluginLogger.debug("CURRENT CAMERA MODE: " + CameraManager.Instance.currentCameraMode);
+            }
             foreach (Camera cam in Camera.allCameras)
             {
                 debugCameraDetails(cam);
