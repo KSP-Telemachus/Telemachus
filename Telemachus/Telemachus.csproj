@@ -67,6 +67,7 @@
     </Compile>
     <Compile Include="src\CameraSnapshots\IVACameraCapture.cs" />
     <Compile Include="src\CameraSnapshots\CurrentFlightCameraCapture.cs" />
+    <Compile Include="src\CameraSnapshots\RasterPropMonitorCamera.cs" />
     <Compile Include="src\CameraSnapshots\SnapshotRenderer.cs" />
     <Compile Include="src\DataLinkFormatters.cs" />
     <Compile Include="src\DataLinkHandlers.cs" />
