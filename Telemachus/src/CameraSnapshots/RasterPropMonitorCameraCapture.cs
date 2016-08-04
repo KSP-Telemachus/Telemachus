@@ -6,9 +6,17 @@ using UnityEngine;
 
 namespace Telemachus.CameraSnapshots
 {
-    class RasterPropMonitorCameraCapture : MonoBehaviour
+    class RasterPropMonitorCameraCapture : CameraCapture
     {
         public RasterPropMonitorCamera rpmCamera;
+        protected static string cameraManagerNamePrefix = "RPMCamera:";
+        public new string cameraManagerName
+        {
+            get
+            {
+                return cameraManagerNamePrefix + rpmCamera.cameraName;
+            }
+        }
 
         void LateUpdate()
         {

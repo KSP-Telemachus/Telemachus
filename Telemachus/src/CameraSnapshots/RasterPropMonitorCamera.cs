@@ -87,12 +87,12 @@ namespace Telemachus.CameraSnapshots
         public override void OnStart(PartModule.StartState state)
         {
             DebugInfo();
-            RasterPropMonitorCameraManager.Instance.BroadcastMessage("addCamera", this);
+            CameraCaptureManager.Instance.BroadcastMessage("addCamera", this);
         }
 
         public void OnDestroy()
         {
-            RasterPropMonitorCameraManager.Instance.BroadcastMessage("removeCamera", this.cameraName);
+            CameraCaptureManager.Instance.BroadcastMessage("removeCamera", this.cameraName);
         }
 
         public void Update()

@@ -12,6 +12,8 @@ namespace Telemachus.CameraSnapshots
         public byte[] imageBytes = null;
         public bool mutex = false;
 
+        public string cameraManagerName;
+
         protected Dictionary<string, Camera> cameraDuplicates = new Dictionary<string, Camera>();
         protected List<string> activeCameras;
         protected static readonly string[] skippedCameras = { "UIMainCamera", "UIVectorCamera" };

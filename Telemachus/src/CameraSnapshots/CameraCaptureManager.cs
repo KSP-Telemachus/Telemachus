@@ -6,21 +6,21 @@ using UnityEngine;
 
 namespace Telemachus.CameraSnapshots
 {
-    class RasterPropMonitorCameraManager : MonoBehaviour
+    class CameraCaptureManager : MonoBehaviour
     {
         #region Singleton management
         public static GameObject instance;
 
-        private RasterPropMonitorCameraManager() { }
+        private CameraCaptureManager() { }
 
         public static GameObject Instance
         {
             get
             {
-                if (RasterPropMonitorCameraManager.instance == null)
+                if (CameraCaptureManager.instance == null)
                 {
-                    instance = GameObject.Find("RasterPropMonitorCameraManager")
-                        ?? new GameObject("RasterPropMonitorCameraManager", typeof(RasterPropMonitorCameraManager));
+                    instance = GameObject.Find("CameraCaptureManager")
+                        ?? new GameObject("CameraCaptureManager", typeof(CameraCaptureManager));
                 }
                 
                 return instance;
@@ -28,7 +28,7 @@ namespace Telemachus.CameraSnapshots
         }
         #endregion
 
-        public Dictionary<string, RasterPropMonitorCameraCapture> cameras = new Dictionary<string, RasterPropMonitorCameraCapture>();
+        public Dictionary<string, CameraCapture> cameras = new Dictionary<string, CameraCapture>();
 
         public void addCamera(RasterPropMonitorCamera camera)
         {
@@ -38,8 +38,15 @@ namespace Telemachus.CameraSnapshots
             }
 
             GameObject container = new GameObject("RasterPropMonitorCameraCapture:" + camera.cameraName, typeof(RasterPropMonitorCameraCapture));
-            cameras[camera.cameraName] = (RasterPropMonitorCameraCapture)container.GetComponent(typeof(RasterPropMonitorCameraCapture));
-            cameras[camera.cameraName].rpmCamera = camera;
+            RasterPropMonitorCameraCapture cameraCapture = (RasterPropMonitorCameraCapture)container.GetComponent(typeof(RasterPropMonitorCameraCapture));
+            cameraCapture.rpmCamera = camera;
+
+            cameras[cameraCapture.cameraManagerName] = cameraCapture;
+        }
+
+        public void addCameraCapture(CameraCapture cameraCapture)
+        {
+            cameras[cameraCapture.cameraManagerName] = cameraCapture;
         }
 
         public void removeCamera(string name)

@@ -70,7 +70,7 @@
     <Compile Include="src\CameraSnapshots\CurrentFlightCameraCapture.cs" />
     <Compile Include="src\CameraSnapshots\RasterPropMonitorCamera.cs" />
     <Compile Include="src\CameraSnapshots\RasterPropMonitorCameraCapture.cs" />
-    <Compile Include="src\CameraSnapshots\RasterPropMonitorCameraManager.cs" />
+    <Compile Include="src\CameraSnapshots\CameraCaptureManager.cs" />
     <Compile Include="src\CameraSnapshots\SnapshotRenderer.cs" />
     <Compile Include="src\DataLinkFormatters.cs" />
     <Compile Include="src\DataLinkHandlers.cs" />
