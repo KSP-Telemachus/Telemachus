@@ -90,6 +90,11 @@ namespace Telemachus.CameraSnapshots
             RasterPropMonitorCameraManager.Instance.BroadcastMessage("addCamera", this);
         }
 
+        public void OnDestroy()
+        {
+            RasterPropMonitorCameraManager.Instance.BroadcastMessage("removeCamera", this.cameraName);
+        }
+
         public void Update()
         {
             //DebugInfo();
