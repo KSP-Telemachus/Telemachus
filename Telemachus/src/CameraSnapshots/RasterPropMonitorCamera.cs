@@ -18,7 +18,7 @@ namespace Telemachus.CameraSnapshots
                     {
                         if (module.moduleName == "JSIExternalCameraSelector")
                         {
-                            PluginLogger.debug("GOT MODULE");
+                            //PluginLogger.debug("GOT MODULE");
                             rpmPartModule = module;
                         }
                     }

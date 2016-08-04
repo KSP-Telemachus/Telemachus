@@ -20,10 +20,10 @@ namespace Telemachus.CameraSnapshots
 
         void LateUpdate()
         {
-            PluginLogger.debug("LATEUPDATE FOR RPM Camera");
+            //PluginLogger.debug("LATEUPDATE FOR RPM Camera");
             if(rpmCamera != null)
             {
-                PluginLogger.debug("LATEUPDATE FOR RPM CAMERA:" + rpmCamera.cameraName);
+                //PluginLogger.debug("LATEUPDATE FOR RPM CAMERA:" + rpmCamera.cameraName);
             }
 
             /*if (CameraManager.Instance != null)

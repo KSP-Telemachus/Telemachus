@@ -25,10 +25,10 @@ namespace Telemachus.CameraSnapshots
 
         void LateUpdate()
         {
-            PluginLogger.debug("LATEUPDATE FOR CAMERA");
+            //PluginLogger.debug("LATEUPDATE FOR CAMERA");
             if(CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight)
             {
-                PluginLogger.debug("CAMERA FOUND, TAKING SCREENSHOT");
+                //PluginLogger.debug("CAMERA FOUND, TAKING SCREENSHOT");
                 StartCoroutine(NewScreenshot());
             }
         }
@@ -37,14 +37,14 @@ namespace Telemachus.CameraSnapshots
         {
             if (CameraManager.Instance != null)
             {
-                PluginLogger.debug("CURRENT CAMERA MODE: " + CameraManager.Instance.currentCameraMode);
+                //PluginLogger.debug("CURRENT CAMERA MODE: " + CameraManager.Instance.currentCameraMode);
             }
 
             activeCameras = new List<string>();
 
             foreach (Camera camera in Camera.allCameras)
             {
-                debugCameraDetails(camera);
+                //debugCameraDetails(camera);
                 // Don't duplicate any cameras we're going to skip
                 if (skippedCameras.IndexOf(camera.name) != -1)
                 {
@@ -90,9 +90,9 @@ namespace Telemachus.CameraSnapshots
             {
                 yield return true;
             }
-            PluginLogger.debug("BYPASSED MUTEX");
+            //PluginLogger.debug("BYPASSED MUTEX");
             mutex = true;
-            PluginLogger.debug("WAITING FOR END OF FRAME");
+            //PluginLogger.debug("WAITING FOR END OF FRAME");
             yield return new WaitForEndOfFrame();
 
             BeforeRenderNewScreenshot();
@@ -100,7 +100,7 @@ namespace Telemachus.CameraSnapshots
             List<Camera> renderingCameras = new List<Camera>();
             foreach (string cameraName in activeCameras)
             {
-                PluginLogger.debug("GETTING CAMERA" + cameraName);
+                //PluginLogger.debug("GETTING CAMERA" + cameraName);
                 renderingCameras.Add(cameraDuplicates[cameraName]);
             }
 
