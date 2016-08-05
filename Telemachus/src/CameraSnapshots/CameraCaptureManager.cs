@@ -26,6 +26,13 @@ namespace Telemachus.CameraSnapshots
                 return instance;
             }
         }
+
+        public static CameraCaptureManager classedInstance
+        {
+            get {
+                return (CameraCaptureManager)Instance.GetComponent(typeof(CameraCaptureManager));
+            }
+        }
         #endregion
 
         public Dictionary<string, CameraCapture> cameras = new Dictionary<string, CameraCapture>();
@@ -41,12 +48,12 @@ namespace Telemachus.CameraSnapshots
             RasterPropMonitorCameraCapture cameraCapture = (RasterPropMonitorCameraCapture)container.GetComponent(typeof(RasterPropMonitorCameraCapture));
             cameraCapture.rpmCamera = camera;
 
-            cameras[cameraCapture.cameraManagerName] = cameraCapture;
+            cameras[cameraCapture.cameraManagerName()] = cameraCapture;
         }
 
         public void addCameraCapture(CameraCapture cameraCapture)
         {
-            cameras[cameraCapture.cameraManagerName] = cameraCapture;
+            cameras[cameraCapture.cameraManagerName()] = cameraCapture;
         }
 
         public void removeCamera(string name)

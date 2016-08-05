@@ -10,27 +10,40 @@ namespace Telemachus.CameraSnapshots
     {
         public RasterPropMonitorCamera rpmCamera;
         protected static string cameraManagerNamePrefix = "RPMCamera:";
-        public new string cameraManagerName
+
+        public override string cameraManagerName()
         {
-            get
-            {
-                return cameraManagerNamePrefix + rpmCamera.cameraName;
-            }
+            return cameraManagerNamePrefix + rpmCamera.cameraName;
         }
 
-        void LateUpdate()
-        {
-            //PluginLogger.debug("LATEUPDATE FOR RPM Camera");
-            if(rpmCamera != null)
-            {
-                //PluginLogger.debug("LATEUPDATE FOR RPM CAMERA:" + rpmCamera.cameraName);
-            }
+        protected bool builtCameraDuplicates = false;
 
-            /*if (CameraManager.Instance != null)
+        protected override void LateUpdate()
+        {
+            /*if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight && rpmCamera != null && !builtCameraDuplicates)
             {
-                PluginLogger.debug("CAMERA FOUND, TAKING SCREENSHOT");
-                StartCoroutine(NewScreenshot());
+                UpdateCameras();
+                builtCameraDuplicates = true;
             }*/
+
+            base.LateUpdate();
+        }
+
+        public override void BeforeRenderNewScreenshot()
+        {
+            UpdateCameras();
+            base.BeforeRenderNewScreenshot();
+        }
+
+        public override void additionalCameraUpdates(Camera cam)
+        {
+            PluginLogger.debug("ROTATION:" + rpmCamera.rotateCamera);
+            cam.transform.position = rpmCamera.part.transform.position;
+            base.additionalCameraUpdates(cam);
+            PluginLogger.debug("PAST BASE");
+            cam.transform.rotation = rpmCamera.part.transform.rotation;
+            cam.transform.Rotate(rpmCamera.rotateCamera);
+            //cam.transform.position += rpmCamera.translateCamera;
         }
     }
 }

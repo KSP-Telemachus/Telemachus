@@ -187,6 +187,32 @@ namespace Telemachus
                 this.setCameraCapture();
             }
 
+            PluginLogger.debug("GET CAMERA");
+            if(CameraCaptureManager.classedInstance.cameras.Count > 0)
+            {
+                
+                RasterPropMonitorCameraCapture camera = (RasterPropMonitorCameraCapture) CameraCaptureManager.classedInstance.cameras.First().Value;
+                PluginLogger.debug("RENDERING SAVED CAMERA: "+ camera.cameraManagerName());
+                if (camera.didRender)
+                {
+                    if (camera.didRender)
+                    {
+                        response.ContentEncoding = Encoding.UTF8;
+                        response.ContentType = "image/png";
+                        response.WriteContent(camera.imageBytes);
+                        dataRates.SendDataToClient(camera.imageBytes.Length);
+                    }
+                    else
+                    {
+                        string NAString = "NA";
+                        response.ContentEncoding = Encoding.UTF8;
+                        response.ContentType = "text/plain";
+                        response.WriteContent(Encoding.UTF8.GetBytes(NAString));
+                        dataRates.SendDataToClient(Encoding.UTF8.GetByteCount(NAString));
+                    }
+                    return true;
+                }
+            }
 
             if (this.cameraCaptureTest.didRender)
             {

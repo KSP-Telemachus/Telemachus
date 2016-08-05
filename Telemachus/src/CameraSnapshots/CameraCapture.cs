@@ -12,7 +12,10 @@ namespace Telemachus.CameraSnapshots
         public byte[] imageBytes = null;
         public bool mutex = false;
 
-        public string cameraManagerName;
+        public virtual string cameraManagerName()
+        {
+            return "NA";
+        }
 
         protected Dictionary<string, Camera> cameraDuplicates = new Dictionary<string, Camera>();
         protected List<string> activeCameras;
@@ -23,7 +26,7 @@ namespace Telemachus.CameraSnapshots
         protected const float aspect = 1.0f;
         public  int cameraResolution = 300;
 
-        void LateUpdate()
+        protected virtual void LateUpdate()
         {
             //PluginLogger.debug("LATEUPDATE FOR CAMERA");
             if(CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight)
@@ -100,7 +103,7 @@ namespace Telemachus.CameraSnapshots
             List<Camera> renderingCameras = new List<Camera>();
             foreach (string cameraName in activeCameras)
             {
-                //PluginLogger.debug("GETTING CAMERA" + cameraName);
+                //PluginLogger.debug("[" + cameraManagerName() + "] GETTING CAMERA " + cameraName);
                 renderingCameras.Add(cameraDuplicates[cameraName]);
             }
 
