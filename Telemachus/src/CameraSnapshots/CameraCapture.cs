@@ -17,6 +17,11 @@ namespace Telemachus.CameraSnapshots
             return "NA";
         }
 
+        public virtual string type()
+        {
+            return "NA";
+        }
+
         protected Dictionary<string, Camera> cameraDuplicates = new Dictionary<string, Camera>();
         protected List<string> activeCameras;
         protected static readonly string[] skippedCameras = { "UIMainCamera", "UIVectorCamera", "velocity camera" };

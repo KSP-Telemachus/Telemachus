@@ -12,6 +12,11 @@ namespace Telemachus.CameraSnapshots
             return "TelemachusFlightCamera";
         }
 
+        public override string cameraType()
+        {
+            return "FlightCamera";
+        }
+
         public override void BeforeRenderNewScreenshot()
         {
             UpdateCameras();

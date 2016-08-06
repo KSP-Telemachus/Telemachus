@@ -10,7 +10,7 @@ namespace Telemachus.CameraSnapshots
     class RasterPropMonitorCameraCapture : CameraCapture
     {
         public RasterPropMonitorCamera rpmCamera;
-        protected static string cameraManagerNamePrefix = "RPMCamera:";
+        protected static string cameraManagerNamePrefix = "RPMCamera-";
         protected static readonly string[] camerasToSkipPositionTransform = { "GalaxyCamera", "Camera ScaledSpace", "Camera VE Underlay" };
         protected Regex _cameraSkipRegex;
         protected Regex cameraSkipRegex
@@ -29,6 +29,11 @@ namespace Telemachus.CameraSnapshots
         public override string cameraManagerName()
         {
             return cameraManagerNamePrefix + rpmCamera.cameraName;
+        }
+
+        public override string cameraType()
+        {
+            return "RasterPropMonitor";
         }
 
         protected bool builtCameraDuplicates = false;
