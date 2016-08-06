@@ -48,12 +48,12 @@ namespace Telemachus.CameraSnapshots
             RasterPropMonitorCameraCapture cameraCapture = (RasterPropMonitorCameraCapture)container.GetComponent(typeof(RasterPropMonitorCameraCapture));
             cameraCapture.rpmCamera = camera;
 
-            cameras[cameraCapture.cameraManagerName()] = cameraCapture;
+            cameras[cameraCapture.cameraManagerName().ToLower()] = cameraCapture;
         }
 
         public void addCameraCapture(CameraCapture cameraCapture)
         {
-            cameras[cameraCapture.cameraManagerName()] = cameraCapture;
+            cameras[cameraCapture.cameraManagerName().ToLower()] = cameraCapture;
         }
 
         public void removeCamera(string name)
