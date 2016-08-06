@@ -38,6 +38,7 @@ namespace Telemachus
             //PluginLogger.debug("START CAMERA CATPURE");
             GameObject obj = new GameObject("CurrentFlightCameraCapture", typeof(CurrentFlightCameraCapture));
             this.cameraCaptureTest = (CurrentFlightCameraCapture)obj.GetComponent(typeof(CurrentFlightCameraCapture));
+            CameraCaptureManager.classedInstance.addCameraCapture(cameraCaptureTest);
             //PluginLogger.debug("CAM CAMPTURE CREATED");
         }
 
@@ -64,6 +65,41 @@ namespace Telemachus
             return (IDictionary<string, object>)SimpleJson.SimpleJson.DeserializeObject(jsonBody);
         }
 
+        public string cameraURL(HttpListenerRequest request, CameraCapture camera)
+        {
+            return request.Url.Scheme + "://" + request.UserHostName + PAGE_PREFIX + "/" + UnityEngine.WWW.EscapeURL(camera.cameraManagerName());
+        }
+
+        public bool processCameraManagerIndex(HttpListenerRequest request, HttpListenerResponse response)
+        {
+            if (GameObject.Find("CurrentFlightCameraCapture") == null)
+            {
+                PluginLogger.debug("REBUILDING CAMERA CAPTURE");
+                this.setCameraCapture();
+            }
+
+            var jsonObject = new List<Dictionary<string, object>>();
+
+            foreach(KeyValuePair<string, CameraCapture> cameraKVP in CameraCaptureManager.classedInstance.cameras)
+            {
+                var jsonData = new Dictionary<string, object>();
+                jsonData["name"] = cameraKVP.Value.cameraManagerName();
+                jsonData["type"] = cameraKVP.Value.cameraType();
+                jsonData["url"] = cameraURL(request, cameraKVP.Value);
+
+                jsonObject.Add(jsonData);
+            }
+
+            byte[] jsonBytes = Encoding.UTF8.GetBytes(SimpleJson.SimpleJson.SerializeObject(jsonObject));
+
+            response.ContentEncoding = Encoding.UTF8;
+            response.ContentType = "application/json";
+            response.WriteContent(jsonBytes);
+            dataRates.SendDataToClient(jsonBytes.Length);
+
+            return true;
+        }
+
         public bool process(HttpListenerRequest request, HttpListenerResponse response)
         {
             if (!request.RawUrl.StartsWith(PAGE_PREFIX)) return false;
@@ -72,6 +108,8 @@ namespace Telemachus
             long byteCount = request.RawUrl.Length + request.ContentLength64;
             // Don't count headers + request.Headers.AllKeys.Sum(x => x.Length + request.Headers[x].Length + 1);
             dataRates.RecieveDataFromClient(Convert.ToInt32(byteCount));
+
+            return processCameraManagerIndex(request, response);
 
             /*
             IDictionary<string, object> apiRequests;
@@ -181,14 +219,10 @@ namespace Telemachus
             return true;
             */
 
-            if (GameObject.Find("CurrentFlightCameraCapture") == null)
-            {
-                PluginLogger.debug("REBUILDING CAMERA CAPTURE");
-                this.setCameraCapture();
-            }
+            
 
             //PluginLogger.debug("GET CAMERA");
-            if(CameraCaptureManager.classedInstance.cameras.Count > 0)
+            /*if(CameraCaptureManager.classedInstance.cameras.Count > 0)
             {
                 
                 RasterPropMonitorCameraCapture camera = (RasterPropMonitorCameraCapture) CameraCaptureManager.classedInstance.cameras.First().Value;
@@ -230,6 +264,7 @@ namespace Telemachus
                 dataRates.SendDataToClient(Encoding.UTF8.GetByteCount(NAString));
             }
             return true;
+            */
         }
     }
 }
