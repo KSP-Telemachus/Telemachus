@@ -35,10 +35,10 @@ namespace Telemachus
 
         public void setCameraCapture()
         {
-            PluginLogger.debug("START CAMERA CATPURE");
+            //PluginLogger.debug("START CAMERA CATPURE");
             GameObject obj = new GameObject("CurrentFlightCameraCapture", typeof(CurrentFlightCameraCapture));
             this.cameraCaptureTest = (CurrentFlightCameraCapture)obj.GetComponent(typeof(CurrentFlightCameraCapture));
-            PluginLogger.debug("CAM CAMPTURE CREATED");
+            //PluginLogger.debug("CAM CAMPTURE CREATED");
         }
 
         #endregion
@@ -187,12 +187,12 @@ namespace Telemachus
                 this.setCameraCapture();
             }
 
-            PluginLogger.debug("GET CAMERA");
+            //PluginLogger.debug("GET CAMERA");
             if(CameraCaptureManager.classedInstance.cameras.Count > 0)
             {
                 
                 RasterPropMonitorCameraCapture camera = (RasterPropMonitorCameraCapture) CameraCaptureManager.classedInstance.cameras.First().Value;
-                PluginLogger.debug("RENDERING SAVED CAMERA: "+ camera.cameraManagerName());
+                //PluginLogger.debug("RENDERING SAVED CAMERA: "+ camera.cameraManagerName());
                 if (camera.didRender)
                 {
                     if (camera.didRender)
