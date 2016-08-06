@@ -30,7 +30,7 @@ namespace Telemachus.CameraSnapshots
 
             RenderTexture.active = backupRenderTexture;
 
-            byte[] result = screenShot.EncodeToPNG();
+            byte[] result = screenShot.EncodeToJPG();
             Destroy(screenShot);
             Destroy(rt);
 

@@ -34,7 +34,7 @@ namespace Telemachus.CameraSnapshots
         
         protected const float fovAngle = 60f;
         protected const float aspect = 1.0f;
-        public  int cameraResolution = 300;
+        public  int cameraResolution = 640;
 
         protected virtual void LateUpdate()
         {

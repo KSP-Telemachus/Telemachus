@@ -130,7 +130,7 @@ namespace Telemachus
             if (camera.didRender)
             {
                 response.ContentEncoding = Encoding.UTF8;
-                response.ContentType = "image/png";
+                response.ContentType = "image/jpeg";
                 response.WriteContent(camera.imageBytes);
                 dataRates.SendDataToClient(camera.imageBytes.Length);
             }
