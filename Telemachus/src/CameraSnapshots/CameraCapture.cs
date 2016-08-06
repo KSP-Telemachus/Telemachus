@@ -17,7 +17,7 @@ namespace Telemachus.CameraSnapshots
             return "NA";
         }
 
-        public virtual string type()
+        public virtual string cameraType()
         {
             return "NA";
         }
