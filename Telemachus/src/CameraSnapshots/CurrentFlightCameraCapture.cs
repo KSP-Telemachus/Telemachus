@@ -7,8 +7,6 @@ namespace Telemachus.CameraSnapshots
 {
     public class CurrentFlightCameraCapture : CameraCapture
     {
-        protected static new string cameraContainerNamePrefix = "Telemachus Camera Container - ";
-
         public override string cameraManagerName()
         {
             return "TelemachusFlightCamera";

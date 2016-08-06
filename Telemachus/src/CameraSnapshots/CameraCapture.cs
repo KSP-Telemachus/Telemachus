@@ -19,8 +19,13 @@ namespace Telemachus.CameraSnapshots
 
         protected Dictionary<string, Camera> cameraDuplicates = new Dictionary<string, Camera>();
         protected List<string> activeCameras;
-        protected static readonly string[] skippedCameras = { "UIMainCamera", "UIVectorCamera" };
-        protected static string cameraContainerNamePrefix = "Telemachus Camera Container - ";
+        protected static readonly string[] skippedCameras = { "UIMainCamera", "UIVectorCamera", "velocity camera" };
+        protected string cameraContainerNamePrefix {
+            get
+            {
+                return "TelemachusCameraContainer:" + cameraManagerName();
+            }
+        }
         
         protected const float fovAngle = 60f;
         protected const float aspect = 1.0f;
@@ -47,7 +52,7 @@ namespace Telemachus.CameraSnapshots
 
             foreach (Camera camera in Camera.allCameras)
             {
-                //debugCameraDetails(camera);
+                // debugCameraDetails(camera);
                 // Don't duplicate any cameras we're going to skip
                 if (skippedCameras.IndexOf(camera.name) != -1)
                 {
@@ -71,6 +76,13 @@ namespace Telemachus.CameraSnapshots
                 cameraDuplicate.enabled = false;
                 cameraDuplicate.fieldOfView = fovAngle;
                 cameraDuplicate.aspect = aspect;
+
+                if (camera.name == "Camera 00" || camera.name == "FXCamera")
+                {
+                    //PluginLogger.debug("ADJUSTING NEAR CLIPPING PLANE FOR: " + camera.name + " : " + cameraDuplicate.farClipPlane / 8192.0f);
+                    cameraDuplicate.nearClipPlane = cameraDuplicate.farClipPlane / 8192.0f;
+                }
+
                 additionalCameraUpdates(cameraDuplicate);
 
                 //Now that the camera has been duplicated, add it to the list of active cameras
@@ -82,7 +94,7 @@ namespace Telemachus.CameraSnapshots
 
         public virtual void debugCameraDetails(Camera cam)
         {
-            PluginLogger.debug("CAMERA: " + cam.name + " ; FAR: " + cam.far + "; FAR CLIP PLANE: " + cam.farClipPlane);
+            PluginLogger.debug("CAMERA: " + cam.name + " POS: " + cam.transform.position + "; ROT: " + cam.transform.rotation  + " ; NEAR:" + cam.nearClipPlane + "; FAR: " + cam.farClipPlane);
         }
 
         public virtual void BeforeRenderNewScreenshot(){ }
