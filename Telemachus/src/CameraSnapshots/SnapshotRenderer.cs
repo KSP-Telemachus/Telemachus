@@ -11,16 +11,17 @@ namespace Telemachus.CameraSnapshots
     {
         public static byte[] renderSnaphot(List<Camera> cameras, int width, int height)
         {
-            RenderTexture rt = new RenderTexture(width, height, 24);
+            PluginLogger.debug("RENDERING SNAPSHOT");
+            /*RenderTexture rt = new RenderTexture(width, height, 24);
 
             foreach(Camera camera in cameras) {
                 camera.targetTexture = rt;
-                camera.Render();
-            }
+                //camera.Render();
+            } */
 
             Texture2D screenShot = new Texture2D(width, height, TextureFormat.RGB24, false);
-            RenderTexture backupRenderTexture = RenderTexture.active;
-            RenderTexture.active = rt;
+            //RenderTexture backupRenderTexture = RenderTexture.active;
+            //RenderTexture.active = rt;
             screenShot.ReadPixels(new Rect(0, 0, width, height), 0, 0);
 
             foreach (Camera camera in cameras)
@@ -28,11 +29,11 @@ namespace Telemachus.CameraSnapshots
                 camera.targetTexture = null;
             }
 
-            RenderTexture.active = backupRenderTexture;
+            //RenderTexture.active = backupRenderTexture;
 
             byte[] result = screenShot.EncodeToJPG();
             Destroy(screenShot);
-            Destroy(rt);
+            //Destroy(rt);
 
             return result;
         }
