@@ -86,13 +86,47 @@ namespace Telemachus.CameraSnapshots
 
         public override void OnStart(PartModule.StartState state)
         {
-            DebugInfo();
+            if (FlightGlobals.fetch != null)
+            {
+                GameEvents.onVesselChange.Add(updateCameraManager);
+                if (vessel == FlightGlobals.ActiveVessel)
+                {
+                    DebugInfo();
+                    addToManager();
+                }
+            }
+        }
+
+        private void updateCameraManager(Vessel data)
+        {
+            PluginLogger.debug("VESSEL CHANGED, UPDATING CAMERA MANAGER: " + data + "  | " + vessel);
+            if(data == vessel)
+            {
+                addToManager();
+            }
+            else
+            {
+                if (CameraCaptureManager.classedInstance.isRemoveCameraFromManager(data, this.cameraName))
+                {
+                    PluginLogger.debug("REMOVING CAMERA: " + RasterPropMonitorCameraCapture.buildCameraManagerName(this.cameraName));
+                    removeFromManager();
+                }
+            }
+        }
+
+        protected void addToManager()
+        {
             CameraCaptureManager.Instance.BroadcastMessage("addCamera", this);
+        }
+
+        protected void removeFromManager()
+        {
+            CameraCaptureManager.Instance.BroadcastMessage("removeCamera", RasterPropMonitorCameraCapture.buildCameraManagerName(this.cameraName));
         }
 
         public void OnDestroy()
         {
-            CameraCaptureManager.Instance.BroadcastMessage("removeCamera", this.cameraName);
+            removeFromManager();
         }
 
         public void Update()
