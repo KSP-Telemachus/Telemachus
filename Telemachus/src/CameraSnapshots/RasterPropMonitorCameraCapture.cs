@@ -28,7 +28,7 @@ namespace Telemachus.CameraSnapshots
 
         public override string cameraManagerName()
         {
-            return cameraManagerNamePrefix + rpmCamera.cameraName;
+            return buildCameraManagerName(rpmCamera.cameraName);
         }
 
         public override string cameraType()
@@ -37,6 +37,11 @@ namespace Telemachus.CameraSnapshots
         }
 
         protected bool builtCameraDuplicates = false;
+
+        public static string buildCameraManagerName(string name)
+        {
+            return cameraManagerNamePrefix + name;
+        }
 
         protected override void LateUpdate()
         {
