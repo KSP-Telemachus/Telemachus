@@ -2,6 +2,7 @@
 using System.Collections;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Telemachus.CameraSnapshots
 {
@@ -111,6 +112,8 @@ namespace Telemachus.CameraSnapshots
                 overviewTexture = new RenderTexture(cameraResolution, cameraResolution, 24);
             }
 
+            List<string> currentlyActiveCameras = new List<string>();
+
             foreach (Camera camera in Camera.allCameras)
             {
                 //PluginLogger.debug("CAMERA:" + camera.name + " TIMESTAMP: " + DateTime.UtcNow.ToShortTimeString());
@@ -152,6 +155,24 @@ namespace Telemachus.CameraSnapshots
                     }
                     /*verboseCameraDebug(camera);
                     verboseCameraDebug(cameraDuplicate);*/
+                }
+
+                //Mark that the camera is currently active
+                currentlyActiveCameras.Add(camera.name);
+            }
+
+
+            //Find all the cameras that are not currently active
+            //PluginLogger.debug("GETTING LIST OF DIABLED CAMERAS");
+            IEnumerable<string> disabledCameras = activeCameras.Except(currentlyActiveCameras);
+            //PluginLogger.debug("DISABLING CAMERAS");
+            foreach(string disabledCamera in disabledCameras)
+            {
+                if (cameraDuplicates.ContainsKey(disabledCamera))
+                {
+                    Destroy(cameraDuplicates[disabledCamera]);
+                    cameraDuplicates.Remove(disabledCamera);
+                    activeCameras.Remove(disabledCamera);
                 }
             }
         }
