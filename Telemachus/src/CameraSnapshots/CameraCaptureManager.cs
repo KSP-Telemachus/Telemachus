@@ -100,7 +100,13 @@ namespace Telemachus.CameraSnapshots
 
         public void removeCamera(string name)
         {
-            cameras.Remove(name.ToLower());
+            name = name.ToLower();
+            if (cameras.ContainsKey(name))
+            {
+                CameraCapture camera = cameras[name];
+                cameras.Remove(name);
+                Destroy(camera);
+            }
         }
     }
 }
