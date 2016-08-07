@@ -86,7 +86,7 @@ namespace Telemachus.CameraSnapshots
 
         public override void OnStart(PartModule.StartState state)
         {
-            /*if (FlightGlobals.fetch != null)
+            if (FlightGlobals.fetch != null)
             {
                 GameEvents.onVesselChange.Add(updateCameraManager);
                 if (vessel == FlightGlobals.ActiveVessel)
@@ -94,7 +94,7 @@ namespace Telemachus.CameraSnapshots
                     DebugInfo();
                     addToManager();
                 }
-            }*/
+            }
         }
 
         private void updateCameraManager(Vessel data)

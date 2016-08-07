@@ -43,24 +43,28 @@ namespace Telemachus.CameraSnapshots
             return cameraManagerNamePrefix + name;
         }
 
-        protected override void LateUpdate()
+        public override void repositionCamera()
         {
-            if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight && rpmCamera != null && !builtCameraDuplicates)
+            foreach (KeyValuePair<string, Camera> KVP in cameraDuplicates)
             {
-                UpdateCameras();
-                builtCameraDuplicates = true;
+                Camera cameraDuplicate = KVP.Value;
+                Camera gameCamera = gameCameraMapping[KVP.Key];
+
+                if (!cameraSkipRegex.IsMatch(gameCamera.name))
+                {
+                    cameraDuplicate.transform.position = rpmCamera.part.transform.position;
+                }
+
+                // Just in case to support JSITransparentPod.
+                //cam.cullingMask &= ~(1 << 16 | 1 << 20);
+
+                cameraDuplicate.transform.rotation = rpmCamera.part.transform.rotation;
+                cameraDuplicate.transform.Rotate(rpmCamera.rotateCamera);
+                cameraDuplicate.transform.position += rpmCamera.translateCamera;
             }
-
-            base.LateUpdate();
         }
 
-        public override void BeforeRenderNewScreenshot()
-        {
-            //UpdateCameras();
-            base.BeforeRenderNewScreenshot();
-        }
-
-        public override void additionalCameraUpdates(Camera cam)
+        /*public override void additionalCameraUpdates(Camera cam)
         {
             if (!cameraSkipRegex.IsMatch(cam.name))
             {
@@ -75,6 +79,6 @@ namespace Telemachus.CameraSnapshots
             cam.transform.position += rpmCamera.translateCamera;
             
             base.additionalCameraUpdates(cam);
-        }
+        }*/
     }
 }
