@@ -41,11 +41,11 @@ namespace Telemachus.CameraSnapshots
             if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight)
             {
                 duplicateAnyNewCameras();
-                if (!builtCameraDuplicates)
+                /*if (!builtCameraDuplicates)
                 {
-                    Camera.onPostRender += MyPostRender;
+                    //Camera.onPostRender += MyPostRender;
                     builtCameraDuplicates = true;
-                }
+                }*/
 
                 renderedFrame = false;
 
@@ -69,10 +69,10 @@ namespace Telemachus.CameraSnapshots
 
         void OnRenderImage(RenderTexture src, RenderTexture dest)
         {
-            PluginLogger.debug("ON RENDER IMAGE");
+            //PluginLogger.debug("ON RENDER IMAGE");
             if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight)
             {
-                PluginLogger.debug("SOURCE RT: " + src.GetInstanceID() + "DEST RT: " + dest.GetInstanceID() + "MY RT: " + overviewTexture.GetInstanceID());
+                //PluginLogger.debug("SOURCE RT: " + src.GetInstanceID() + "DEST RT: " + dest.GetInstanceID() + "MY RT: " + overviewTexture.GetInstanceID());
             }
         }
 
@@ -113,7 +113,7 @@ namespace Telemachus.CameraSnapshots
 
             foreach (Camera camera in Camera.allCameras)
             {
-                PluginLogger.debug("CAMERA:" + camera.name + " TIMESTAMP: " + DateTime.UtcNow.ToShortTimeString());
+                //PluginLogger.debug("CAMERA:" + camera.name + " TIMESTAMP: " + DateTime.UtcNow.ToShortTimeString());
                 // debugCameraDetails(camera);
                 // Don't duplicate any cameras we're going to skip
                 if (skippedCameras.IndexOf(camera.name) != -1)
@@ -142,7 +142,7 @@ namespace Telemachus.CameraSnapshots
                         //PluginLogger.debug("ADJUSTING NEAR CLIPPING PLANE FOR: " + camera.name + " : " + cameraDuplicate.farClipPlane / 8192.0f);
                         cameraDuplicate.nearClipPlane = cameraDuplicate.farClipPlane / 8192.0f;
                     }
-                    PluginLogger.debug("DUPLICATED CAMERA: " + camera.name);
+                    //PluginLogger.debug("DUPLICATED CAMERA: " + camera.name);
                     //Now that the camera has been duplicated, add it to the list of active cameras
                     activeCameras.Add(camera.name);
 
