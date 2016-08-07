@@ -45,18 +45,18 @@ namespace Telemachus.CameraSnapshots
 
         protected override void LateUpdate()
         {
-            /*if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight && rpmCamera != null && !builtCameraDuplicates)
+            if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight && rpmCamera != null && !builtCameraDuplicates)
             {
                 UpdateCameras();
                 builtCameraDuplicates = true;
-            }*/
+            }
 
             base.LateUpdate();
         }
 
         public override void BeforeRenderNewScreenshot()
         {
-            UpdateCameras();
+            //UpdateCameras();
             base.BeforeRenderNewScreenshot();
         }
 
@@ -68,7 +68,7 @@ namespace Telemachus.CameraSnapshots
             }
 
             // Just in case to support JSITransparentPod.
-            cam.cullingMask &= ~(1 << 16 | 1 << 20);
+            //cam.cullingMask &= ~(1 << 16 | 1 << 20);
 
             cam.transform.rotation = rpmCamera.part.transform.rotation;
             cam.transform.Rotate(rpmCamera.rotateCamera);

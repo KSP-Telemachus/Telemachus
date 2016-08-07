@@ -48,6 +48,7 @@ namespace Telemachus.CameraSnapshots
 
         public void UpdateCameras()
         {
+            PluginLogger.debug("UPDATING CAMERAS");
             if (CameraManager.Instance != null)
             {
                 //PluginLogger.debug("CURRENT CAMERA MODE: " + CameraManager.Instance.currentCameraMode);

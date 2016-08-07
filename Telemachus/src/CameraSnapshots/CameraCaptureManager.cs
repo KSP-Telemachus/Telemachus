@@ -53,24 +53,24 @@ namespace Telemachus.CameraSnapshots
 
             if (!vesselList.Contains(cameraName))
             {
-                PluginLogger.debug("ADDING: " + cameraName + " TO : " + vessel.id);
+                //PluginLogger.debug("ADDING: " + cameraName + " TO : " + vessel.id);
                 vesselList.Add(cameraName);
             }
         }
 
         public bool isRemoveCameraFromManager(Vessel vessel, string name)
         {
-            PluginLogger.debug("CHECKING FOR: " + name + " IN : " + vessel.id);
+            //PluginLogger.debug("CHECKING FOR: " + name + " IN : " + vessel.id);
             if (!vesselCameraMappings.ContainsKey(vessel.id)){
                 return true;
             }
 
-            PluginLogger.debug("FOUND KEY: " + vessel.id);
+            //PluginLogger.debug("FOUND KEY: " + vessel.id);
 
 
             if (!vesselCameraMappings[vessel.id].Contains(name))
             {
-                PluginLogger.debug("MISSING: " + name + " IN : " + vessel.id);
+                //PluginLogger.debug("MISSING: " + name + " IN : " + vessel.id);
                 return true;
             }
 
