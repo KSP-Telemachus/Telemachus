@@ -23,9 +23,6 @@ namespace Telemachus.CameraSnapshots
 
         public Dictionary<string, Camera> gameCameraMapping = new Dictionary<string, Camera>();
 
-        protected bool builtCameraDuplicates = false;
-        protected bool renderedFrame = false;
-
         public override string cameraManagerName()
         {
             return "TelemachusFlightCamera";
@@ -42,39 +39,11 @@ namespace Telemachus.CameraSnapshots
             if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight)
             {
                 duplicateAnyNewCameras();
-                /*if (!builtCameraDuplicates)
-                {
-                    //Camera.onPostRender += MyPostRender;
-                    builtCameraDuplicates = true;
-                }*/
-
-                renderedFrame = false;
-
                 repositionCamera();
                 StartCoroutine(newRender());
             }
-            
-            /*foreach(KeyValuePair<string, Camera> KVP in cameraDuplicates)
-            {
-                debugCameraDetails(KVP.Value);
-            }*/
 
             //base.LateUpdate();
-        }
-
-        public void MyPostRender(Camera cam)
-        {
-            //overviewTexture
-            //Debug.Log("PostRender from camera " + cam.gameObject.name);
-        }
-
-        void OnRenderImage(RenderTexture src, RenderTexture dest)
-        {
-            //PluginLogger.debug("ON RENDER IMAGE");
-            if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight)
-            {
-                //PluginLogger.debug("SOURCE RT: " + src.GetInstanceID() + "DEST RT: " + dest.GetInstanceID() + "MY RT: " + overviewTexture.GetInstanceID());
-            }
         }
 
         public IEnumerator newRender()
@@ -142,10 +111,9 @@ namespace Telemachus.CameraSnapshots
 
                     if (camera.name == "Camera 00" || camera.name == "FXCamera")
                     {
-                        //PluginLogger.debug("ADJUSTING NEAR CLIPPING PLANE FOR: " + camera.name + " : " + cameraDuplicate.farClipPlane / 8192.0f);
                         cameraDuplicate.nearClipPlane = cameraDuplicate.farClipPlane / 8192.0f;
                     }
-                    //PluginLogger.debug("DUPLICATED CAMERA: " + camera.name);
+
                     //Now that the camera has been duplicated, add it to the list of active cameras
                     activeCameras.Add(camera.name);
 
@@ -153,19 +121,13 @@ namespace Telemachus.CameraSnapshots
                     {
                         gameCameraMapping[camera.name] = camera;
                     }
-                    /*verboseCameraDebug(camera);
-                    verboseCameraDebug(cameraDuplicate);*/
                 }
 
                 //Mark that the camera is currently active
                 currentlyActiveCameras.Add(camera.name);
             }
 
-
-            //Find all the cameras that are not currently active
-            //PluginLogger.debug("GETTING LIST OF DIABLED CAMERAS");
             IEnumerable<string> disabledCameras = activeCameras.Except(currentlyActiveCameras);
-            //PluginLogger.debug("DISABLING CAMERAS");
             foreach(string disabledCamera in disabledCameras)
             {
                 if (cameraDuplicates.ContainsKey(disabledCamera))
