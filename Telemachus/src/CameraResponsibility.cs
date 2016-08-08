@@ -38,7 +38,7 @@ namespace Telemachus
 
         private UpLinkDownLinkRate dataRates = null;
 
-        private CurrentFlightCameraCapture cameraCaptureTest = null;
+        
 
         #region Initialisation
 
@@ -46,15 +46,12 @@ namespace Telemachus
         {
             this.kspAPI = kspAPI;
             dataRates = rateTracker;
-            this.setCameraCapture();
         }
 
         public void setCameraCapture()
         {
             //PluginLogger.debug("START CAMERA CATPURE");
-            GameObject obj = new GameObject("CurrentFlightCameraCapture", typeof(CurrentFlightCameraCapture));
-            this.cameraCaptureTest = (CurrentFlightCameraCapture)obj.GetComponent(typeof(CurrentFlightCameraCapture));
-            CameraCaptureManager.classedInstance.addCameraCapture(cameraCaptureTest);
+            
             //PluginLogger.debug("CAM CAMPTURE CREATED");
         }
 
@@ -144,10 +141,6 @@ namespace Telemachus
 
         public bool process(HttpListenerRequest request, HttpListenerResponse response)
         {
-            if(this.cameraCaptureTest == null)
-            {
-                this.setCameraCapture();
-            }
             //PluginLogger.debug(request.Url.AbsolutePath.TrimEnd('/'));
             //PluginLogger.debug(String.Join(",", CameraCaptureManager.classedInstance.cameras.Keys.ToArray()));
             //PluginLogger.debug("FLIGHT CAMERA: " + this.cameraCaptureTest);

@@ -35,8 +35,10 @@ namespace Telemachus.CameraSnapshots
         }
         #endregion
 
+        private CurrentFlightCameraCapture cameraCaptureTest = null;
         public Dictionary<string, CameraCapture> cameras = new Dictionary<string, CameraCapture>();
         public Dictionary<Guid, List<string>> vesselCameraMappings = new Dictionary<Guid, List<string>>();
+
 
         public void addToVesselCameraMappings(Vessel vessel, string cameraName)
         {
@@ -56,6 +58,29 @@ namespace Telemachus.CameraSnapshots
                 //PluginLogger.debug("ADDING: " + cameraName + " TO : " + vessel.id);
                 vesselList.Add(cameraName);
             }
+        }
+
+        protected void OnEnable()
+        {
+            GameEvents.onFlightReady.Add(addFlightCamera);
+            GameEvents.onGameSceneLoadRequested.Add(removeFlightCameraIfNotFlight);
+        }
+
+        private void removeFlightCameraIfNotFlight(GameScenes data)
+        {
+            if(data != GameScenes.FLIGHT && cameraCaptureTest)
+            {
+                removeCamera(cameraCaptureTest.cameraManagerName());
+                Destroy(cameraCaptureTest.gameObject);
+                cameraCaptureTest = null;
+            }
+        }
+
+        private void addFlightCamera()
+        {
+            GameObject obj = new GameObject("CurrentFlightCameraCapture", typeof(CurrentFlightCameraCapture));
+            this.cameraCaptureTest = (CurrentFlightCameraCapture)obj.GetComponent(typeof(CurrentFlightCameraCapture));
+            addCameraCapture(cameraCaptureTest);
         }
 
         public bool isRemoveCameraFromManager(Vessel vessel, string name)
