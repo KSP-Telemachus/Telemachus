@@ -83,19 +83,19 @@ namespace Telemachus.CameraSnapshots
             PluginLogger.debug(cameraManagerName() + ": WAITING FOR END OF FRAME");
             yield return new WaitForEndOfFrame();
             PluginLogger.debug(cameraManagerName() + ": OUT OF FRAME");
-            /*
-            imageStopWatch.Start();
+            
+            //imageStopWatch.Start();
             Texture2D texture = getTexture2DFromRenderTexture();
             this.imageBytes = texture.EncodeToJPG();
             this.didRender = true;
             Destroy(texture);
-            imageStopWatch.Stop();
-            PluginLogger.debug(cameraManagerName() + ": TIME TO RENDER: " + imageStopWatch.Elapsed + " : " + DateTime.Now.ToString("hh.mm.ss.ffffff"));
-            imageStopWatch.Reset();
-            renderCount++;
-            */
+            //imageStopWatch.Stop();
+            //PluginLogger.debug(cameraManagerName() + ": TIME TO RENDER: " + imageStopWatch.Elapsed + " : " + DateTime.Now.ToString("hh.mm.ss.ffffff"));
+            //imageStopWatch.Reset();
+            //renderCount++;
+            
             //wait a second before releasing the mutex to improve performance
-            yield return new WaitForSeconds(10f);
+            yield return new WaitForSeconds(1.5f);
             mutex = false;
         }
 
