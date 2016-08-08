@@ -55,8 +55,9 @@ namespace Telemachus.CameraSnapshots
         protected virtual void LateUpdate()
         {
             //PluginLogger.debug("LATE UPDATE FOR FLIGHT CAMERA");
-            if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight)
+            if (CameraManager.Instance != null && HighLogic.LoadedSceneIsFlight && !mutex)
             {
+                mutex = true;
                 duplicateAnyNewCameras();
                 repositionCamera();
                 StartCoroutine(newRender());
@@ -72,6 +73,7 @@ namespace Telemachus.CameraSnapshots
             Texture2D texture = getTexture2DFromRenderTexture();
             this.imageBytes = texture.EncodeToJPG();
             this.didRender = true;
+            mutex = false;
 
             Destroy(texture);
         }
