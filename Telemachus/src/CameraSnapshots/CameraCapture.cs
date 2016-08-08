@@ -96,6 +96,7 @@ namespace Telemachus.CameraSnapshots
             //renderCount++;
 
             //wait a second before releasing the mutex to improve performance
+            //PluginLogger.debug("RENDER DELAY:" + (1.0f + (.3f * renderOffsetFactor)));
             yield return new WaitForSeconds(1.0f + (.3f * renderOffsetFactor));
             mutex = false;
         }
