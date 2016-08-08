@@ -66,16 +66,23 @@ namespace Telemachus.CameraSnapshots
 
         public IEnumerator newRender()
         {
-            yield return true;
-            //PluginLogger.debug(cameraManagerName() +  ": WAITING FOR END OF FRAME");
-            //yield return new WaitForEndOfFrame();
-            //PluginLogger.debug(cameraManagerName() + ": OUT OF FRAME");
+            PluginLogger.debug(cameraManagerName() + ": WAITING FOR END OF FRAME");
+            yield return new WaitForEndOfFrame();
+            PluginLogger.debug(cameraManagerName() + ": OUT OF FRAME");
+            /*
+            imageStopWatch.Start();
             Texture2D texture = getTexture2DFromRenderTexture();
             this.imageBytes = texture.EncodeToJPG();
             this.didRender = true;
-            mutex = false;
-
             Destroy(texture);
+            imageStopWatch.Stop();
+            PluginLogger.debug(cameraManagerName() + ": TIME TO RENDER: " + imageStopWatch.Elapsed + " : " + DateTime.Now.ToString("hh.mm.ss.ffffff"));
+            imageStopWatch.Reset();
+            renderCount++;
+            */
+            //wait a second before releasing the mutex to improve performance
+            yield return new WaitForSeconds(10f);
+            mutex = false;
         }
 
         public Texture2D getTexture2DFromRenderTexture()
@@ -148,9 +155,10 @@ namespace Telemachus.CameraSnapshots
                     {
                         Destroy(cameraDuplicates[disabledCamera]);
                         cameraDuplicates.Remove(disabledCamera);
-                        activeCameras.Remove(disabledCamera);
                     }
                 }
+
+                activeCameras = currentlyActiveCameras;
             }
         }
 
