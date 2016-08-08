@@ -115,12 +115,14 @@ namespace Telemachus.CameraSnapshots
 
             string name = cameraCapture.cameraManagerName().ToLower();
             cameras[name] = cameraCapture;
+            cameraCapture.renderOffsetFactor = cameras.Count;
             addToVesselCameraMappings(camera.vessel, camera.cameraName);
         }
 
         public void addCameraCapture(CameraCapture cameraCapture)
         {
             cameras[cameraCapture.cameraManagerName().ToLower()] = cameraCapture;
+            cameraCapture.renderOffsetFactor = cameras.Count;
         }
 
         public void removeCamera(string name)
