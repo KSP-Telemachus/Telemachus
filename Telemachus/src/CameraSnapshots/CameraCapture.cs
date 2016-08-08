@@ -52,6 +52,20 @@ namespace Telemachus.CameraSnapshots
         protected const float aspect = 1.0f;
         public  int cameraResolution = 300;
 
+        protected void OnEnable()
+        {
+            Camera.onPostRender += disableCameraIfInList;
+        }
+
+        private void disableCameraIfInList(Camera cam)
+        {
+            if (cameraDuplicates.ContainsValue(cam))
+            {
+                PluginLogger.debug("DISABLE CAMERA:"+ cam.name);
+                cam.enabled = false;
+            }
+        }
+
         protected virtual void LateUpdate()
         {
             //PluginLogger.debug("LATE UPDATE FOR FLIGHT CAMERA");
@@ -140,6 +154,12 @@ namespace Telemachus.CameraSnapshots
                     {
                         gameCameraMapping[camera.name] = camera;
                     }
+                }
+
+                //Mark the camera as enabled so it will be rendered again
+                if (cameraDuplicates.ContainsKey(camera.name))
+                {
+                    cameraDuplicates[camera.name].enabled = true;
                 }
 
                 //Mark that the camera is currently active
