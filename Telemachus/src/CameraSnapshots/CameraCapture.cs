@@ -134,6 +134,7 @@ namespace Telemachus.CameraSnapshots
                     continue;
                 }
 
+                PluginLogger.debug(cameraManagerName() +  " {" + verboseCameraDetails(camera) + "}");
 
                 if (!cameraDuplicates.ContainsKey(camera.name))
                 {
@@ -199,19 +200,37 @@ namespace Telemachus.CameraSnapshots
             }
         }
 
-        public void verboseCameraDebug(Camera camera)
+        public string verboseCameraDetails(Camera camera)
         {
             string[] debugProperties = {
-                        "CAMERA INFO: " + camera.name,
-                        "TARGET DISPLAY: " + camera.targetDisplay,
-                        "TARGET TEXTURE: " + camera.targetTexture,
-                        "RENDERING PATH: " + camera.renderingPath,
-                        "ACTUAL RENDER PATH: " + camera.actualRenderingPath,
-                        "CAMERA TYPE: " + camera.cameraType,
-                        "GAME OBJECT: " + camera.gameObject
-                    };
-            PluginLogger.debug(String.Join("\n", debugProperties));
+                "CAMERA INFO: " + camera.name,
+                "TARGET DISPLAY: " + camera.targetDisplay,
+                "TARGET TEXTURE: " + camera.targetTexture,
+                "RENDERING PATH: " + camera.renderingPath,
+                "ACTUAL RENDER PATH: " + camera.actualRenderingPath,
+                "CAMERA TYPE: " + camera.cameraType,
+                "GAME OBJECT: " + camera.gameObject,
+                "BG COLOR: " + camera.backgroundColor,
+                "CULLING MASK: " + camera.cullingMask,
+                "DEPTH: " + camera.depth,
+                "HDR: " + camera.hdr,
+                "POSITION: " + camera.transform.position,
+                "ROT: " + camera.transform.rotation,
+                "NEAR: " + camera.nearClipPlane,
+                "FAR: " + camera.farClipPlane,
+                "LOCAL EULER ANGLES: " + camera.transform.localEulerAngles,
+                "LOCAL POSITION: " + camera.transform.localPosition,
+                "LOCAL SCALE: " + camera.transform.localScale,
+                "EULER ANGLES: " + camera.transform.eulerAngles
+            };
+            return String.Join("\n", debugProperties);
         }
+
+        public void verboseCameraDebug(Camera camera)
+        {
+            PluginLogger.debug(verboseCameraDetails(camera));
+        }
+
 
         /*public void UpdateCameras()
         {
