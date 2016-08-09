@@ -134,7 +134,7 @@ namespace Telemachus.CameraSnapshots
                     continue;
                 }
 
-                PluginLogger.debug(cameraManagerName() +  " {" + verboseCameraDetails(camera) + "}");
+                //PluginLogger.debug(cameraManagerName() +  " {" + verboseCameraDetails(camera) + "}");
 
                 if (!cameraDuplicates.ContainsKey(camera.name))
                 {
