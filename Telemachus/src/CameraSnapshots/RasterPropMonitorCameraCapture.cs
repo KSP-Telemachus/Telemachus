@@ -43,26 +43,20 @@ namespace Telemachus.CameraSnapshots
             return cameraManagerNamePrefix + name;
         }
 
-        public override void repositionCamera()
+        public override void additionalCameraUpdates(Camera dupliateCam, Camera gameCamera)
         {
-            base.repositionCamera();
-            foreach (KeyValuePair<string, Camera> KVP in cameraDuplicates)
+            base.additionalCameraUpdates(dupliateCam, gameCamera);
+            if (!cameraSkipRegex.IsMatch(gameCamera.name))
             {
-                Camera cameraDuplicate = KVP.Value;
-                Camera gameCamera = gameCameraMapping[KVP.Key];
-
-                if (!cameraSkipRegex.IsMatch(gameCamera.name))
-                {
-                    cameraDuplicate.transform.position = rpmCamera.part.transform.position;
-                }
-
-                // Just in case to support JSITransparentPod.
-                //cam.cullingMask &= ~(1 << 16 | 1 << 20);
-
-                cameraDuplicate.transform.rotation = rpmCamera.part.transform.rotation;
-                cameraDuplicate.transform.Rotate(rpmCamera.rotateCamera);
-                cameraDuplicate.transform.position += rpmCamera.translateCamera;
+                dupliateCam.transform.position = rpmCamera.part.transform.position;
             }
+
+            // Just in case to support JSITransparentPod.
+            //cam.cullingMask &= ~(1 << 16 | 1 << 20);
+
+            dupliateCam.transform.rotation = rpmCamera.part.transform.rotation;
+            dupliateCam.transform.Rotate(rpmCamera.rotateCamera);
+            dupliateCam.transform.position += rpmCamera.translateCamera;
         }
 
         /*public override void additionalCameraUpdates(Camera cam)
