@@ -45,6 +45,7 @@ namespace Telemachus.CameraSnapshots
 
         public override void repositionCamera()
         {
+            base.repositionCamera();
             foreach (KeyValuePair<string, Camera> KVP in cameraDuplicates)
             {
                 Camera cameraDuplicate = KVP.Value;
