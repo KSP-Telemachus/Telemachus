@@ -84,8 +84,14 @@ namespace Telemachus.CameraSnapshots
             //PluginLogger.debug(cameraManagerName() + ": WAITING FOR END OF FRAME");
             yield return new WaitForEndOfFrame();
             //PluginLogger.debug(cameraManagerName() + ": OUT OF FRAME");
-            
-            //imageStopWatch.Start();
+
+            foreach (Camera camera in cameraDuplicates.Values)
+            {
+                //camera.targetTexture = rt;
+                camera.Render();
+            }
+
+                //imageStopWatch.Start();
             Texture2D texture = getTexture2DFromRenderTexture();
             this.imageBytes = texture.EncodeToJPG();
             this.didRender = true;
@@ -162,7 +168,7 @@ namespace Telemachus.CameraSnapshots
                 //Mark the camera as enabled so it will be rendered again
                 if (cameraDuplicates.ContainsKey(camera.name))
                 {
-                    cameraDuplicates[camera.name].enabled = true;
+                    cameraDuplicates[camera.name].enabled = false;
                 }
 
                 //Mark that the camera is currently active
