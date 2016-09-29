@@ -19,6 +19,7 @@ namespace Telemachus
         /// The page prefix that this class handles
         public const String PAGE_PREFIX = "/telemachus/cameras";
         public const String CAMERA_LIST_ENDPOINT = PAGE_PREFIX;
+        public const String NGROK_ORIGINAL_HOST_HEADER = "X-Original-Host";
         protected Regex _cameraNameEndpointRegex;
         protected Regex cameraNameEndpointRegex
         {
@@ -80,7 +81,17 @@ namespace Telemachus
 
         public string cameraURL(HttpListenerRequest request, CameraCapture camera)
         {
-            return request.Url.Scheme + "://" + request.UserHostName + PAGE_PREFIX + "/" + UnityEngine.WWW.EscapeURL(camera.cameraManagerName());
+            String hostname = "";
+            if (request.Headers.Contains(NGROK_ORIGINAL_HOST_HEADER))
+            {
+                hostname = request.Headers[NGROK_ORIGINAL_HOST_HEADER];
+            }
+            else
+            {
+                hostname = request.UserHostName;
+            }
+
+            return request.Url.Scheme + "://" + hostname + PAGE_PREFIX + "/" + UnityEngine.WWW.EscapeURL(camera.cameraManagerName());
         }
 
         public bool processCameraManagerIndex(HttpListenerRequest request, HttpListenerResponse response)
