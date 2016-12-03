@@ -153,7 +153,7 @@ namespace Telemachus
             {
                 return SumResources((List<PartResource>)input,
                     x => x.amount,
-                    x => x.part.inStageIndex == Staging.CurrentStage);
+                    x => x.part.inStageIndex == x.part.vessel.currentStage);
             }
         }
 
