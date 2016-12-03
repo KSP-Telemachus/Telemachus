@@ -8,6 +8,7 @@ using System.Threading;
 using System.Collections;
 using UnityEngine;
 using KSP.UI.Screens;
+using KSP.UI.Util;
 
 namespace Telemachus
 {
@@ -1525,7 +1526,7 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources =>
                 {
-                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
+                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.CoM);
                     return result.eulerAngles.y;
                 },
                 "n.heading2", "Heading", formatters.Default, APIEntry.UnitType.DEG));
@@ -1533,7 +1534,7 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.CoM);
                    return (result.eulerAngles.x > 180) ? (360.0 - result.eulerAngles.x) : -result.eulerAngles.x;
                },
                "n.pitch2", "Pitch", formatters.Default, APIEntry.UnitType.DEG));
@@ -1541,7 +1542,7 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.CoM);
                    return (result.eulerAngles.z > 180) ?
                        (result.eulerAngles.z - 360.0) : result.eulerAngles.z;
                },
@@ -1550,7 +1551,7 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                 dataSources =>
                 {
-                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
+                    Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.CoM);
                     return result.eulerAngles.y;
                 },
                 "n.rawheading2", "Raw Heading", formatters.Default, APIEntry.UnitType.DEG));
@@ -1558,7 +1559,7 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.CoM);
                    return result.eulerAngles.x;
                },
                "n.rawpitch2", "Raw Pitch", formatters.Default, APIEntry.UnitType.DEG));
@@ -1566,7 +1567,7 @@ namespace Telemachus
             registerAPI(new PlotableAPIEntry(
                dataSources =>
                {
-                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.findWorldCenterOfMass());
+                   Quaternion result = updateHeadingPitchRollField(dataSources.vessel, dataSources.vessel.CoM);
                    return result.eulerAngles.z;
                },
                "n.rawroll2", "Raw Roll", formatters.Default, APIEntry.UnitType.DEG));
@@ -2191,11 +2192,11 @@ namespace Telemachus
                 {
                     foreach (var module in part.Modules.OfType<ModuleEnviroSensor>())
                     {
-                        if (!partModules.ContainsKey(module.sensorType))
+                        if (!partModules.ContainsKey(module.sensorType.ToString()))
                         {
-                            partModules[module.sensorType] = new List<ModuleEnviroSensor>();
+                            partModules[module.sensorType.ToString()] = new List<ModuleEnviroSensor>();
                         }
-                        partModules[module.sensorType].Add(module);
+                        partModules[module.sensorType.ToString()].Add(module);
                     }
                 }
             }
