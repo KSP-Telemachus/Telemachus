@@ -86,6 +86,9 @@ namespace Telemachus
                 contentTypes[".ttf"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "application/font-sfnt" };
                 contentTypes[".woff"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "application/font-woff" };
                 contentTypes[".otf"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "application/font-sfnt" };
+                contentTypes[".mp4"] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = "video/mp4" };
+                contentTypes[".json"] = new HTMLResponseContentType { contentType = HTMLContentType.TextContent, mimeType = "application/json" };
+                contentTypes[".txt"] = new HTMLResponseContentType { contentType = HTMLContentType.TextContent, mimeType = "text/plain" };
                 contentTypes[""] = new HTMLResponseContentType { contentType = HTMLContentType.BinaryContent, mimeType = null };
 
             }
