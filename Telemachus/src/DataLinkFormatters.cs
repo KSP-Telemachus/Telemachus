@@ -154,7 +154,7 @@ namespace Telemachus
             {
                 return SumResources((List<PartResource>)input,
                     x => x.amount,
-                    x => x.part.inStageIndex == StageManager.CurrentStage);
+                    x => x.part.inStageIndex == x.part.vessel.currentStage);
             }
         }
 
@@ -163,7 +163,7 @@ namespace Telemachus
         {
             public override object prepareForSerialization(object input)
             {
-                return SumResources((List<Vessel.ActiveResource>)input,
+                return SumResources((List<SimplifiedResource>)input,
                     x => x.amount);
             }
         }
@@ -172,7 +172,7 @@ namespace Telemachus
         {
             public override object prepareForSerialization(object input)
             {
-                return SumResources((List<Vessel.ActiveResource>)input,
+                return SumResources((List<SimplifiedResource>)input,
                     x => x.maxAmount);
             }
         }
