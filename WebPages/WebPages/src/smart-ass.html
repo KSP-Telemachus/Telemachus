@@ -5,7 +5,7 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-    <title>Smart A.S.S.</title>
+    <title>Smart S.A.S.</title>
 
     <link rel="stylesheet" href="https://s3.amazonaws.com/codiqa-cdn/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
     <link rel="stylesheet" type="text/css" href="jKSPWAPICore.css" />
@@ -28,9 +28,13 @@
                 setTimeout(function () { $(id).buttonMarkup({ icon: theicon }) }, 500);
             });
         }
-
-        function execute(id) {
-            $(id).buttonMarkup({ icon: "refresh" });
+        function changeSlider(id,value) {
+          $(id).val(parseInt($(id).val())+value);
+          $(id).trigger('change');
+          execute();
+        }
+        function execute() {
+            $("#exec").buttonMarkup({ icon: "refresh" });
             jKSPWAPI.call(
             "ret=mj.surface2[" + $('#heading').val() + "," + $('#pitch').val() + "," + $('#roll').val() + "]",
             function (d) {
@@ -40,7 +44,7 @@
                 else if (d.ret > 0) {
                     jKSPWAPI.generateNotificationWithCode(d.ret);
                 }
-                setTimeout(function () { $(id).buttonMarkup({ icon: theicon }) }, 500);
+                setTimeout(function () { $("#exec").buttonMarkup({ icon: "star" }) }, 500);
             });
         }
     </script>
@@ -51,40 +55,59 @@
         <div data-role="content">
             <input type="submit" id="1" data-inline="true" data-icon="star" data-iconpos="bottom" value="Off" onclick="command('mj.smartassoff', '#1', 'star')" />
             <input type="submit" id="0" data-inline="true" data-icon="star" data-iconpos="bottom" value="Node" onclick="command('mj.node', '#0', 'star')" />
-
-            <input type="submit" id="2" data-inline="true" data-icon="forward" data-iconpos="bottom" value="Retrograde" onclick="command('mj.retrograde', '#2', 'forward')" />
-            <input type="submit" id="3" data-inline="true" data-icon="back" data-iconpos="bottom" value="Prograde" onclick="command('mj.prograde', '#3', 'back')" />
-            <input type="submit" id="4" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Normal" onclick="command('mj.normalplus', '#4', 'plus')" />
-            <input type="submit" id="5" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Normal" onclick="command('mj.normalminus', '#5', 'minus')" />
-            <input type="submit" id="6" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialplus', '#6', 'plus')" />
-            <input type="submit" id="7" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialminus', '#7', 'minus')" />
-            <input type="submit" id="8" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Target" onclick="command('mj.targetplus', '#8', 'plus')" />
-            <input type="submit" id="9" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Target" onclick="command('mj.targetminus', '#9', 'minus')" />
-            <input type="submit" id="10" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Relative" onclick="command('mj.relativeplus', '#10', 'plus')" />
-            <input type="submit" id="11" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Relative" onclick="command('mj.relativeminus', '#11', 'minus')" />
-            <input type="submit" id="12" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Parallel" onclick="command('mj.parallelplus', '#12', 'plus')" />
-            <input type="submit" id="13" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Parallel" onclick="command('mj.parallelminus', '#13', 'minus')" />
-            <center>
-                <div data-role="fieldcontain">
-                    <label for="slider2">
-                        Pitch
-                    </label>
-                    <input id="pitch" type="range" name="slider" value="90" min="-90" max="90" data-highlight="false" />
-                </div>
-                <div data-role="fieldcontain">
-                    <label for="slider1">
-                        Heading
-                    </label>
-                    <input id="heading" type="range" name="slider" value="90" min="0" max="360" data-highlight="false" />
-                </div>
-              <div data-role="fieldcontain">
-                <label for="slider3">
-                  Roll
-                </label>
-                <input id="roll" type="range" name="slider" value="90" min="0" max="360" data-highlight="false" />
+            <!-- ORBITAL -->
+            <div data-role="collapsible-set">
+              <div data-role="collapsible" data-collapsed="false">
+                <h3>Orbital</h3>
+                <input type="submit" id="2" data-inline="true" data-icon="forward" data-iconpos="bottom" value="Retrograde" onclick="command('mj.retrograde', '#2', 'forward')" />
+                <input type="submit" id="3" data-inline="true" data-icon="back" data-iconpos="bottom" value="Prograde" onclick="command('mj.prograde', '#3', 'back')" />
+                <input type="submit" id="4" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Normal" onclick="command('mj.normalplus', '#4', 'plus')" />
+                <input type="submit" id="5" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Normal" onclick="command('mj.normalminus', '#5', 'minus')" />
+                <input type="submit" id="6" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialplus', '#6', 'plus')" />
+                <input type="submit" id="7" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Radial" onclick="command('mj.radialminus', '#7', 'minus')" />
               </div>
-            </center>
-            <input type="submit" id="8" data-icon="star" data-iconpos="bottom" value="Execute" onclick="execute('#8')" />
+
+              <!-- TARGET -->
+              <div data-role="collapsible">
+                <h3>Target</h3>
+                <input type="submit" id="8" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Target" onclick="command('mj.targetplus', '#8', 'plus')" />
+                <input type="submit" id="9" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Target" onclick="command('mj.targetminus', '#9', 'minus')" />
+                <input type="submit" id="10" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Relative" onclick="command('mj.relativeplus', '#10', 'plus')" />
+                <input type="submit" id="11" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Relative" onclick="command('mj.relativeminus', '#11', 'minus')" />
+                <input type="submit" id="12" data-inline="true" data-icon="plus" data-iconpos="bottom" value="Parallel" onclick="command('mj.parallelplus', '#12', 'plus')" />
+                <input type="submit" id="13" data-inline="true" data-icon="minus" data-iconpos="bottom" value="Parallel" onclick="command('mj.parallelminus', '#13', 'minus')" />
+              </div>
+
+              <!-- SURFACE -->
+              <div data-role="collapsible">
+                <h3>Surface</h3>
+                <div data-role="fieldcontain">
+                  <label for="pitch">
+                   Pitch
+                  </label>
+                  <input id="pitch" type="range" name="pitch" value="90" min="-90" max="90" data-highlight="false" />
+                  <a id="pitch-minus" data-role="button" data-inline="true" data-mini=true data-icon="minus" data-iconpos="notext" onclick="changeSlider('#pitch',-1)"></a>
+                  <a id="pitch-plus"  data-role="button" data-inline="true" data-mini=true data-icon="plus" data-iconpos="notext" onclick="changeSlider('#pitch',1)"></a>
+                </div>
+                <div data-role="fieldcontain">
+                  <label for="heading">
+                     Heading
+                  </label>
+                  <input id="heading" type="range" name="heading" value="90" min="0" max="360" data-highlight="false" />
+                  <a id="heading-minus" data-role="button" data-inline="true" data-mini=true data-icon="minus" data-iconpos="notext" onclick="changeSlider('#heading',-1)"></a>
+                  <a id="heading-plus"  data-role="button" data-inline="true" data-mini=true data-icon="plus" data-iconpos="notext" onclick="changeSlider('#heading',1)"></a>
+                </div>
+                <div data-role="fieldcontain">
+                  <label for="roll">
+                     Roll
+                  </label>
+                  <input id="roll" type="range" name="roll" value="0" min="0" max="360" data-highlight="false" />
+                  <a id="roll-minus" data-role="button" data-inline="true" data-mini=true data-icon="minus" data-iconpos="notext" onclick="changeSlider('#roll',-1)"></a>
+                  <a id="roll-plus"  data-role="button" data-inline="true" data-mini=true data-icon="plus" data-iconpos="notext" onclick="changeSlider('#roll',1)"></a>
+                </div>
+                <input type="submit" id="exec" data-icon="star" data-iconpos="bottom" value="Execute" onclick="execute()" />
+              </div>
+            </div>
         </div>
     </div>
 </body>
